@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -13,6 +15,34 @@ namespace Moggle.Tests
         {
             TestOutputHelper = testOutputHelper;
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("Hello")]
+        [InlineData("World")]
+        public async Task SameSeedShouldProduceSameGame(string Seed)
+        {
+            var board1 = MoggleState.DefaultState with
+            {
+                Board = MoggleBoard.DefaultBoardClassic.Randomize(Seed)
+            };
+
+            await Task.Delay(100);
+
+            var board2 = MoggleState.DefaultState with
+            {
+                Board = MoggleBoard.DefaultBoardClassic.Randomize(Seed)
+            };
+
+            var b1String = string.Join(", ", board1.Board.Positions.Select(x => x.ToString()));
+            var b2String = string.Join(", ", board2.Board.Positions.Select(x => x.ToString()));
+
+            TestOutputHelper.WriteLine(b1String);
+            TestOutputHelper.WriteLine(b2String);
+
+            board1.Board.Positions.Should().BeEquivalentTo(board2.Board.Positions);
+        }
+
 
         [Theory]
         [InlineData("")]

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
-using MoreLinq;
 
 namespace Moggle
 {
@@ -69,13 +68,34 @@ public record MoggleBoard(
         }
         else
         {
-            return Randomize(new Random(seed.GetHashCode()));
+            var code = GetNumber(seed);
+
+            Console.WriteLine(code);
+            return Randomize(new Random(code));
         }
     }
 
+    private static int GetNumber(string s)
+    {
+        var current = 1;
+
+        foreach (var v in s)
+        {
+            current += v;
+            current *= v;
+        }
+
+        return current;
+    }
+
+
     public MoggleBoard Randomize(Random random)
     {
-        var newPositions = Positions.Shuffle(random)
+        var newPositions = DefaultBoardClassic.Positions
+            .Select(pos=> (pos, random.Next(1000)))
+            .OrderBy(x=> x.Item2)
+            .Select(x=>x.pos)
+            .ToList()
             .Select(x => x.RandomizeFace(random))
             .ToImmutableList();
 
