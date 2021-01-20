@@ -12,7 +12,9 @@
       {
         var coordinate = new Coordinate(r, col);
         <MudElement Class="cell">
-          <MudButton Class="aspectratio"
+          <MudButton
+            Size="Size.Small"
+            Class="aspectratio"
                      Color="@GetColor(coordinate)"
                      Disabled="@(!State.Value.IsMoveLegal(coordinate))"
                      OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
