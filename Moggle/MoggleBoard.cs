@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Fluxor;
 using MoreLinq;
@@ -22,27 +23,37 @@ public record StartGameAction(string Seed, int Duration) : IAction<MoggleState>
     }
 }
 
-//public class StartGameEffect : Effect<StartGameAction>
-//{
-//    /// <inheritdoc />
-//    protected override async Task HandleAsync(StartGameAction action, IDispatcher dispatcher)
-//    {
-//        await Task.Delay(TimeSpan.FromSeconds(action.Duration));
-//        dispatcher.Dispatch(new CheckTimeAction());
-//    }
-//}
+public class StartGameEffect : Effect<StartGameAction>
+{
+    /// <inheritdoc />
+    protected override async Task HandleAsync(StartGameAction action, IDispatcher dispatcher)
+    {
+        Timer t = null;
+        t = new Timer(
+            _ =>
+            {
 
-//public record CheckTimeAction : IAction<MoggleState>
-//{
-//    /// <inheritdoc />
-//    public MoggleState Reduce(MoggleState board)
-//    {
-//        if (board.FinishTime.HasValue && board.FinishTime.Value.Ticks < DateTime.Now.Ticks)
-//            return board with { FinishTime = null };
+                dispatcher.Dispatch(new CheckTimeAction());
+                t.DisposeAsync();
+            },
+            null,
+            TimeSpan.FromSeconds(action.Duration),
+            Timeout.InfiniteTimeSpan
+        );
+    }
+}
 
-//        return board;
-//    }
-//}
+public record CheckTimeAction : IAction<MoggleState>
+{
+    /// <inheritdoc />
+    public MoggleState Reduce(MoggleState board)
+    {
+        if (board.FinishTime.HasValue && board.FinishTime.Value.Ticks < DateTime.Now.Ticks)
+            return board with { FinishTime = null };
+
+        return board;
+    }
+}
 
 public record RotateAction(bool Clockwise) : IAction<MoggleState>
 {
@@ -64,7 +75,7 @@ public static class Reducer
     }
 }
 
-public record MoggleState(MoggleBoard Board, DateTime FinishTime, int Rotation)
+public record MoggleState(MoggleBoard Board, DateTime? FinishTime, int Rotation)
 {
     public static readonly MoggleState DefaultState = new(
         MoggleBoard.DefaultBoardClassic,
@@ -83,10 +94,14 @@ public record MoggleState(MoggleBoard Board, DateTime FinishTime, int Rotation)
         return newState;
     }
 
-
-    public static (int row, int column) RotateCoordinate(int row, int column, int size, int rotation)
+    public static (int row, int column) RotateCoordinate(
+        int row,
+        int column,
+        int size,
+        int rotation)
     {
         var realSize = size - 1;
+
         return ((rotation + 4) % 4) switch
         {
             0 => (row, column),

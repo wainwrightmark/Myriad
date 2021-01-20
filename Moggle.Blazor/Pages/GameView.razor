@@ -4,30 +4,6 @@
 @inject IDialogService Dialog
 
 
-<MudGrid>
-   <MudItem xs="4">
-    <MudFab  Color="Color.Secondary" Icon="@Icons.Material.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(false))"/>
-  </MudItem>
-
-  <MudItem xs="4">
-
-    @if (IsGameVisible)
-    {
-      <MudText Typo="Typo.h5">@SecondsLeft</MudText>
-    }
-    else
-    {
-      <MudFab Color="Color.Primary" OnClick="OpenDialog" Size="Size.Large" Label="New Game"/>
-    }
-
-  </MudItem>
-  <MudItem xs="4">
-    <MudFab  Color="Color.Secondary" Icon="@Icons.Material.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(true))"/>
-  </MudItem>
-
-</MudGrid>
-
-
 @for (var row = 0; row < State.Value.Board.RowCount; row++)
 {
   var r = row;
@@ -49,53 +25,13 @@
 
 @code {
 
-    [Inject]
-    private IState<MoggleState> State { get; set; }
+  [Inject]
+  private IState<MoggleState> State { get; set; }
 
-    [Inject]
-    public IDispatcher Dispatcher { get; set; }
+  [Inject]
+  public IDispatcher Dispatcher { get; set; }
 
-    public bool IsGameVisible => SecondsLeft > 0;
-
-    private Timer _timer;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _timer = new Timer(DateTimeCallback, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-        }
-    }
-
-    private async void DateTimeCallback(object state)
-    {
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task OpenDialog()
-    {
-      var d = Dialog.Show<StartDialog>("Start Game");
-
-      var r = await d.Result;
-
-      if (r.Cancelled)
-        return;
-
-      if (r.Data is (string seed, int duration))
-      {
-        Dispatcher.Dispatch(new StartGameAction(seed, duration));
-      }
-    }
-
-
-    public int SecondsLeft
-    {
-      get
-      {
-        var r = Convert.ToInt32(State.Value.FinishTime.Subtract(DateTime.Now).TotalSeconds);
-        return Math.Max(0, r);
-      }
-    }
+  public bool IsGameVisible => State.Value.FinishTime.HasValue;
 
 }
 
@@ -112,7 +48,7 @@
   }
 
   .row .cell > * {
-    background: @(IsGameVisible?  "#00ffff" : "#ff0000");
+    background: @(IsGameVisible ? "#00ffff" : "#ff0000");
     elevation: above;
     display: flex;
     align-items: center;

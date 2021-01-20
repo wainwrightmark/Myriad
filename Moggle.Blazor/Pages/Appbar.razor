@@ -1,10 +1,24 @@
-﻿@using Fluxor
+﻿@using System.Threading
+@using Fluxor
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+@inject IDialogService Dialog
 
 
-<MudText Typo="Typo.h5">Moggle</MudText>
+<MudFab Color="Color.Secondary" Icon="@Icons.Material.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(false))"/>
 
-        <MudAppBarSpacer />
+<MudAppBarSpacer/>
 
+@if (SecondsLeft.HasValue)
+{
+  <MudText Typo="Typo.h5">@SecondsLeft</MudText>
+  <MudAppBarSpacer/>
+}
+<MudAppBarSpacer/>
+
+<MudFab Color="Color.Primary" OnClick="OpenDialog" Size="Size.Large" Label="New Game"/>
+<MudAppBarSpacer/>
+<MudFab Color="Color.Secondary" Icon="@Icons.Material.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(true))"/>
+<MudAppBarSpacer/>
 <MudIconButton
   Icon="@Icons.Custom.GitHub"
   Color="Color.Inherit"
@@ -12,3 +26,56 @@
   Link="https://github.com/wainwrightmark/Moggle"
   Target="_blank"/>
 
+@code {
+
+  [Inject]
+  private IState<MoggleState> State { get; set; }
+
+  [Inject]
+  public IDispatcher Dispatcher { get; set; }
+
+  public bool IsGameVisible => SecondsLeft > 0;
+
+  private Timer _timer;
+
+  protected override void OnAfterRender(bool firstRender)
+  {
+    if (firstRender)
+    {
+      _timer = new Timer(DateTimeCallback, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+  }
+
+  private async void DateTimeCallback(object state)
+  {
+    await InvokeAsync(StateHasChanged);
+  }
+
+  private async Task OpenDialog()
+  {
+    var d = Dialog.Show<StartDialog>("Start Game");
+
+    var r = await d.Result;
+
+    if (r.Cancelled)
+      return;
+
+    if (r.Data is (string seed, int duration))
+    {
+      Dispatcher.Dispatch(new StartGameAction(seed, duration));
+    }
+  }
+
+  public int? SecondsLeft
+  {
+    get
+    {
+      if (!State.Value.FinishTime.HasValue)
+        return null;
+
+      var r = Convert.ToInt32(State.Value.FinishTime.Value.Subtract(DateTime.Now).TotalSeconds);
+      return Math.Max(0, r);
+    }
+  }
+
+}
