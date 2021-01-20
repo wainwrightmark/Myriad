@@ -1,0 +1,134 @@
+﻿@using Fluxor
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+@inject IDialogService Dialog
+
+
+<MudGrid>
+   <MudItem xs="4">
+    <MudIconButton Icon="@Icons.Material.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(false))"/>
+  </MudItem>
+
+  <MudItem xs="4">
+
+    @if (IsGameVisible)
+    {
+      <MudText Typo="Typo.h5">@DisplaySecondsLeft</MudText>
+    }
+    else
+    {
+      <MudButton OnClick="OpenDialog">New Game</MudButton>
+    }
+
+  </MudItem>
+  <MudItem xs="4">
+    <MudIconButton Icon="@Icons.Material.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(true))"/>
+  </MudItem>
+
+</MudGrid>
+
+
+@for (var row = 0; row < State.Value.Board.RowCount; row++)
+{
+  var r = row;
+  <MudElement Class="row">
+    @for (var col = 0; col < State.Value.Board.ColumnCount; col++)
+    {
+      var c = col;
+      <MudElement Class="cell">
+        <MudElement Class="aspectratio">
+          @State.Value.GetLetterAtCoordinate(r, c)
+
+        </MudElement>
+
+      </MudElement>
+    }
+  </MudElement>
+}
+
+
+@code {
+
+    [Inject]
+    private IState<MoggleState> State { get; set; }
+
+    [Inject]
+    public IDispatcher Dispatcher { get; set; }
+
+    public bool IsGameVisible => SecondsLeft > 0;
+
+    /// <inheritdoc />
+    protected override Task OnInitializedAsync()
+    {
+      Tick(null, null);
+      return base.OnInitializedAsync();
+    }
+
+    private System.Timers.Timer aTimer;
+
+    private void Tick(object _, System.Timers.ElapsedEventArgs _1)
+    {
+      aTimer = new System.Timers.Timer(1000) { };
+      aTimer.Elapsed += Tick;
+      aTimer.Enabled = true;
+      DisplaySecondsLeft = SecondsLeft;
+      StateHasChanged();
+    }
+
+    private async Task OpenDialog()
+    {
+      var d = Dialog.Show<StartDialog>("Start Game");
+
+      var r = await d.Result;
+
+      if (r.Cancelled)
+        return;
+
+      if (r.Data is (string seed, int duration))
+      {
+        Dispatcher.Dispatch(new StartGameAction(seed, duration));
+      }
+    }
+
+  public int DisplaySecondsLeft;
+
+    public int SecondsLeft
+    {
+      get
+      {
+        var r = Convert.ToInt32(State.Value.FinishTime.Subtract(DateTime.Now).TotalSeconds);
+        return Math.Max(0, r);
+      }
+    }
+
+}
+
+<style>
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .cell {
+    flex-basis: calc(100% / 4);
+    float: left;
+    padding: 1em;
+  }
+
+  .row .cell > * {
+    background: @(IsGameVisible?  "#00ffff" : "#ff0000");
+    elevation: above;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .aspectratio {
+    width: 100%;
+    height: 0;
+    position: relative;
+    padding-bottom: 50%;
+    padding-top: 50%;
+    font-family: monospace;
+    font-size: 24.5vw;
+  }
+</style>
