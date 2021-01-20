@@ -34,7 +34,7 @@ namespace Moggle.Tests
             {
                 for (var c = 0; c < s.ColumnCount; c++)
                 {
-                    var val = s.GetLetterAtCoordinate(r, c);
+                    var val = s.GetLetterAtCoordinate(new Coordinate(r, c));
 
                     TestOutputHelper.WriteLine($"{r}, {c}: {val}");
                 }

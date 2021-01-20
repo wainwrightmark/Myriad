@@ -3,25 +3,43 @@
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
 
-
-@for (var row = 0; row < State.Value.Board.RowCount; row++)
-{
-  var r = row;
-  <MudElement Class="row">
-    @for (var col = 0; col < State.Value.Board.ColumnCount; col++)
-    {
-      var c = col;
-      <MudElement Class="cell">
-        <MudElement Class="aspectratio">
-          @State.Value.GetLetterAtCoordinate(r, c)
+<MudElement Class="grid">
+  @for (var row = 0; row < State.Value.Board.RowCount; row++)
+  {
+    var r = row;
+    <MudElement Class="row">
+      @for (var col = 0; col < State.Value.Board.ColumnCount; col++)
+      {
+        var coordinate = new Coordinate(r, col);
+        <MudElement Class="cell">
+          <MudButton Class="aspectratio"
+                     Color="@GetColor(coordinate)"
+                     Disabled="@(!State.Value.IsMoveLegal(coordinate))"
+                     OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
+            @State.Value.GetLetterAtCoordinate(coordinate)
+          </MudButton>
 
         </MudElement>
+      }
+    </MudElement>
+  }
+</MudElement>
 
-      </MudElement>
-    }
-  </MudElement>
-}
+<MudText Typo="Typo.h1">
+  @State.Value.Score
+</MudText>
 
+<MudList>
+  @foreach (var w in State.Value.FoundWords)
+  {
+    var word = w;
+    <MudCheckBox
+      Disabled="@(!IsGameVisible)"
+      CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableWord(word, b)); }"
+      Label=@word
+      Checked="@(!State.Value.DisabledWords.Contains(word))"/>
+  }
+</MudList>
 
 @code {
 
@@ -33,9 +51,28 @@
 
   public bool IsGameVisible => State.Value.FinishTime.HasValue;
 
+  public Color GetColor(Coordinate coordinate)
+  {
+    if (!IsGameVisible || !State.Value.ChosenPositions.Any())
+      return Color.Default;
+
+    if (State.Value.ChosenPositions.Last() == coordinate)
+      return Color.Primary;
+    else if (State.Value.ChosenPositions.Contains(coordinate))
+      return Color.Secondary;
+    else if (State.Value.IsMoveLegal(coordinate))
+      return Color.Success;
+    else
+      return Color.Dark;
+
+  }
+
 }
 
 <style>
+
+  .grid { max-width: 800px; }
+
   .row {
     display: flex;
     flex-wrap: wrap;
@@ -48,7 +85,7 @@
   }
 
   .row .cell > * {
-    background: @(IsGameVisible ? "#00ffff" : "#ff0000");
+    @*background: @(IsGameVisible ? "#00ffff" : "#ff0000");*@
     elevation: above;
     display: flex;
     align-items: center;

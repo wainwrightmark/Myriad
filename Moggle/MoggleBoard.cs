@@ -1,133 +1,12 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Fluxor;
 using MoreLinq;
 
 namespace Moggle
 {
 
-public interface IAction<TState>
-{
-    TState Reduce(TState board);
-}
 
-public record StartGameAction(string Seed, int Duration) : IAction<MoggleState>
-{
-    /// <inheritdoc />
-    public MoggleState Reduce(MoggleState board)
-    {
-        return board.StartNewGame(Seed, Duration);
-    }
-}
-
-public class StartGameEffect : Effect<StartGameAction>
-{
-    /// <inheritdoc />
-    protected override async Task HandleAsync(StartGameAction action, IDispatcher dispatcher)
-    {
-        Timer t = null;
-        t = new Timer(
-            _ =>
-            {
-
-                dispatcher.Dispatch(new CheckTimeAction());
-                t.DisposeAsync();
-            },
-            null,
-            TimeSpan.FromSeconds(action.Duration),
-            Timeout.InfiniteTimeSpan
-        );
-    }
-}
-
-public record CheckTimeAction : IAction<MoggleState>
-{
-    /// <inheritdoc />
-    public MoggleState Reduce(MoggleState board)
-    {
-        if (board.FinishTime.HasValue && board.FinishTime.Value.Ticks < DateTime.Now.Ticks)
-            return board with { FinishTime = null };
-
-        return board;
-    }
-}
-
-public record RotateAction(bool Clockwise) : IAction<MoggleState>
-{
-    /// <inheritdoc />
-    public MoggleState Reduce(MoggleState board)
-    {
-        var newRotation = Clockwise ? board.Rotation + 1 : board.Rotation - 1;
-
-        return board with { Rotation = newRotation };
-    }
-}
-
-public static class Reducer
-{
-    [ReducerMethod]
-    public static MoggleState Reduce(MoggleState board, IAction<MoggleState> action)
-    {
-        return action.Reduce(board);
-    }
-}
-
-public record MoggleState(MoggleBoard Board, DateTime? FinishTime, int Rotation)
-{
-    public static readonly MoggleState DefaultState = new(
-        MoggleBoard.DefaultBoardClassic,
-        DateTime.Now,
-        0
-    );
-
-    public MoggleState StartNewGame(string seed, int duration)
-    {
-        var newState = new MoggleState(
-            Board.Randomize(seed),
-            DateTime.Now.AddSeconds(duration),
-            Rotation
-        );
-
-        return newState;
-    }
-
-    public static (int row, int column) RotateCoordinate(
-        int row,
-        int column,
-        int size,
-        int rotation)
-    {
-        var realSize = size - 1;
-
-        return ((rotation + 4) % 4) switch
-        {
-            0 => (row, column),
-            1 => (realSize - column, row),
-            2 => (realSize - row, realSize - column),
-            3 => (column, realSize - row),
-            _ => throw new ArgumentException(nameof(Rotation))
-        };
-    }
-
-    public char? GetLetterAtCoordinate(int row, int column)
-    {
-        if (Board == null)
-            return null;
-
-        var (newRow, newColumn) = RotateCoordinate(row, column, Board.ColumnCount, Rotation);
-
-        return Board.GetLetterAtCoordinate(newRow, newColumn);
-    }
-}
-
-public class Feature : Feature<MoggleState>
-{
-    public override string GetName() => "Moggle";
-    protected override MoggleState GetInitialState() => MoggleState.DefaultState;
-}
 
 public record MoggleBoard(
     ImmutableArray<BoggleDice> Dice,
@@ -203,9 +82,9 @@ public record MoggleBoard(
         return this with { Positions = newPositions };
     }
 
-    public char GetLetterAtCoordinate(int row, int column)
+    public char GetLetterAtCoordinate(Coordinate coordinate)
     {
-        var index = (row * ColumnCount) + column;
+        var index = (coordinate.Row * ColumnCount) + coordinate.Column;
 
         return GetLetterAtIndex(index);
     }
@@ -219,17 +98,6 @@ public record MoggleBoard(
     }
 
     public int RowCount => Positions.Count / ColumnCount;
-}
-
-public record BoggleDice(string Letters);
-
-public record DicePosition(int DiceIndex, int FaceIndex)
-{
-    public DicePosition RandomizeFace(Random random)
-    {
-        var fi = random.Next(5);
-        return this with { FaceIndex = fi };
-    }
 }
 
 }

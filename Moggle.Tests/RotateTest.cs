@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -32,7 +27,7 @@ public class RotateTest
         int expectedColumn,
         int size)
     {
-        var (actualRow, actualColumn) = MoggleState.RotateCoordinate(row, column, size, rotation);
+        var (actualRow, actualColumn) = new Coordinate(row, column).Rotate(size, rotation);
 
         actualRow.Should().Be(expectedRow);
         actualColumn.Should().Be(expectedColumn);
@@ -49,7 +44,7 @@ public class RotateTest
             {
                 TestOutputHelper.WriteLine($"Testing ({row}, {column})");
 
-                var rotate0 = (row, column);
+                var rotate0 =new Coordinate(row, column);
                 var rotate1 = Rotate(rotate0, 1);
                 var rotate2 = Rotate(rotate0, 2);
                 var rotate3 = Rotate(rotate0, 3);
@@ -68,9 +63,9 @@ public class RotateTest
             }
         }
 
-        static (int row, int column) Rotate((int row, int column) pair, int rotation)
+        static Coordinate Rotate(Coordinate coordinate, int rotation)
         {
-            return MoggleState.RotateCoordinate(pair.row, pair.column, size, rotation);
+            return coordinate.Rotate(size, rotation);
         }
     }
 }
