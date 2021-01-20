@@ -34,10 +34,12 @@ public record MoggleState(
         ImmutableHashSet<string>.Empty
     );
 
-    public MoggleState StartNewGame(string seed, int duration)
+    public MoggleState StartNewGame(string seed, bool classic, int duration)
     {
+        var board = classic ? MoggleBoard.DefaultBoardClassic : MoggleBoard.DefaultBoardModern;
+
         var newState = new MoggleState(
-            Board.Randomize(seed),
+            board.Randomize(seed),
             DateTime.Now.AddSeconds(duration),
             Rotation,
             ImmutableList<Coordinate>.Empty,

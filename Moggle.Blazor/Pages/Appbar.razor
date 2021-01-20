@@ -60,9 +60,9 @@
     if (r.Cancelled)
       return;
 
-    if (r.Data is (string seed, int duration))
+    if (r.Data is (string seed, bool classic, int duration))
     {
-      Dispatcher.Dispatch(new StartGameAction(seed, duration));
+      Dispatcher.Dispatch(new StartGameAction(seed, classic, duration));
     }
   }
 
