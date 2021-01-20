@@ -1,27 +1,28 @@
 ﻿@using Fluxor
+@using System.Threading
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
 
 
 <MudGrid>
    <MudItem xs="4">
-    <MudIconButton Icon="@Icons.Material.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(false))"/>
+    <MudFab  Color="Color.Secondary" Icon="@Icons.Material.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(false))"/>
   </MudItem>
 
   <MudItem xs="4">
 
     @if (IsGameVisible)
     {
-      <MudText Typo="Typo.h5">@DisplaySecondsLeft</MudText>
+      <MudText Typo="Typo.h5">@SecondsLeft</MudText>
     }
     else
     {
-      <MudButton OnClick="OpenDialog">New Game</MudButton>
+      <MudFab Color="Color.Primary" OnClick="OpenDialog" Size="Size.Large" Label="New Game"/>
     }
 
   </MudItem>
   <MudItem xs="4">
-    <MudIconButton Icon="@Icons.Material.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(true))"/>
+    <MudFab  Color="Color.Secondary" Icon="@Icons.Material.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(true))"/>
   </MudItem>
 
 </MudGrid>
@@ -56,22 +57,19 @@
 
     public bool IsGameVisible => SecondsLeft > 0;
 
-    /// <inheritdoc />
-    protected override Task OnInitializedAsync()
+    private Timer _timer;
+
+    protected override void OnAfterRender(bool firstRender)
     {
-      Tick(null, null);
-      return base.OnInitializedAsync();
+        if (firstRender)
+        {
+            _timer = new Timer(DateTimeCallback, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+        }
     }
 
-    private System.Timers.Timer aTimer;
-
-    private void Tick(object _, System.Timers.ElapsedEventArgs _1)
+    private async void DateTimeCallback(object state)
     {
-      aTimer = new System.Timers.Timer(1000) { };
-      aTimer.Elapsed += Tick;
-      aTimer.Enabled = true;
-      DisplaySecondsLeft = SecondsLeft;
-      StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task OpenDialog()
@@ -89,7 +87,6 @@
       }
     }
 
-  public int DisplaySecondsLeft;
 
     public int SecondsLeft
     {
