@@ -27,7 +27,7 @@ public record MoggleState(
 {
     public static readonly MoggleState DefaultState = new(
         MoggleBoard.DefaultBoardClassic,
-        DateTime.Now,
+        null,
         0,
         ImmutableList<Coordinate>.Empty,
         ImmutableHashSet<string>.Empty,
