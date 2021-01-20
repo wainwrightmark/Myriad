@@ -34,7 +34,7 @@
   {
     var word = w;
     <MudCheckBox
-      Disabled="@(!IsGameVisible)"
+      Disabled="@(IsGameVisible)"
       CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableWord(word, b)); }"
       Label=@word
       Checked="@(!State.Value.DisabledWords.Contains(word))"/>
