@@ -1,5 +1,4 @@
 ﻿@using Fluxor
-@using System.Threading
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
 
@@ -7,6 +6,7 @@
   @for (var row = 0; row < State.Value.Board.Height; row++)
   {
     var r = row;
+    <div>
       @for (var col = 0; col < State.Value.Board.Width; col++)
       {
         var coordinate = new Coordinate(r, col);
@@ -16,9 +16,12 @@
             Color="@GetColor(coordinate)"
             Disabled="@(!State.Value.IsMoveLegal(coordinate))"
             OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
-            @(State.Value.GetLetterAtCoordinate(coordinate).ToString())
+          @(State.Value.GetLetterAtCoordinate(coordinate).ToString())
+          @*@coordinate*@
           </MudButton>
       }
+    </div>
+
   }
 </div>
 
@@ -67,7 +70,7 @@
 
 <style>
 
-  .canvas {
+  .box {
     display:block
   }
 
@@ -83,7 +86,7 @@
     height: calc(100% / @State.Value.MaxDimension);
     font-family: monospace;
     font-size: 8px;
-    font-size: calc(60vmin / @State.Value.MaxDimension);
+    font-size: calc(30vmin / @State.Value.MaxDimension);
     min-width: 8px;
     min-height: 8px;
     transition: top 2s, left 2s;

@@ -32,6 +32,9 @@ public record Coordinate(int Row, int Column)
 
         return rowDiff <= 1 && colDiff <= 1;
     }
+
+    /// <inheritdoc />
+    public override string ToString() => $"({Row},{Column})";
 }
 
 }
