@@ -3,7 +3,7 @@
 
 public interface IAction<TState>
 {
-    TState Reduce(TState board);
+    TState Reduce(TState state);
 }
 
 }

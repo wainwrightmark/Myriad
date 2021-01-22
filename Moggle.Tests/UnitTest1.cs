@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -20,19 +19,13 @@ namespace Moggle.Tests
         [InlineData("")]
         [InlineData("Hello")]
         [InlineData("World")]
-        public async Task SameSeedShouldProduceSameGame(string Seed)
+        public async Task SameSeedShouldProduceSameGame(string seed)
         {
-            var board1 = MoggleState.DefaultState with
-            {
-                Board = MoggleBoard.DefaultBoardClassic.Randomize(Seed)
-            };
+            var board1 = MoggleState.DefaultState.StartNewGame(seed, 5, 5, false, 120);
 
             await Task.Delay(100);
 
-            var board2 = MoggleState.DefaultState with
-            {
-                Board = MoggleBoard.DefaultBoardClassic.Randomize(Seed)
-            };
+            var board2 = MoggleState.DefaultState.StartNewGame(seed, 5, 5, false, 120);
 
             var b1String = string.Join(", ", board1.Board.Positions.Select(x => x.ToString()));
             var b2String = string.Join(", ", board2.Board.Positions.Select(x => x.ToString()));
@@ -50,19 +43,18 @@ namespace Moggle.Tests
         [InlineData("ruth")]
         public void Test1(string key)
         {
-            var s = MoggleBoard.DefaultBoardClassic;
+            var s = MoggleState.DefaultState.StartNewGame(key, 4, 4, false, 120).Board;
 
-            s = s.Randomize(key);
 
-            s.RowCount.Should().Be(4);
-            s.ColumnCount.Should().Be(4);
+            s.Height.Should().Be(4);
+            s.Width.Should().Be(4);
 
             s.Positions.Should().HaveCount(16);
             s.Dice.Should().HaveCount(16);
 
-            for (var r = 0; r < s.RowCount; r++)
+            for (var r = 0; r < s.Height; r++)
             {
-                for (var c = 0; c < s.ColumnCount; c++)
+                for (var c = 0; c < s.Width; c++)
                 {
                     var val = s.GetLetterAtCoordinate(new Coordinate(r, c));
 

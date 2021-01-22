@@ -3,29 +3,24 @@
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
 
-<MudElement Class="grid">
-  @for (var row = 0; row < State.Value.Board.RowCount; row++)
+<div class="box">
+  @for (var row = 0; row < State.Value.Board.Height; row++)
   {
     var r = row;
-    <MudElement Class="row">
-      @for (var col = 0; col < State.Value.Board.ColumnCount; col++)
+      @for (var col = 0; col < State.Value.Board.Width; col++)
       {
         var coordinate = new Coordinate(r, col);
-        <MudElement Class="cell">
-          <MudButton
+        <MudButton
             Size="Size.Small"
-            Class="aspectratio"
-                     Color="@GetColor(coordinate)"
-                     Disabled="@(!State.Value.IsMoveLegal(coordinate))"
-                     OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
-            @State.Value.GetLetterAtCoordinate(coordinate)
+            Class="square"
+            Color="@GetColor(coordinate)"
+            Disabled="@(!State.Value.IsMoveLegal(coordinate))"
+            OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
+            @(State.Value.GetLetterAtCoordinate(coordinate).ToString())
           </MudButton>
-
-        </MudElement>
       }
-    </MudElement>
   }
-</MudElement>
+</div>
 
 <MudText Typo="Typo.h1">
   @State.Value.Score
@@ -66,42 +61,30 @@
       return Color.Success;
     else
       return Color.Dark;
-
   }
 
 }
 
 <style>
 
-  .grid { max-width: 800px; }
-
-  .row {
-    display: flex;
-    flex-wrap: wrap;
+  .canvas {
+    display:block
   }
 
   .cell {
-    flex-basis: calc(100% / 4);
-    float: left;
-    padding: 1em;
+    top: calc(90vmin / @State.Value.MaxDimension);
+    right: calc(90vmin / @State.Value.MaxDimension);
   }
 
-  .row .cell > * {
-    @*background: @(IsGameVisible ? "#00ffff" : "#ff0000");*@
-    elevation: above;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  .square {
 
-  .aspectratio {
-    width: 100%;
-    height: 0;
     position: relative;
-    padding-bottom: 50%;
-    padding-top: 50%;
+    width: calc(100% / @State.Value.MaxDimension);
+    height: calc(100% / @State.Value.MaxDimension);
     font-family: monospace;
-    font-size: 20vw;
-    min-width: 16px;
+    font-size: 8px;
+    font-size: calc(60vmin / @State.Value.MaxDimension);
+    min-width: 8px;
+    min-height: 8px;
   }
 </style>

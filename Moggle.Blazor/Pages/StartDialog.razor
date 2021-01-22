@@ -1,9 +1,10 @@
 ﻿<MudDialog>
   <DialogContent>
     Setup Game
-    <MudTextField @bind-Value="Seed" Label="Type Seed Here" Variant="Variant.Outlined"></MudTextField>
+    <MudTextField @bind-Value="Seed" Placeholder="Type Seed Here" Variant="Variant.Outlined"></MudTextField>
     <MudCheckBox @bind-Checked="@Classic" Label="Classic"></MudCheckBox>
-
+    <MudTextField @bind-Value="Height" Label="Height" Variant="Variant.Outlined"></MudTextField>
+    <MudTextField @bind-Value="Width" Label="Width" Variant="Variant.Outlined"></MudTextField>
     <MudTextField @bind-Value="Duration" Label="Seconds" Variant="Variant.Outlined"></MudTextField>
   </DialogContent>
   <DialogActions>
@@ -17,12 +18,16 @@
   [CascadingParameter]
   MudDialogInstance MudDialog { get; set; }
 
-  void Submit() => MudDialog.Close(DialogResult.Ok((Seed, Classic, Duration)));
+  void Submit() => MudDialog.Close(DialogResult.Ok(new StartGameAction(Seed, Width, Height, Classic, Duration)));
   void Cancel() => MudDialog.Cancel();
 
   public string Seed { get; set; }
 
-  public bool Classic { get; set; }
+  public bool Classic { get; set; } = false;
 
-  public int Duration { get; set; } = 60;
+  public int Width { get; set; } = 4;
+
+  public int Height { get; set; } = 4;
+
+  public int Duration { get; set; } = 120;
 }

@@ -27,20 +27,27 @@ public class RotateTest
         int expectedColumn,
         int size)
     {
-        var (actualRow, actualColumn) = new Coordinate(row, column).Rotate(size, rotation);
+        var (actualRow, actualColumn) = new Coordinate(row, column).Rotate(new Coordinate(size - 1, size - 1), rotation);
 
         actualRow.Should().Be(expectedRow);
         actualColumn.Should().Be(expectedColumn);
     }
 
-    [Fact]
-    public void RotationShouldRotateAllPointsCorrectly()
+    [Theory]
+    [InlineData(2,2)]
+    [InlineData(3,3)]
+    [InlineData(4,4)]
+    [InlineData(5,5)]
+    [InlineData(6,6)]
+    [InlineData(4,6)]
+    [InlineData(6,4)]
+    public void RotationShouldRotateAllPointsCorrectly(int height, int width)
     {
-        const int size = 4;
+        var maxCoordinate = new Coordinate(height - 1, width - 1);
 
-        for (var row = 0; row < size; row++)
+        for (var row = 0; row < height; row++)
         {
-            for (var column = 0; column < size; column++)
+            for (var column = 0; column < width; column++)
             {
                 TestOutputHelper.WriteLine($"Testing ({row}, {column})");
 
@@ -63,9 +70,9 @@ public class RotateTest
             }
         }
 
-        static Coordinate Rotate(Coordinate coordinate, int rotation)
+        Coordinate Rotate(Coordinate coordinate, int rotation)
         {
-            return coordinate.Rotate(size, rotation);
+            return coordinate.Rotate(maxCoordinate, rotation);
         }
     }
 }

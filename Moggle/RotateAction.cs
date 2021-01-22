@@ -7,16 +7,17 @@ namespace Moggle
 public record RotateAction(bool Clockwise) : IAction<MoggleState>
 {
     /// <inheritdoc />
-    public MoggleState Reduce(MoggleState board)
+    public MoggleState Reduce(MoggleState state)
     {
-        var newRotation = Clockwise ? board.Rotation + 1 : board.Rotation - 1;
+        var newRotation = Clockwise ? state.Rotation + 1 : state.Rotation - 1;
 
-        return board with
+        return state with
         {
             Rotation = newRotation,
-            ChosenPositions = board.ChosenPositions
-                .Select(x => x.Rotate(board.Board.ColumnCount, Clockwise ? -1 : 1))
-                .ToImmutableList()
+            ChosenPositions = state.ChosenPositions
+                .Select(x => x.Rotate(state.Board.MaxCoordinate, Clockwise ? -1 : 1))
+                .ToImmutableList(),
+            Board = state.Board with{Width = state.Board.Height}
         };
     }
 }
