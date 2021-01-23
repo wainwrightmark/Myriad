@@ -41,6 +41,8 @@ public class RotateTest
     [InlineData(6,6)]
     [InlineData(4,6)]
     [InlineData(6,4)]
+    [InlineData(2,3)]
+    [InlineData(3,2)]
     public void RotationShouldRotateAllPointsCorrectly(int height, int width)
     {
         var maxCoordinate = new Coordinate(height - 1, width - 1);

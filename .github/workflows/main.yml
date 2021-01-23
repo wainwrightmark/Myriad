@@ -21,7 +21,7 @@ jobs:
       run: dotnet publish Moggle.Blazor/Moggle.Blazor.csproj -c Release -o release --nologo
       # changes the base-tag in index.html from '/' to 'Moggle' to match GitHub Pages repository subdirectory
     - name: Change base-tag in index.html from / to Moggle
-      run: sed -i 's/<base href="\/" \/>/<base href="\/Moggle\/" \/>/g' release/wwwroot/index.html
+      run: sed -i 's/<base href="\/"\/>/<base href="\/Moggle\/" \/>/g' release/wwwroot/index.html
       
     # add .nojekyll file to tell GitHub pages to not treat this as a Jekyll project. (Allow files and folders starting with an underscore)
     - name: Add .nojekyll file
