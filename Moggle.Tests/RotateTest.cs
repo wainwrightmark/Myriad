@@ -51,12 +51,13 @@ public class RotateTest
         {
             for (var column = 0; column < width; column++)
             {
-                TestOutputHelper.WriteLine($"Testing ({row}, {column})");
-
                 var rotate0 =new Coordinate(row, column);
                 var rotate1 = Rotate(rotate0, 1);
                 var rotate2 = Rotate(rotate0, 2);
                 var rotate3 = Rotate(rotate0, 3);
+
+                TestOutputHelper.WriteLine($"Testing r0:{rotate0}, r1{rotate1}, r2:{rotate2}, r3{rotate3}");
+
 
                 Rotate(rotate1, 1).Should().Be(rotate2);
                 Rotate(rotate1, 2).Should().Be(rotate3);

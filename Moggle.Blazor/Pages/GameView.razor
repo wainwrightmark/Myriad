@@ -11,17 +11,17 @@
       {
         var coordinate = new Coordinate(r, col);
         <MudButton
-            Size="Size.Small"
-            Class="square"
-            Color="@GetColor(coordinate)"
-            Disabled="@(!State.Value.IsMoveLegal(coordinate))"
-            OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
+          Size="Size.Small"
+          Variant="Variant.Filled"
+          Class="square"
+          Color="@GetColor(coordinate)"
+          Disabled="@(!State.Value.IsMoveLegal(coordinate))"
+          OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
           @(State.Value.GetLetterAtCoordinate(coordinate).ToString())
           @*@coordinate*@
-          </MudButton>
+        </MudButton>
       }
     </div>
-
   }
 </div>
 
@@ -59,7 +59,7 @@
     if (State.Value.ChosenPositions.Last() == coordinate)
       return Color.Primary;
     else if (State.Value.ChosenPositions.Contains(coordinate))
-      return Color.Secondary;
+      return Color.Tertiary;
     else if (State.Value.IsMoveLegal(coordinate))
       return Color.Success;
     else
@@ -70,9 +70,7 @@
 
 <style>
 
-  .box {
-    display:block
-  }
+  .box { display: block }
 
   .cell {
     top: calc(90vmin / @State.Value.MaxDimension);

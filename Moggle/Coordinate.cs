@@ -12,12 +12,14 @@ public record Coordinate(int Row, int Column)
         while (rotation < 0)
             rotation += 4;
 
+        var max = Math.Max(maxCoordinate.Column, maxCoordinate.Row);
+
         return (rotation % 4) switch
         {
             0 => this,
-            1 => new(maxCoordinate.Row - Column, Row),
-            2 => new(maxCoordinate.Row - Row, maxCoordinate.Column - Column),
-            3 => new(Column, maxCoordinate.Column - Row),
+            1 => new((max - Column ), Row),
+            2 => new((max - Row), (max - Column)),
+            3 => new(Column, (max - Row) ),
             _ => throw new ArgumentException(nameof(rotation))
         };
     }
