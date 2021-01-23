@@ -15,9 +15,9 @@ public record Coordinate(int Row, int Column)
         return (rotation % 4) switch
         {
             0 => this,
-            1 => new(maxCoordinate.Column - Column, Row),
+            1 => new(maxCoordinate.Row - Column, Row),
             2 => new(maxCoordinate.Row - Row, maxCoordinate.Column - Column),
-            3 => new(Column, maxCoordinate.Row - Row),
+            3 => new(Column, maxCoordinate.Column - Row),
             _ => throw new ArgumentException(nameof(rotation))
         };
     }
