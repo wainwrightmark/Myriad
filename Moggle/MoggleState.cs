@@ -72,11 +72,10 @@ public record MoggleState(
                 //Complete a word
                 case >= 3:
                 {
-                    var word =
-                        new string(
-                            ChosenPositions.Select(GetLetterAtCoordinate)
-                                .ToArray()
-                        );
+                    var word = string.Join(
+                        "",
+                        ChosenPositions.Select(GetLetterAtCoordinate).Select(x => x.WordText)
+                    );
 
                     return this with
                     {
@@ -110,7 +109,7 @@ public record MoggleState(
         return null;
     }
 
-    public char GetLetterAtCoordinate(Coordinate coordinate)
+    public Letter GetLetterAtCoordinate(Coordinate coordinate)
     {
         var newCoordinate = coordinate.Rotate(Board.MaxCoordinate, Rotation);
         return Board.GetLetterAtCoordinate(newCoordinate);

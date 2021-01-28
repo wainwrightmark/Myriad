@@ -99,24 +99,35 @@ public record MoggleBoard(
         return this with { Positions = newPositions };
     }
 
-    public char GetLetterAtCoordinate(Coordinate coordinate)
+    public Letter GetLetterAtCoordinate(Coordinate coordinate)
     {
         var index = (coordinate.Row * Width) + coordinate.Column;
 
         return GetLetterAtIndex(index);
     }
 
-    public char GetLetterAtIndex(int i)
+    public Letter GetLetterAtIndex(int i)
     {
         var position = Positions[i % Positions.Count];
         var die      = Dice[position.DiceIndex % Dice.Length];
         var letter   = die.Letters[position.FaceIndex % die.Letters.Length];
-        return letter;
+        return Letter.Create(letter);
     }
 
     public int Height => Positions.Count / Width;
 
     public Coordinate MaxCoordinate => new(Height - 1, Width - 1);
+}
+
+public record Letter(string ButtonText, string WordText)
+{
+    public static Letter Create(char c)
+    {
+        if (c.Equals('Q') || c.Equals('q'))
+            return new Letter("Qᵤ", "QU");
+
+        return new Letter(c.ToString().ToUpper(), c.ToString().ToUpper());
+    }
 }
 
 }

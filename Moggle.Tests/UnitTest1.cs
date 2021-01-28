@@ -70,7 +70,7 @@ namespace Moggle.Tests
         public void TestLetterFrequencies(bool classic)
         {
 
-            var dict = new ConcurrentDictionary<char, int>();
+            var dict = new ConcurrentDictionary<Letter, int>();
 
             for (var i = 0; i < 1000; i++)
             {
@@ -89,7 +89,7 @@ namespace Moggle.Tests
 
             foreach (var (key, value) in dict.OrderBy(x=>x.Key))
             {
-                TestOutputHelper.WriteLine($"{key}: {value}");
+                TestOutputHelper.WriteLine($"{key.WordText}: {value}");
             }
         }
     }

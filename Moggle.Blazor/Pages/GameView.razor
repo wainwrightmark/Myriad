@@ -19,7 +19,7 @@
           Style="transition: background-color 1s"
           Disabled="@(!State.Value.IsMoveLegal(coordinate))"
           OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
-          @(State.Value.GetLetterAtCoordinate(coordinate).ToString())
+          @(State.Value.GetLetterAtCoordinate(coordinate).ButtonText)
         </MudButton>
       }
     </div>
