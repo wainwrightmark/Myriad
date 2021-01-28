@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -60,6 +61,35 @@ namespace Moggle.Tests
 
                     TestOutputHelper.WriteLine($"{r}, {c}: {val}");
                 }
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void TestLetterFrequencies(bool classic)
+        {
+
+            var dict = new ConcurrentDictionary<char, int>();
+
+            for (var i = 0; i < 1000; i++)
+            {
+                var s = MoggleState.DefaultState.StartNewGame(i.ToString(), 4, 4, classic, 120);
+
+
+                for (var j = 0; j < 16; j++)
+                {
+                    var l = s.Board.GetLetterAtIndex(j);
+                    dict.AddOrUpdate(l, 1,(x, i) => i + 1);
+                }
+            }
+
+
+            dict.Count.Should().Be(26);
+
+            foreach (var (key, value) in dict.OrderBy(x=>x.Key))
+            {
+                TestOutputHelper.WriteLine($"{key}: {value}");
             }
         }
     }
