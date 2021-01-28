@@ -12,13 +12,13 @@
         var coordinate = new Coordinate(r, col);
         <MudButton
           @key="@coordinate"
-          Size="Size.Small"
-          Variant="Variant.Filled"
-          Class="square"
-          Color="@GetColor(coordinate)"
-          Style="transition: background-color 1s"
-          Disabled="@(!State.Value.IsMoveLegal(coordinate))"
-          OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
+           Size="Size.Small"
+           Variant="Variant.Filled"
+           Class="square"
+           Color="@GetColor(coordinate)"
+           Style="transition: background-color 1s"
+           Disabled="@(!State.Value.IsMoveLegal(coordinate))"
+           OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
           @(State.Value.GetLetterAtCoordinate(coordinate).ButtonText)
         </MudButton>
       }
@@ -26,21 +26,38 @@
   }
 </div>
 
-<MudText Typo="Typo.h1">
-  @State.Value.Score
-</MudText>
+<MudChip Icon="@Icons.Material.MilitaryTech">@State.Value.Score</MudChip>
+<MudChip Icon="@Icons.Material.Notes">@(State.Value.NumberOfWords)</MudChip>
+
 
 <MudList>
-  @foreach (var w in State.Value.FoundWords)
+
+  @if (State.Value.CheatWords != null)
   {
-    var word = w;
-    <MudCheckBox
-      Disabled="@(IsGameVisible)"
-      CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableWord(word, b)); }"
-      Label=@word
-      Checked="@(!State.Value.DisabledWords.Contains(word))"/>
+    @foreach (var w in State.Value.CheatWords)
+    {
+      <MudChip Label="true">@w</MudChip>
+    }
+  }
+  else
+  {
+    @foreach (var w in State.Value.FoundWords)
+    {
+      var word = w;
+      <MudCheckBox
+        Disabled="@(IsGameVisible)"
+        CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableWord(word, b)); }"
+        Label=@word
+        Checked="@(!State.Value.DisabledWords.Contains(word))"/>
+    }
   }
 </MudList>
+
+@if (State.Value.CheatWords == null)
+{
+  <MudButton OnClick="() => Dispatcher.Dispatch(new CheatAction())">Cheat</MudButton>
+}
+
 
 @code {
 

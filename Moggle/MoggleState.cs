@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Fluxor;
 
 namespace Moggle
 {
@@ -17,13 +21,55 @@ public record EnableWord(string Word, bool Enable) : IAction<MoggleState>
     }
 }
 
+public record CheatAction : IAction<MoggleState>
+{
+    /// <inheritdoc />
+    public MoggleState Reduce(MoggleState state)
+    {
+        if (state.CheatWords != null)
+            return state;
+
+        state = state with { CheatWords = ImmutableList<string>.Empty };
+        return state;
+    }
+}
+
+public class CheatEffect : Effect<CheatAction>
+{
+    /// <inheritdoc />
+    protected override async Task HandleAsync(CheatAction action, IDispatcher dispatcher)
+    {
+        if (_solver == null)
+        {
+            var s = await Solver.InitializeAsync(CancellationToken.None);
+
+            _solver = s;
+        }
+
+        dispatcher.Dispatch(new SolveAction(_solver));
+    }
+
+    private static Solver? _solver;
+}
+
+public record SolveAction(Solver Solver) : IAction<MoggleState>
+{
+    /// <inheritdoc />
+    public MoggleState Reduce(MoggleState state)
+    {
+        var words = Solver.GetPossibleWords(state.Board).ToImmutableList();
+        return state with { CheatWords = words };
+    }
+}
+
 public record MoggleState(
     MoggleBoard Board,
     DateTime? FinishTime,
     int Rotation,
     ImmutableList<Coordinate> ChosenPositions,
     ImmutableSortedSet<string> FoundWords,
-    ImmutableHashSet<string> DisabledWords)
+    ImmutableHashSet<string> DisabledWords,
+    ImmutableList<string>? CheatWords)
 {
     public static readonly MoggleState DefaultState = new(
         MoggleBoard.Create(true, 4, 4),
@@ -31,7 +77,8 @@ public record MoggleState(
         0,
         ImmutableList<Coordinate>.Empty,
         ImmutableSortedSet<string>.Empty,
-        ImmutableHashSet<string>.Empty
+        ImmutableHashSet<string>.Empty,
+        null
     );
 
     public MoggleState StartNewGame(
@@ -47,7 +94,8 @@ public record MoggleState(
             Rotation,
             ImmutableList<Coordinate>.Empty,
             ImmutableSortedSet<string>.Empty,
-            ImmutableHashSet<string>.Empty
+            ImmutableHashSet<string>.Empty,
+            null
         );
 
         return newState;
@@ -84,8 +132,8 @@ public record MoggleState(
                     };
                 }
                 //Give up on this path
-                case 1 or 2:  return this with { ChosenPositions = ImmutableList<Coordinate>.Empty };
-                default: return null; //Do nothing
+                case 1 or 2: return this with { ChosenPositions = ImmutableList<Coordinate>.Empty };
+                default:     return null; //Do nothing
             }
         }
 
@@ -115,39 +163,38 @@ public record MoggleState(
         return Board.GetLetterAtCoordinate(newCoordinate);
     }
 
+    public static int ScoreWord(int length)
+    {
+        return length switch
+        {
+            < 3  => 0,
+            3    => 1,
+            4    => 1,
+            5    => 2,
+            6    => 3,
+            7    => 4,
+            >= 8 => 11
+        };
+    }
+
     public int Score
     {
         get
         {
-            var total = 0;
+            return Words.Sum(s => ScoreWord(s.Length));
+        }
+    }
 
-            foreach (var s in FoundWords.Except(DisabledWords))
-            {
-                switch (s.Length)
-                {
-                    case <3: break;
-                    case 3:
-                        total += 1;
-                        break;
-                    case 4:
-                        total += 1;
-                        break;
-                    case 5:
-                        total += 2;
-                        break;
-                    case 6:
-                        total += 3;
-                        break;
-                    case 7:
-                        total += 4;
-                        break;
-                    case >=8:
-                        total += 11;
-                        break;
-                }
-            }
+    public int NumberOfWords => Words.Count();
 
-            return total;
+    private IEnumerable<string> Words
+    {
+        get
+        {
+            if (CheatWords != null)
+                return CheatWords;
+
+            return FoundWords.Except(DisabledWords);
         }
     }
 }

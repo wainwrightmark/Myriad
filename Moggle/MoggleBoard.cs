@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -117,6 +118,14 @@ public record MoggleBoard(
     public int Height => Positions.Count / Width;
 
     public Coordinate MaxCoordinate => new(Height - 1, Width - 1);
+
+    public IEnumerable<Coordinate> GetAllCoordinates()
+    {
+        for (var c = 0; c < Width; c++)
+        for (var r = 0; r < Height; r++)
+            yield return new Coordinate(r, c);
+    }
+
 }
 
 public record Letter(string ButtonText, string WordText)

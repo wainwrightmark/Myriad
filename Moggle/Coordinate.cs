@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Moggle
 {
@@ -17,9 +18,9 @@ public record Coordinate(int Row, int Column)
         return (rotation % 4) switch
         {
             0 => this,
-            1 => new((max - Column ), Row),
+            1 => new((max - Column), Row),
             2 => new((max - Row), (max - Column)),
-            3 => new(Column, (max - Row) ),
+            3 => new(Column, (max - Row)),
             _ => throw new ArgumentException(nameof(rotation))
         };
     }
@@ -33,6 +34,28 @@ public record Coordinate(int Row, int Column)
         var colDiff = Math.Abs(Column - co.Column);
 
         return rowDiff <= 1 && colDiff <= 1;
+    }
+
+    private static readonly List<(int rowModifier, int colModifier)> AdjacentPositions =
+        new() {
+            (-1, -1), (-1, 0), (-1, 1),
+            (0, -1),  (0, 1),
+            (1, -1), (1,0), (1, 1) };
+
+    public IEnumerable<Coordinate> GetAdjacentCoordinates(Coordinate maxCoordinate)
+    {
+        foreach (var (rowModifier, colModifier) in AdjacentPositions)
+        {
+            var newR = Row + rowModifier;
+            var newC = Column + colModifier;
+
+            if(newR < 0 || newR > maxCoordinate.Row)
+                continue;
+            if(newC < 0 || newC > maxCoordinate.Column)
+                continue;
+
+            yield return new Coordinate(newR, newC);
+        }
     }
 
     /// <inheritdoc />
