@@ -1,16 +1,18 @@
 ﻿<MudDialog>
-  <DialogContent>
-    Setup Game
-    <MudTextField @bind-Value="Seed" Placeholder="Type Seed Here" Variant="Variant.Outlined"></MudTextField>
-    <MudCheckBox @bind-Checked="@Classic" Label="Classic"></MudCheckBox>
-    <MudTextField @bind-Value="Height" Label="Height" Variant="Variant.Outlined"></MudTextField>
-    <MudTextField @bind-Value="Width" Label="Width" Variant="Variant.Outlined"></MudTextField>
-    <MudTextField @bind-Value="Duration" Label="Seconds" Variant="Variant.Outlined"></MudTextField>
-  </DialogContent>
   <DialogActions>
     <MudButton OnClick="Cancel">Cancel</MudButton>
     <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
   </DialogActions>
+  <DialogContent>
+    <MudContainer Style="max-height: 200px; overflow-y: scroll">
+      <MudTextField @bind-Value="Seed" Placeholder="Type Seed Here" Variant="Variant.Outlined"/>
+      <MudCheckBox @bind-Checked="@Classic" Label="Classic"/>
+      <MudTextField @bind-Value="Width" Label="Width" Variant="Variant.Outlined"/>
+      <MudTextField @bind-Value="Height" Label="Height" Variant="Variant.Outlined"/>
+      <MudTextField @bind-Value="Duration" Label="Seconds" Variant="Variant.Outlined"/>
+    </MudContainer>
+  </DialogContent>
+
 </MudDialog>
 
 @code {
