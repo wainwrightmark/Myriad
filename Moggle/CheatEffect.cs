@@ -10,9 +10,11 @@ public class CheatEffect : Effect<CheatAction>
     /// <inheritdoc />
     protected override async Task HandleAsync(CheatAction action, IDispatcher dispatcher)
     {
+
         if (_solver == null)
         {
-            var s = await Solver.FromDictionaryHelperAsync(CancellationToken.None);
+            await Task.Delay(10);
+            var s = Solver.FromResourceFile();
 
             _solver = s;
         }

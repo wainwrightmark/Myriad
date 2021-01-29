@@ -10,7 +10,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Words\Words.csproj" />
+    <Compile Update="Words.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Words.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Words.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Words.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

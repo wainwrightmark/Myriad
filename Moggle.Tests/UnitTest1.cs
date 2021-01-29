@@ -16,7 +16,7 @@ namespace Moggle.Tests
         public UnitTest1(ITestOutputHelper testOutputHelper)
         {
             TestOutputHelper = testOutputHelper;
-            _solver = new Lazy<Solver>(Solver.FromDictionaryHelperAsync);
+            _solver = new Lazy<Solver>(Solver.FromResourceFile);
         }
 
         [Theory]
@@ -90,7 +90,7 @@ namespace Moggle.Tests
 
             dict.Count.Should().Be(26);
 
-            foreach (var (key, value) in dict.OrderBy(x=>x.Key))
+            foreach (var (key, value) in dict.OrderBy(x=>x.Key.WordText))
             {
                 TestOutputHelper.WriteLine($"{key.WordText}: {value}");
             }
@@ -163,41 +163,6 @@ namespace Moggle.Tests
             TestOutputHelper.WriteLine($"Score: {bestScore}");
         }
 
-        [Theory]
-        [InlineData(100000, false, 5, 5,"happy,birthday,stephanie")]
-        [InlineData(100000, true, 5, 5,"happy,birthday,stephanie")]
-        public void FindBestGridsForWordList(int trials, bool classic, int height, int width, string wordList)
-        {
-            var bestSeed = 0;
-            var mostWords = 0;
-
-            var solver = Solver.FromWordList(wordList.Split(","));
-
-            var sw = Stopwatch.StartNew();
-            for (var i = 0; i < trials; i++)
-            {
-                var state = MoggleState.DefaultState.StartNewGame(i.ToString(), width, height, classic, 120);
-                var words = solver.GetPossibleWords(state.Board).ToList();
-
-
-                var score = words.Select(x => x.Length).Select(MoggleState.ScoreWord).Sum();
-
-                if (words.Count > mostWords)
-                {
-                    mostWords = words.Count;
-                    bestSeed = i;
-                }
-
-            }
-            sw.Stop();
-
-            TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
-
-            TestOutputHelper.WriteLine($"Seed: {bestSeed}");
-            TestOutputHelper.WriteLine($"Words: {mostWords}");
-        }
-
-
 
         [Theory]
         [InlineData(1000, false, 3, 3)]
@@ -230,6 +195,15 @@ namespace Moggle.Tests
             TestOutputHelper.WriteLine($"AverageWords: {averageWords}");
             TestOutputHelper.WriteLine($"AverageScore: {averageScore}");
 
+        }
+
+        [Fact]
+        public void GenerateWordList()
+        {
+            foreach (var word in _solver.Value.LegalWords.OrderBy(x=>x))
+            {
+                TestOutputHelper.WriteLine(word);
+            }
         }
 
 

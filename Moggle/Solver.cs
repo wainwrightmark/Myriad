@@ -3,9 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Words;
 
 namespace Moggle
 {
@@ -28,17 +25,32 @@ public class Solver
         return new Solver(legalWords, legalPrefixes);
     }
 
-    public static async Task<Solver> FromDictionaryHelperAsync(CancellationToken ct)
+    public static Solver FromResourceFile()
     {
-        var words = await new DictionaryHelper().GetNormalWordsAsync(ct);
+        var words = Words.WordList.Split('\n');
+
         return FromWordList(words);
     }
 
-    public static Solver FromDictionaryHelperAsync()
-    {
-        var words = new DictionaryHelper().GetNormalWords();
-        return FromWordList(words);
-    }
+    //public static async Task<Solver> FromDictionaryHelperAsync(CancellationToken ct)
+    //{
+    //    var words = await new DictionaryHelper().GetNormalWordsAsync(ct);
+    //    return FromWordList(words.Select(OnlyLetters));
+    //}
+
+    //private static string OnlyLetters(string s)
+    //{
+    //    if (s.All(char.IsLetter))
+    //        return s;
+
+    //    return new string(s.Where(char.IsLetter).ToArray());
+    //}
+
+    //public static Solver FromDictionaryHelperAsync()
+    //{
+    //    var words = new DictionaryHelper().GetNormalWords();
+    //    return FromWordList(words.Select(OnlyLetters));
+    //}
 
     public readonly IReadOnlySet<string> LegalWords;
     public readonly IReadOnlySet<string> LegalPrefixes;
