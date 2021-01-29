@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -95,6 +96,38 @@ namespace Moggle.Tests
                 TestOutputHelper.WriteLine($"{key.WordText}: {value}");
             }
         }
+
+        [Theory]
+        [InlineData(1000, false, 4, 4)]
+        public void FindBestSeeds(int numberToGet, bool classic, int width, int height)
+        {
+            var seeds = new List<(string, int)>();
+            var sw = Stopwatch.StartNew();
+            foreach (var seed in _solver.Value.LegalWords)
+            {
+                var state = MoggleState.DefaultState.StartNewGame(seed, width, height, classic, 120);
+
+                var words = _solver.Value.GetPossibleWords(state.Board).ToList();
+
+                seeds.Add((seed, words.Count));
+            }
+            sw.Stop();
+
+            TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
+            TestOutputHelper.WriteLine(seeds.Max(x=>x.Item2) + "Words");
+
+            foreach (var p in seeds.OrderByDescending(x=>x.Item2).Take(numberToGet))
+            {
+                TestOutputHelper.WriteLine(p.Item1);
+            }
+        }
+
+        [Fact]
+        public void TestGoodSeeds()
+        {
+            GoodSeedHelper.GoodSeeds.Value.Count.Should().Be(1000);
+        }
+
 
 
         private readonly Lazy<Solver> _solver;

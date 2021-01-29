@@ -61,6 +61,62 @@ namespace Moggle {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to baptism
+        ///black
+        ///heptathlon
+        ///custodianship
+        ///backslapping
+        ///canons
+        ///pundit
+        ///played
+        ///manacling
+        ///impregnability
+        ///draftings
+        ///glands
+        ///sport
+        ///glissandi
+        ///absenteeism
+        ///vegan
+        ///chunter
+        ///preshrank
+        ///battering
+        ///airtight
+        ///flawlessly
+        ///history
+        ///induced
+        ///unhallowed
+        ///cynosure
+        ///genuflect
+        ///circumcised
+        ///governable
+        ///sinceritys
+        ///truisms
+        ///rehabilitations
+        ///scavenged
+        ///climber
+        ///iceman
+        ///burglarises
+        ///dignifying
+        ///parameterised
+        ///condensates
+        ///rhythmical
+        ///pedagogic
+        ///rotundas
+        ///standpoints
+        ///effigies
+        ///antimony
+        ///sachets
+        ///spinsters
+        ///divining
+        ///ven [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string GoodSeeds {
+            get {
+                return ResourceManager.GetString("GoodSeeds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to aah
         ///aardvark
         ///aardvarks
@@ -114,7 +170,12 @@ namespace Moggle {
         ///abbreviates
         ///abbreviating
         ///abbreviation
-        ///abbrevi [rest of string was truncated]&quot;;.
+        ///abbreviations
+        ///abbrevs
+        ///abdicate
+        ///abdicated
+        ///abdicates
+        ///abdicatin [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string WordList {
             get {

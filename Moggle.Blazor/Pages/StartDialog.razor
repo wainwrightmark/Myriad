@@ -1,11 +1,12 @@
-﻿<MudDialog>
+﻿@using Microsoft.Extensions.DependencyInjection
+<MudDialog>
   <DialogActions>
     <MudButton OnClick="Cancel">Cancel</MudButton>
     <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
   </DialogActions>
   <DialogContent>
     <MudContainer Style="max-height: 200px; overflow-y: scroll">
-      <MudTextField @bind-Value="Seed" Placeholder="Type Seed Here" Variant="Variant.Outlined"/>
+      <MudTextField @bind-Value="Seed" Placeholder="Type Seed Here" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Casino" OnAdornmentClick="@GetRandomSeed"/>
       <MudCheckBox @bind-Checked="@Classic" Label="Classic"/>
       <MudTextField @bind-Value="Width" Label="Width" Variant="Variant.Outlined"/>
       <MudTextField @bind-Value="Height" Label="Height" Variant="Variant.Outlined"/>
@@ -32,4 +33,10 @@
   public int Height { get; set; } = 4;
 
   public int Duration { get; set; } = 120;
+
+  public void GetRandomSeed()
+  {
+    Seed = GoodSeedHelper.GetGoodSeed();
+  }
+
 }
