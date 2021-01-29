@@ -16,7 +16,7 @@ namespace Moggle.Tests
         public UnitTest1(ITestOutputHelper testOutputHelper)
         {
             TestOutputHelper = testOutputHelper;
-            _solver = new Lazy<Solver>(Solver.Initialize);
+            _solver = new Lazy<Solver>(Solver.FromDictionaryHelperAsync);
         }
 
         [Theory]
@@ -132,6 +132,74 @@ namespace Moggle.Tests
         }
 
         [Theory]
+        [InlineData(10000, false, 3,3)]
+        [InlineData(10000, true, 3,3)]
+        [InlineData(10000, false, 4,4)]
+        [InlineData(10000, true, 4,4)]
+        public void FindBestGrids(int trials, bool classic, int height, int width)
+        {
+            var bestSeed  = 0;
+            var bestScore = 0;
+
+            var sw = Stopwatch.StartNew();
+            for (var i = 0; i < trials; i++)
+            {
+                var state = MoggleState.DefaultState.StartNewGame(i.ToString(), width, height, classic, 120);
+                var words = _solver.Value.GetPossibleWords(state.Board).ToList();
+                var score = words.Select(x => x.Length).Select(MoggleState.ScoreWord).Sum();
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestSeed  = i;
+                }
+
+            }
+            sw.Stop();
+
+            TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
+
+            TestOutputHelper.WriteLine($"Seed: {bestSeed}");
+            TestOutputHelper.WriteLine($"Score: {bestScore}");
+        }
+
+        [Theory]
+        [InlineData(100000, false, 5, 5,"happy,birthday,stephanie")]
+        [InlineData(100000, true, 5, 5,"happy,birthday,stephanie")]
+        public void FindBestGridsForWordList(int trials, bool classic, int height, int width, string wordList)
+        {
+            var bestSeed = 0;
+            var mostWords = 0;
+
+            var solver = Solver.FromWordList(wordList.Split(","));
+
+            var sw = Stopwatch.StartNew();
+            for (var i = 0; i < trials; i++)
+            {
+                var state = MoggleState.DefaultState.StartNewGame(i.ToString(), width, height, classic, 120);
+                var words = solver.GetPossibleWords(state.Board).ToList();
+
+
+                var score = words.Select(x => x.Length).Select(MoggleState.ScoreWord).Sum();
+
+                if (words.Count > mostWords)
+                {
+                    mostWords = words.Count;
+                    bestSeed = i;
+                }
+
+            }
+            sw.Stop();
+
+            TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
+
+            TestOutputHelper.WriteLine($"Seed: {bestSeed}");
+            TestOutputHelper.WriteLine($"Words: {mostWords}");
+        }
+
+
+
+        [Theory]
         [InlineData(1000, false, 3, 3)]
         [InlineData(1000, true, 3, 3)]
         [InlineData(1000, false, 4, 4)]
@@ -163,6 +231,7 @@ namespace Moggle.Tests
             TestOutputHelper.WriteLine($"AverageScore: {averageScore}");
 
         }
+
 
     }
 }

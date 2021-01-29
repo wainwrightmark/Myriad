@@ -2,65 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Fluxor;
 
 namespace Moggle
 {
-
-public record EnableWord(string Word, bool Enable) : IAction<MoggleState>
-{
-    /// <inheritdoc />
-    public MoggleState Reduce(MoggleState board)
-    {
-        if (Enable)
-            return board with { DisabledWords = board.DisabledWords.Remove(Word) };
-
-        return board with { DisabledWords = board.DisabledWords.Add(Word) };
-    }
-}
-
-public record CheatAction : IAction<MoggleState>
-{
-    /// <inheritdoc />
-    public MoggleState Reduce(MoggleState state)
-    {
-        if (state.CheatWords != null)
-            return state;
-
-        state = state with { CheatWords = ImmutableList<string>.Empty };
-        return state;
-    }
-}
-
-public class CheatEffect : Effect<CheatAction>
-{
-    /// <inheritdoc />
-    protected override async Task HandleAsync(CheatAction action, IDispatcher dispatcher)
-    {
-        if (_solver == null)
-        {
-            var s = await Solver.InitializeAsync(CancellationToken.None);
-
-            _solver = s;
-        }
-
-        dispatcher.Dispatch(new SolveAction(_solver));
-    }
-
-    private static Solver? _solver;
-}
-
-public record SolveAction(Solver Solver) : IAction<MoggleState>
-{
-    /// <inheritdoc />
-    public MoggleState Reduce(MoggleState state)
-    {
-        var words = Solver.GetPossibleWords(state.Board).ToImmutableList();
-        return state with { CheatWords = words };
-    }
-}
 
 public record MoggleState(
     MoggleBoard Board,
@@ -81,6 +25,16 @@ public record MoggleState(
         null
     );
 
+    public static MoggleState CreateFromString(string s) => new(
+        MoggleBoard.CreateFromString(s),
+        null,
+        0,
+        ImmutableList<Coordinate>.Empty,
+        ImmutableSortedSet<string>.Empty,
+        ImmutableHashSet<string>.Empty,
+        null
+    );
+
     public MoggleState StartNewGame(
         string seed,
         int width,
@@ -88,15 +42,25 @@ public record MoggleState(
         bool classic,
         int duration)
     {
-        var newState = new MoggleState(
-            MoggleBoard.Create(classic, width, height).Randomize(seed),
-            DateTime.Now.AddSeconds(duration),
-            Rotation,
-            ImmutableList<Coordinate>.Empty,
-            ImmutableSortedSet<string>.Empty,
-            ImmutableHashSet<string>.Empty,
-            null
-        );
+        MoggleState newState;
+
+        if (seed.StartsWith('_')) //this is a bit hacky
+        {
+            newState = CreateFromString(seed.TrimStart('_'))
+                with{FinishTime = DateTime.Now.AddSeconds(duration)};
+        }
+        else
+        {
+            newState = new MoggleState(
+                MoggleBoard.Create(classic, width, height).Randomize(seed),
+                DateTime.Now.AddSeconds(duration),
+                Rotation,
+                ImmutableList<Coordinate>.Empty,
+                ImmutableSortedSet<string>.Empty,
+                ImmutableHashSet<string>.Empty,
+                null
+            );
+        }
 
         return newState;
     }

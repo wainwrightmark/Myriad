@@ -49,6 +49,47 @@ public record MoggleBoard(
         new("HLNNRZ")
     );
 
+    public static MoggleBoard CreateFromString(string s)
+    {
+        int width;
+        int height;
+
+        switch (s.Length)
+        {
+            case <= 9:
+            {
+                width  = 3;
+                height = 3;
+                break;
+            }
+            case <= 16:
+            {
+                width  = 4;
+                height = 4;
+                break;
+            }
+
+            case <= 25:
+            {
+                width  = 5;
+                height = 5;
+                break;
+            }
+            case <= 36:
+            {
+                width  = 6;
+                height = 6;
+                break;
+            }
+            default: throw new ArgumentException("letters");
+        }
+
+        var letters   = s.PadRight(height * width, '*');
+        var dice      = letters.Select(x => new BoggleDice(new string(x, 6))).ToImmutableArray();
+        var positions = Enumerable.Range(0, letters.Length).Select(x => new DicePosition(x, 0)).ToImmutableList();
+        return new MoggleBoard(dice, positions, width);
+    }
+
     public static MoggleBoard Create(bool classic, int width, int height) => new(
         classic ? ClassicDice : ModernDice,
         Enumerable.Range(0, width * height).Select(x => new DicePosition(x, 0)).ToImmutableList(),
@@ -124,18 +165,6 @@ public record MoggleBoard(
         for (var c = 0; c < Width; c++)
         for (var r = 0; r < Height; r++)
             yield return new Coordinate(r, c);
-    }
-
-}
-
-public record Letter(string ButtonText, string WordText)
-{
-    public static Letter Create(char c)
-    {
-        if (c.Equals('Q') || c.Equals('q'))
-            return new Letter("Qᵤ", "QU");
-
-        return new Letter(c.ToString().ToUpper(), c.ToString().ToUpper());
     }
 }
 

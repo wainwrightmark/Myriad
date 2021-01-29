@@ -14,36 +14,34 @@ public class Solver
 {
     private Solver(IReadOnlySet<string> legalWords, IReadOnlySet<string> legalPrefixes)
     {
-        _legalWords    = legalWords;
-        _legalPrefixes = legalPrefixes;
+        LegalWords    = legalWords;
+        LegalPrefixes = legalPrefixes;
     }
 
-    public static async Task<Solver> InitializeAsync(CancellationToken ct)
+    public static Solver FromWordList(IEnumerable<string> words)
+    {
+        var legalWords = words.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var legalPrefixes = legalWords.SelectMany(GetAllPrefixes)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return new Solver(legalWords, legalPrefixes);
+    }
+
+    public static async Task<Solver> FromDictionaryHelperAsync(CancellationToken ct)
     {
         var words = await new DictionaryHelper().GetNormalWordsAsync(ct);
-
-        var legalWords = words.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var legalPrefixes = legalWords.SelectMany(GetAllPrefixes)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        return new Solver(legalWords, legalPrefixes);
+        return FromWordList(words);
     }
 
-    public static Solver Initialize()
+    public static Solver FromDictionaryHelperAsync()
     {
         var words = new DictionaryHelper().GetNormalWords();
-
-        var legalWords = words.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var legalPrefixes = legalWords.SelectMany(GetAllPrefixes)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        return new Solver(legalWords, legalPrefixes);
+        return FromWordList(words);
     }
 
-    private readonly IReadOnlySet<string> _legalWords;
-    private readonly IReadOnlySet<string> _legalPrefixes;
+    public readonly IReadOnlySet<string> LegalWords;
+    public readonly IReadOnlySet<string> LegalPrefixes;
 
     private static IEnumerable<string> GetAllPrefixes(string s)
     {
@@ -57,7 +55,7 @@ public class Solver
 
         finder.Run();
 
-        return finder.WordsSoFar;
+        return finder.WordsSoFar.OrderBy(x => x);
     }
 
     private class WordFinder
@@ -104,10 +102,10 @@ public class Solver
                 var l         = Board.GetLetterAtCoordinate(adjacentCoordinate);
                 var newPrefix = prefix + l.WordText;
 
-                if (_solver._legalWords.Contains(newPrefix))
+                if (_solver.LegalWords.Contains(newPrefix))
                     WordsSoFar.Add(newPrefix);
 
-                if (_solver._legalPrefixes.Contains(newPrefix))
+                if (_solver.LegalPrefixes.Contains(newPrefix))
                 {
                     Queue.Enqueue((newPrefix, usedCoordinates.Add(adjacentCoordinate)));
                 }
