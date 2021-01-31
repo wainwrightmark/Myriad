@@ -25,8 +25,8 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
         };
     }
 
-    public Coordinate ReflectColumn(int maxColumn) => new (Row, maxColumn - Column);
-    public Coordinate ReflectRow(int maxRow) => new (maxRow - Row, Column);
+    public Coordinate ReflectColumn(int maxColumn) => new(Row, maxColumn - Column);
+    public Coordinate ReflectRow(int maxRow) => new(maxRow - Row, Column);
 
     public bool IsAdjacent(Coordinate co)
     {
@@ -40,10 +40,17 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
     }
 
     private static readonly List<(int rowModifier, int colModifier)> AdjacentPositions =
-        new() {
-            (-1, -1), (-1, 0), (-1, 1),
-            (0, -1),  (0, 1),
-            (1, -1), (1,0), (1, 1) };
+        new()
+        {
+            (-1, -1),
+            (-1, 0),
+            (-1, 1),
+            (0, -1),
+            (0, 1),
+            (1, -1),
+            (1, 0),
+            (1, 1)
+        };
 
     public IEnumerable<Coordinate> GetAdjacentCoordinates(Coordinate maxCoordinate)
     {
@@ -52,20 +59,68 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
             var newR = Row + rowModifier;
             var newC = Column + colModifier;
 
-            if(newR < 0 || newR > maxCoordinate.Row)
+            if (newR < 0 || newR > maxCoordinate.Row)
                 continue;
-            if(newC < 0 || newC > maxCoordinate.Column)
+
+            if (newC < 0 || newC > maxCoordinate.Column)
                 continue;
 
             yield return new Coordinate(newR, newC);
         }
     }
 
+    public bool HasAtLeastXNeighbors(int x, Coordinate maxCoordinate)
+        {
+            int requiredDimensions;
+            switch (x)
+            {
+                case <= 0: return true;
+                case <= 1: requiredDimensions = 1;
+                    break;
+                case <= 3: requiredDimensions = 2;
+                    break;
+                case <= 5: requiredDimensions = 3;
+                    break;
+                case <= 8: requiredDimensions = 4;
+                    break;
+                default:   return false;
+            }
+
+            var dimensions = 0;
+
+            if (Row > 0)
+                dimensions++;
+
+            if (Row < maxCoordinate.Row)
+                dimensions++;
+
+            if (Column > 0)
+                dimensions++;
+
+            if (Column < maxCoordinate.Column)
+                dimensions++;
+
+            return dimensions >= requiredDimensions;
+
+
+        }
+
     public IEnumerable<Coordinate> GetPositionsUpTo()
     {
         for (var r = 0; r <= Row; r++)
         for (var c = 0; c <= Column; c++)
             yield return new Coordinate(r, c);
+    }
+
+    public int DistanceFromCentre(Coordinate maxCoordinate)
+    {
+        var dRow = Row * 2;
+        var dCol = Column * 2;
+
+        var rDist = Math.Abs(maxCoordinate.Row - dRow);
+        var cDist = Math.Abs(maxCoordinate.Column - dCol);
+
+        return rDist + cDist;
     }
 
     /// <inheritdoc />
@@ -84,7 +139,7 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
     {
         var root = Math.Sqrt(numberOfNodes);
 
-        var ceiling = (int) Math.Ceiling(root);
+        var ceiling = (int)Math.Ceiling(root);
 
         return new Coordinate(ceiling - 1, ceiling - 1);
     }

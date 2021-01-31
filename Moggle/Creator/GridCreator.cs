@@ -1,15 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Moggle.Creator
 {
 
 public static class GridCreator
 {
-    public static NodeGrid CreateNodeGrid(IEnumerable<string> allWords)
+    public static NodeGrid CreateNodeGridFromText(string text, ILogger logger, int msCancellation)
+    {
+        var words = GetAllWords(text);
+
+
+        return CreateNodeGrid(words, logger, msCancellation);
+    }
+
+    public static IEnumerable<string> GetAllWords(string text)
+    {
+        var words = text.ToUpper()
+            .Split(
+                new[] { '\r', '\n', ' ', '\t' },
+                StringSplitOptions.None | StringSplitOptions.RemoveEmptyEntries
+            )
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(LettersOnly)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return words;
+
+        string LettersOnly(string s) => new(s.Where(char.IsLetter).ToArray());
+    }
+
+    public static NodeGrid CreateNodeGrid(IEnumerable<string> allWords, ILogger logger, int msCancellation)
     {
         var words = RemoveSubstrings(
                 allWords.Select(x => x.ToUpper()),
@@ -17,7 +45,17 @@ public static class GridCreator
             )
             .ToList();
 
+
+            logger.LogInformation(words.Count + " words");
+        logger.LogInformation(string.Join(", ", words));
+
         var runeMultiplicities = CreateMultiplicities(words).ToDictionary(x => x.Rune);
+
+        var rmString = string.Join(", ", runeMultiplicities.Select(x => x.Value));
+
+        logger.LogInformation(rmString);
+
+        var sw = Stopwatch.StartNew();
 
         while (true)
         {
@@ -31,19 +69,31 @@ public static class GridCreator
                 maxCoordinate
             );
 
-            var triedGrids = new HashSet<NodeGrid>();
+            var solver = new Creator();
 
-            var r = FindFilledGrids(emptyGrid, triedGrids, nodes.ToImmutableList())
-                .FirstOrDefault();
+            var r = solver.Create(new SolveState(emptyGrid, nodes.ToImmutableList()), new CancellationTokenSource(msCancellation).Token, logger);
 
             if (r is not null)
-                return r;
+            {
+                sw.Stop();
 
-            var mostConstrainedNode = nodes.Select(x => x.RootNodeList)
+                logger.LogInformation(
+                    $"{numberOfNodes} cell Grid Found in " + sw.ElapsedMilliseconds
+                                                           + $"ms after {solver.TriedGrids.Count} tries"
+                );
+
+                return r;
+            }
+
+            var mostConstrainedNode = nodes.Select(x => x.RootNodeGroup)
                 .OrderByDescending(x => x.ConstraintScore)
                 .First();
 
             var newNumber = mostConstrainedNode.RootNodes.Count + 1;
+
+            logger.LogInformation(
+                $"No Grid found after {sw.ElapsedMilliseconds}ms, increasing {mostConstrainedNode.Rune} to {mostConstrainedNode.RootNodes.Count + 1} after {solver.TriedGrids.Count} tries"
+            );
 
             runeMultiplicities[mostConstrainedNode.Rune] =
                 new BaseRuneMultiplicity(mostConstrainedNode.Rune, newNumber);
@@ -77,59 +127,11 @@ public static class GridCreator
         }
     }
 
-    private static IEnumerable<NodeGrid> FindFilledGrids(
-        NodeGrid grid,
-        ISet<NodeGrid> triedGrids,
-        ImmutableList<Node> remainingNodes)
-    {
-        if (!triedGrids.Add(grid))
-            yield break;
-
-        if (!remainingNodes.Any())
-        {
-            yield return grid;
-
-            yield break;
-        }
-
-        var nextNode = remainingNodes
-            .Select(node => (node, locations: node.FindPossibleLocations(grid)))
-            .OrderBy(x => x.locations.Count)
-            .ThenByDescending(x => x.node.RootNodeList.ConstraintScore)
-            .First();
-
-        if (nextNode.locations.Count == 0)
-        {
-            yield break; //This is impossible
-        }
-
-        var newRemainingNodes = remainingNodes.Remove(nextNode.node);
-
-        foreach (var nextNodeLocation in nextNode.locations)
-        {
-            var oldSetAtCoordinate = grid.Dictionary.TryGetValue(nextNodeLocation, out var s)
-                ? s
-                : ImmutableSortedSet<Node>.Empty;
-
-            var newSet = oldSetAtCoordinate.Add(nextNode.node);
-
-            var newGrid = new NodeGrid(
-                grid.Dictionary.SetItem(nextNodeLocation, newSet),
-                grid.MaxCoordinate
-            );
-
-            foreach (var a in FindFilledGrids(newGrid, triedGrids, newRemainingNodes))
-            {
-                yield return a;
-            }
-        }
-    }
-
     private record BaseRuneMultiplicity(Rune Rune, int Multiplicity)
     {
-        public RootNodeList Create()
+        public RootNodeGroup Create()
         {
-            var rnl = new RootNodeList(Rune);
+            var rnl = new RootNodeGroup(Rune);
 
             var list =
                 Enumerable.Range(0, Multiplicity)
@@ -139,13 +141,16 @@ public static class GridCreator
             rnl.RootNodes = list;
             return rnl;
         }
+
+        /// <inheritdoc />
+        public override string ToString() => $"{Rune} {Multiplicity}";
     }
 
     private static IReadOnlyList<Node> CreateNodes(
         IEnumerable<string> words,
         IEnumerable<BaseRuneMultiplicity> baseRuneMultiplicities)
     {
-        Dictionary<Rune, RootNodeList> runeDictionary =
+        Dictionary<Rune, RootNodeGroup> runeDictionary =
             baseRuneMultiplicities.ToDictionary(
                 x => x.Rune,
                 x => x.Create()
