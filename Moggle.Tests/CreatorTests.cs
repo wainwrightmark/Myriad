@@ -27,11 +27,12 @@ public class CreatorTests
     [InlineData("ovington skware massive")]
     [InlineData("stacys mum has got it going on")]
     [InlineData(StacysMomChorus)]
+    [InlineData(TotalEclipseChorus)]
     [InlineData(TotalEclipse)]
     [InlineData(StacysMum)]
     public void TestCreator(string wordsString)
     {
-        const int msDelay = 20000;
+        const int msDelay = 30000;
         var grid = Creator.GridCreator.CreateNodeGridFromText(wordsString, new TestOutputLogger("Test", TestOutputHelper), msDelay);
 
         TestOutputHelper.WriteLine(grid.ToMoggleBoard(new Rune('*')).ToMultiLineString());
@@ -55,6 +56,18 @@ You're just not the girl for me
 I know it might be wrong but
 I'm in love with Stacy's mom
 ";
+
+    public const string TotalEclipseChorus = @"
+I really need you tonight
+Forever's gonna start tonight
+Forever's gonna start tonight
+Once upon a time I was falling in love
+But now I'm only falling apart
+Nothing I can say
+A total eclipse of the heart
+A total eclipse of the heart
+A total eclipse of the heart
+Turn around, bright eyes";
 
     public const string TotalEclipse = @"every now and then I get a little bit lonely
 And you're never coming 'round
