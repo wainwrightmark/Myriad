@@ -53,7 +53,7 @@
   }
 </MudList>
 
-@if (State.Value.CheatWords == null)
+@if (State.Value.CheatWords == null && State.Value.AllowCheating)
 {
   <MudButton OnClick="() => Dispatcher.Dispatch(new CheatAction())">Cheat</MudButton>
 }

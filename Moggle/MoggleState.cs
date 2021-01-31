@@ -13,16 +13,18 @@ public record MoggleState(
     ImmutableList<Coordinate> ChosenPositions,
     ImmutableSortedSet<string> FoundWords,
     ImmutableHashSet<string> DisabledWords,
-    ImmutableList<string>? CheatWords)
+    ImmutableList<string>? CheatWords,
+    bool AllowCheating)
 {
     public static readonly MoggleState DefaultState = new(
-        MoggleBoard.Create(true, 4, 4),
+        MoggleBoard.Create(false, 4, 4),
         null,
         0,
         ImmutableList<Coordinate>.Empty,
         ImmutableSortedSet<string>.Empty,
         ImmutableHashSet<string>.Empty,
-        null
+        null,
+        false
     );
 
     public static MoggleState CreateFromString(string s) => new(
@@ -32,7 +34,8 @@ public record MoggleState(
         ImmutableList<Coordinate>.Empty,
         ImmutableSortedSet<string>.Empty,
         ImmutableHashSet<string>.Empty,
-        null
+        null,
+        false
     );
 
     public MoggleState StartNewGame(
@@ -40,7 +43,8 @@ public record MoggleState(
         int width,
         int height,
         bool classic,
-        int duration)
+        int duration,
+        bool allowCheating)
     {
         MoggleState newState;
 
@@ -58,7 +62,8 @@ public record MoggleState(
                 ImmutableList<Coordinate>.Empty,
                 ImmutableSortedSet<string>.Empty,
                 ImmutableHashSet<string>.Empty,
-                null
+                null,
+                allowCheating
             );
         }
 
