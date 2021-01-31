@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moggle.Creator;
 
 namespace Moggle
 {
@@ -51,7 +53,29 @@ public record MoggleState(
         if (seed.StartsWith('_')) //this is a bit hacky
         {
             newState = CreateFromString(seed.TrimStart('_'))
-                with{FinishTime = DateTime.Now.AddSeconds(duration)};
+                with
+                {
+                    FinishTime = DateTime.Now.AddSeconds(duration)
+                };
+        }
+        else if (seed.StartsWith("?")) //also cheeky
+        {
+            var grid = GridCreator.CreateNodeGridFromText(
+                seed.TrimStart('?'),
+                NullLogger<MoggleState>.Instance,
+                1000
+            );
+
+            newState = new MoggleState(
+                grid.ToMoggleBoard(MoggleBoard.PaddingRune),
+                DateTime.Now.AddSeconds(duration),
+                Rotation,
+                ImmutableList<Coordinate>.Empty,
+                ImmutableSortedSet<string>.Empty,
+                ImmutableHashSet<string>.Empty,
+                null,
+                allowCheating
+            );
         }
         else
         {

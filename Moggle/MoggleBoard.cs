@@ -50,7 +50,7 @@ public record MoggleBoard(
         new("HLNNRZ")
     );
 
-    private static readonly Rune PaddingRune = "😊".EnumerateRunes().Single();
+    public static readonly Rune PaddingRune = "😊".EnumerateRunes().Single();
 
     public static MoggleBoard CreateFromString(string s)
     {

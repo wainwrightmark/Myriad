@@ -67,6 +67,18 @@
   [Inject]
   public IDispatcher Dispatcher { get; set; }
 
+  [Parameter]
+  public StartGameAction? StartGameAction { get; set; }
+
+  /// <inheritdoc />
+  protected override void OnParametersSet()
+  {
+    if (StartGameAction != null)
+      Dispatcher.Dispatch(StartGameAction);
+
+    base.OnParametersSet();
+  }
+
   public bool IsGameVisible => State.Value.FinishTime.HasValue;
 
   public Color GetColor(Coordinate coordinate)

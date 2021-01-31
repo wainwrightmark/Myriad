@@ -26,13 +26,15 @@ public class CreatorTests
     [InlineData("happy birthday steph")]
     [InlineData("ovington skware massive")]
     [InlineData("stacys mum has got it going on")]
-    [InlineData(StacysMomChorus)]
-    [InlineData(TotalEclipseChorus)]
-    [InlineData(TotalEclipse)]
-    [InlineData(StacysMum)]
+    [InlineData("Amy alex emily lee mark stephanie mike lizanne amelia")]
+    //[InlineData(StacysMomChorus)]
+    //[InlineData(TotalEclipseChorus)]
+    //[InlineData(TotalEclipse)]
+    //[InlineData(StacysMum)]
+
     public void TestCreator(string wordsString)
     {
-        const int msDelay = 30000;
+        const int msDelay = 10000;
         var grid = Creator.GridCreator.CreateNodeGridFromText(wordsString, new TestOutputLogger("Test", TestOutputHelper), msDelay);
 
         TestOutputHelper.WriteLine(grid.ToMoggleBoard(new Rune('*')).ToMultiLineString());
