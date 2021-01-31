@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Moggle
 {
 
-public record Coordinate(int Row, int Column)
+public record Coordinate(int Row, int Column) : IComparable<Coordinate>, IComparable
 {
     public Coordinate Rotate(
         Coordinate maxCoordinate,
@@ -24,6 +24,9 @@ public record Coordinate(int Row, int Column)
             _ => throw new ArgumentException(nameof(rotation))
         };
     }
+
+    public Coordinate ReflectColumn(int maxColumn) => new (Row, maxColumn - Column);
+    public Coordinate ReflectRow(int maxRow) => new (maxRow - Row, Column);
 
     public bool IsAdjacent(Coordinate co)
     {
@@ -58,8 +61,50 @@ public record Coordinate(int Row, int Column)
         }
     }
 
+    public IEnumerable<Coordinate> GetPositionsUpTo()
+    {
+        for (var r = 0; r <= Row; r++)
+        for (var c = 0; c <= Column; c++)
+            yield return new Coordinate(r, c);
+    }
+
     /// <inheritdoc />
     public override string ToString() => $"({Row},{Column})";
+
+    /// <inheritdoc />
+    public int CompareTo(object? obj)
+    {
+        if (obj is Coordinate c)
+            return CompareTo(c);
+
+        return 0;
+    }
+
+    public static Coordinate GetMaxCoordinateForSquareGrid(int numberOfNodes)
+    {
+        var root = Math.Sqrt(numberOfNodes);
+
+        var ceiling = (int) Math.Ceiling(root);
+
+        return new Coordinate(ceiling - 1, ceiling - 1);
+    }
+
+    /// <inheritdoc />
+    public int CompareTo(Coordinate? other)
+    {
+        if (ReferenceEquals(this, other))
+            return 0;
+
+        if (other is null)
+            return 1;
+
+        var rowComparison = Row.CompareTo(other.Row);
+
+        if (rowComparison != 0)
+            return rowComparison;
+
+        return Column.CompareTo(other.Column);
+    }
 }
 
 }

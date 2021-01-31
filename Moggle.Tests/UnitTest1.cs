@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
@@ -237,6 +238,36 @@ namespace Moggle.Tests
             {
                 TestOutputHelper.WriteLine(word);
             }
+        }
+
+
+        [Theory]
+        [InlineData("happy,birthday")]
+        [InlineData("happy,birthday,stephanie")]
+        [InlineData("happy,birthday,stephanie,daybirth,yes,yestdappn")]
+        [InlineData("happy,birthday,mark")]
+        [InlineData("happy,birthday,hap")]
+        [InlineData("a,b,c")]
+        [InlineData("xa,xb,xc")]
+        [InlineData("happy,birthday,steph")]
+        [InlineData("ovington,square,massive")]
+        public void TestCreator(string wordsString)
+        {
+            var words = wordsString.Split(
+                ",",
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+            );
+
+            var sw = Stopwatch.StartNew();
+
+            var grid = Creator.GridCreator.CreateNodeGrid(words);
+
+            sw.Stop();
+            TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
+
+
+            TestOutputHelper.WriteLine(grid.ToMoggleBoard(new Rune('*')).ToMultiLineString());
+
         }
 
 

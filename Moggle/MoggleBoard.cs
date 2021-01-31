@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
 
 namespace Moggle
 {
@@ -49,45 +50,25 @@ public record MoggleBoard(
         new("HLNNRZ")
     );
 
+    private static readonly Rune PaddingRune = "😊".EnumerateRunes().Single();
+
     public static MoggleBoard CreateFromString(string s)
     {
-        int width;
-        int height;
+        var c = Coordinate.GetMaxCoordinateForSquareGrid(s.EnumerateRunes().Count());
 
-        switch (s.Length)
-        {
-            case <= 9:
-            {
-                width  = 3;
-                height = 3;
-                break;
-            }
-            case <= 16:
-            {
-                width  = 4;
-                height = 4;
-                break;
-            }
+        var total = (c.Column + 1) * (c.Row + 1);
+        var runes = s.EnumerateRunes().ToList();
 
-            case <= 25:
-            {
-                width  = 5;
-                height = 5;
-                break;
-            }
-            case <= 36:
-            {
-                width  = 6;
-                height = 6;
-                break;
-            }
-            default: throw new ArgumentException("letters");
-        }
+        if (runes.Count < total)
+            runes.AddRange(Enumerable.Repeat(PaddingRune, total - runes.Count));
 
-        var letters   = s.PadRight(height * width, '*');
-        var dice      = letters.Select(x => new BoggleDice(new string(x, 6))).ToImmutableArray();
-        var positions = Enumerable.Range(0, letters.Length).Select(x => new DicePosition(x, 0)).ToImmutableList();
-        return new MoggleBoard(dice, positions, width);
+        var dice = runes.Select(x => new BoggleDice(ImmutableList.Create(x))).ToImmutableArray();
+
+        var positions = Enumerable.Range(0, runes.Count)
+            .Select(x => new DicePosition(x, 0))
+            .ToImmutableList();
+
+        return new MoggleBoard(dice, positions, c.Column + 1);
     }
 
     public static MoggleBoard Create(bool classic, int width, int height) => new(
@@ -152,7 +133,7 @@ public record MoggleBoard(
     {
         var position = Positions[i % Positions.Count];
         var die      = Dice[position.DiceIndex % Dice.Length];
-        var letter   = die.Letters[position.FaceIndex % die.Letters.Length];
+        var letter   = die.Runes[position.FaceIndex % die.Runes.Count];
         return Letter.Create(letter);
     }
 
@@ -165,6 +146,34 @@ public record MoggleBoard(
         for (var c = 0; c < Width; c++)
         for (var r = 0; r < Height; r++)
             yield return new Coordinate(r, c);
+    }
+
+    public string ToMultiLineString()
+    {
+        StringBuilder sb = new();
+
+        for (var r = 0; r < Height; r++)
+        {
+            for (var c = 0; c < Width; c++)
+            {
+                var l = GetLetterAtCoordinate(new Coordinate(r, c));
+                sb.Append(l.ButtonText);
+            }
+
+            sb.AppendLine();
+        }
+
+        return sb.ToString().Trim();
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return ToMultiLineString()
+            .Replace('\r',   '\t')
+            .Replace('\n',   '\t')
+            .Replace("\t\t", "\t")
+            .Trim();
     }
 }
 

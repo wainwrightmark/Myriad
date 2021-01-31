@@ -1,17 +1,16 @@
-﻿namespace Moggle
+﻿using System.Text;
+
+namespace Moggle
 {
 
 public record Letter(string ButtonText, string WordText)
 {
-    public static Letter Create(char c)
+    public static Letter Create(Rune rune)
     {
-        if (c.Equals('Q') || c.Equals('q'))
+        if (rune.ToString().Equals("Q") || rune.ToString().Equals("q"))//Weird special case for Q
             return new Letter("Qᵤ", "QU");
 
-        if (c.Equals('*'))
-            return new Letter("😊", "😊");
-
-        return new Letter(c.ToString().ToUpper(), c.ToString().ToUpper());
+        return new Letter(rune.ToString().ToUpper(), rune.ToString().ToUpper());
     }
 }
 
