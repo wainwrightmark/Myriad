@@ -7,7 +7,6 @@ public record StartGameAction(
     int Height,
     bool Classic,
     int Duration,
-    bool AllowCheating,
     int MinWordLength) : IAction<MoggleState>
 {
     /// <inheritdoc />
@@ -17,7 +16,6 @@ public record StartGameAction(
         Height,
         Classic,
         Duration,
-        AllowCheating,
         MinWordLength
     );
 }

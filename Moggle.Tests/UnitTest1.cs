@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
@@ -27,11 +26,11 @@ namespace Moggle.Tests
         [InlineData("World")]
         public async Task SameSeedShouldProduceSameGame(string seed)
         {
-            var board1 = MoggleState.DefaultState.StartNewGame(seed, 5, 5, false, 120, false, 3);
+            var board1 = MoggleState.DefaultState.StartNewGame(seed, 5, 5, false, 120, 3);
 
             await Task.Delay(100);
 
-            var board2 = MoggleState.DefaultState.StartNewGame(seed, 5, 5, false, 120, false, 3);
+            var board2 = MoggleState.DefaultState.StartNewGame(seed, 5, 5, false, 120,  3);
 
             var b1String = string.Join(", ", board1.Board.Positions.Select(x => x.ToString()));
             var b2String = string.Join(", ", board2.Board.Positions.Select(x => x.ToString()));
@@ -49,7 +48,7 @@ namespace Moggle.Tests
         [InlineData("ruth")]
         public void Test1(string key)
         {
-            var s = MoggleState.DefaultState.StartNewGame(key, 4, 4, false, 120, false, 3).Board;
+            var s = MoggleState.DefaultState.StartNewGame(key, 4, 4, false, 120,  3).Board;
 
 
             s.Height.Should().Be(4);
@@ -79,13 +78,13 @@ namespace Moggle.Tests
 
             for (var i = 0; i < 1000; i++)
             {
-                var s = MoggleState.DefaultState.StartNewGame(i.ToString(), 4, 4, classic, 120, false, 3);
+                var s = MoggleState.DefaultState.StartNewGame(i.ToString(), 4, 4, classic, 120,  3);
 
 
                 for (var j = 0; j < 16; j++)
                 {
                     var l = s.Board.GetLetterAtIndex(j);
-                    dict.AddOrUpdate(l, 1,(x, i) => i + 1);
+                    dict.AddOrUpdate(l, 1,(_, q) => q + 1);
                 }
             }
 
@@ -106,7 +105,7 @@ namespace Moggle.Tests
             var sw = Stopwatch.StartNew();
             foreach (var seed in _solver.Value.LegalWords)
             {
-                var state = MoggleState.DefaultState.StartNewGame(seed, width, height, classic, 120, false, 3);
+                var state = MoggleState.DefaultState.StartNewGame(seed, width, height, classic, 120,  3);
 
                 var words = _solver.Value.GetPossibleWords(state.Board).ToList();
 
@@ -144,7 +143,7 @@ namespace Moggle.Tests
         [InlineData("my hovercraft is full of eels", false, 6,6)]
         public void TestSolver(string seed, bool classic, int height, int width)
         {
-            var state = MoggleState.DefaultState.StartNewGame(seed, width, height, classic, 120, false, 3);
+            var state = MoggleState.DefaultState.StartNewGame(seed, width, height, classic, 120,  3);
 
             var sw = Stopwatch.StartNew();
             var words = _solver.Value.GetPossibleWords(state.Board).ToList();
@@ -178,7 +177,7 @@ namespace Moggle.Tests
             var sw = Stopwatch.StartNew();
             for (var i = 0; i < trials; i++)
             {
-                var state = MoggleState.DefaultState.StartNewGame(i.ToString(), width, height, classic, 120, false, 3);
+                var state = MoggleState.DefaultState.StartNewGame(i.ToString(), width, height, classic, 120,  3);
                 var words = _solver.Value.GetPossibleWords(state.Board).ToList();
                 var score = words.Select(x => x.Length).Select(MoggleState.ScoreWord).Sum();
 
@@ -215,7 +214,7 @@ namespace Moggle.Tests
             var sw = Stopwatch.StartNew();
             for (var i = 0; i < numberOfTests; i++)
             {
-                var state = MoggleState.DefaultState.StartNewGame(i.ToString(), width, height, classic, 120, false, 3);
+                var state = MoggleState.DefaultState.StartNewGame(i.ToString(), width, height, classic, 120,  3);
                 var words = _solver.Value.GetPossibleWords(state.Board).ToList();
                 totalWords += words.Count;
                 totalScore += words.Select(x => x.Length).Select(MoggleState.ScoreWord).Sum();

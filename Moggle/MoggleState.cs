@@ -15,8 +15,7 @@ public record MoggleState(
     ImmutableList<Coordinate> ChosenPositions,
     ImmutableSortedSet<string> FoundWords,
     ImmutableHashSet<string> DisabledWords,
-    ImmutableList<string>? CheatWords,
-    bool AllowCheating)
+    ImmutableList<string>? CheatWords)
 {
 
     public static readonly Solver Solver = Solver.FromResourceFile();
@@ -29,8 +28,7 @@ public record MoggleState(
         ImmutableList<Coordinate>.Empty,
         ImmutableSortedSet<string>.Empty,
         ImmutableHashSet<string>.Empty,
-        null,
-        false
+        null
     );
 
     public static MoggleState CreateFromString(string s) => new(
@@ -40,8 +38,7 @@ public record MoggleState(
         ImmutableList<Coordinate>.Empty,
         ImmutableSortedSet<string>.Empty,
         ImmutableHashSet<string>.Empty,
-        null,
-        false
+        null
     );
 
     public MoggleState StartNewGame(
@@ -50,7 +47,6 @@ public record MoggleState(
         int height,
         bool classic,
         int duration,
-        bool allowCheating,
         int minWordLength)
     {
         MoggleState newState;
@@ -78,8 +74,7 @@ public record MoggleState(
                 ImmutableList<Coordinate>.Empty,
                 ImmutableSortedSet<string>.Empty,
                 ImmutableHashSet<string>.Empty,
-                null,
-                allowCheating
+                null
             );
         }
         else
@@ -91,8 +86,7 @@ public record MoggleState(
                 ImmutableList<Coordinate>.Empty,
                 ImmutableSortedSet<string>.Empty,
                 ImmutableHashSet<string>.Empty,
-                null,
-                allowCheating
+                null
             );
         }
 

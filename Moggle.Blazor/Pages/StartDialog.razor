@@ -12,7 +12,6 @@
       <MudTextField @bind-Value="Duration" Label="Seconds" Variant="Variant.Outlined"/>
       <MudTextField @bind-Value="MinWordLength" Label="MinWordLength" Variant="Variant.Outlined"/>
       <MudCheckBox @bind-Checked="@Classic" Label="Classic"/>
-      <MudCheckBox @bind-Checked="@AllowCheating"  CheckedIcon="@Filled.MoodBad" UncheckedIcon="@Filled.Mood" />
     </MudContainer>
   </DialogContent>
 
@@ -29,14 +28,13 @@
     Classic= State.Value.Board.Dice.First().Runes.SequenceEqual("AACIOT".EnumerateRunes());
     Width = State.Value.Board.Width;
     Height = State.Value.Board.Height;
-    AllowCheating = State.Value.AllowCheating;
     base.OnParametersSet();
   }
 
   [Parameter]
   public IState<MoggleState> State { get; set; }
 
-  void Submit() => MudDialog.Close(DialogResult.Ok(new StartGameAction(Seed, Width, Height, Classic, Duration, AllowCheating, MinWordLength)));
+  void Submit() => MudDialog.Close(DialogResult.Ok(new StartGameAction(Seed, Width, Height, Classic, Duration, MinWordLength)));
   void Cancel() => MudDialog.Cancel();
 
   public string Seed { get; set; }

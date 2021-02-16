@@ -8,7 +8,7 @@ public record CheatAction : IAction<MoggleState>
     /// <inheritdoc />
     public MoggleState Reduce(MoggleState state)
     {
-        if (state.CheatWords != null || !state.AllowCheating)
+        if (state.CheatWords != null)
             return state;
 
         var cheatWords = MoggleState.Solver.GetPossibleWords(state.Board);

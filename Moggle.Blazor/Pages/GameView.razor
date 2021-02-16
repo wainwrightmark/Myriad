@@ -26,8 +26,8 @@
   }
 </div>
 
-<MudChip Icon="@Icons.Material.MilitaryTech">@State.Value.Score</MudChip>
-<MudChip Icon="@Icons.Material.Notes">@(State.Value.NumberOfWords)</MudChip>
+<MudChip Icon="@Filled.MilitaryTech">@State.Value.Score</MudChip>
+<MudChip Icon="@Filled.Notes">@(State.Value.NumberOfWords)</MudChip>
 
 
 <MudList>
@@ -53,7 +53,7 @@
   }
 </MudList>
 
-@if (State.Value.CheatWords == null && State.Value.AllowCheating)
+@if (State.Value.CheatWords == null && AllowCheating)
 {
   <MudButton OnClick="() => Dispatcher.Dispatch(new CheatAction())">Cheat</MudButton>
 }
@@ -66,6 +66,9 @@
 
   [Inject]
   public IDispatcher Dispatcher { get; set; }
+
+  [Parameter]
+  public bool AllowCheating { get; set; }
 
   [Parameter]
   public StartGameAction? StartGameAction { get; set; }
