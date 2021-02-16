@@ -7,10 +7,10 @@
   <DialogContent>
     <MudContainer Style="max-height: 200px; overflow-y: scroll">
       <MudTextField @bind-Value="Seed" Placeholder="Type Seed Here" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Filled.Casino" OnAdornmentClick="@GetRandomSeed"/>
-      <MudTextField @bind-Value="Width" Label="Width" Variant="Variant.Outlined"/>
-      <MudTextField @bind-Value="Height" Label="Height" Variant="Variant.Outlined"/>
-      <MudTextField @bind-Value="Duration" Label="Seconds" Variant="Variant.Outlined"/>
-      <MudTextField @bind-Value="MinWordLength" Label="MinWordLength" Variant="Variant.Outlined"/>
+      <MudTextField  @bind-Value="Width" Label="Width" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Filled.ArrowUpward" OnAdornmentClick="() => Width+=1"/>
+      <MudTextField @bind-Value="Height" Label="Height" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Filled.ArrowUpward" OnAdornmentClick="() => Height+=1"/>
+      <MudTextField @bind-Value="Duration" Label="Seconds" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Filled.ArrowUpward" OnAdornmentClick="() => Duration+=10"/>
+      <MudTextField @bind-Value="MinWordLength" Label="MinWordLength" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Filled.ArrowUpward" OnAdornmentClick="() => MinWordLength+=1"/>
       <MudCheckBox @bind-Checked="@Classic" Label="Classic"/>
     </MudContainer>
   </DialogContent>
