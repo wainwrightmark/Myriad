@@ -18,8 +18,12 @@ public record MoggleState(
     ImmutableList<string>? CheatWords,
     bool AllowCheating)
 {
+
+    public static readonly Solver Solver = Solver.FromResourceFile();
+
+
     public static readonly MoggleState DefaultState = new(
-        MoggleBoard.Create(false, 4, 4),
+        MoggleBoard.Create(false, 4, 4, 3),
         null,
         0,
         ImmutableList<Coordinate>.Empty,
@@ -46,7 +50,8 @@ public record MoggleState(
         int height,
         bool classic,
         int duration,
-        bool allowCheating)
+        bool allowCheating,
+        int minWordLength)
     {
         MoggleState newState;
 
@@ -80,7 +85,7 @@ public record MoggleState(
         else
         {
             newState = new MoggleState(
-                MoggleBoard.Create(classic, width, height).Randomize(seed),
+                MoggleBoard.Create(classic, width, height, minWordLength).Randomize(seed),
                 DateTime.Now.AddSeconds(duration),
                 Rotation,
                 ImmutableList<Coordinate>.Empty,
@@ -108,26 +113,29 @@ public record MoggleState(
 
         if (ChosenPositions.Last().Equals(coordinate))
         {
-            switch (ChosenPositions.Count)
-            {
-                //Complete a word
-                case >= 3:
-                {
-                    var word = string.Join(
-                        "",
-                        ChosenPositions.Select(GetLetterAtCoordinate).Select(x => x.WordText)
-                    );
 
-                    return this with
-                    {
-                        ChosenPositions = ImmutableList<Coordinate>.Empty,
-                        FoundWords = FoundWords.Add(word)
-                    };
-                }
-                //Give up on this path
-                case 1 or 2: return this with { ChosenPositions = ImmutableList<Coordinate>.Empty };
-                default:     return null; //Do nothing
+            if (ChosenPositions.Count >= Board.MinWordLength)//Complete a word
+            {
+                var word = string.Join(
+                    "",
+                    ChosenPositions.Select(GetLetterAtCoordinate).Select(x => x.WordText)
+                );
+
+                if (!Solver.LegalWords.Contains(word))
+                    return null;
+
+                return this with
+                {
+                    ChosenPositions = ImmutableList<Coordinate>.Empty,
+                    FoundWords = FoundWords.Add(word)
+                };
             }
+            else if (ChosenPositions.Count <= Board.MinWordLength) //Give up on this path
+            {
+                return this with { ChosenPositions = ImmutableList<Coordinate>.Empty };
+            }
+            else//Do nothing
+                return null;
         }
 
         var index = ChosenPositions.LastIndexOf(coordinate);

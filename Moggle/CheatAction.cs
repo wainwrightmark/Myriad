@@ -11,7 +11,9 @@ public record CheatAction : IAction<MoggleState>
         if (state.CheatWords != null || !state.AllowCheating)
             return state;
 
-        state = state with { CheatWords = ImmutableList<string>.Empty };
+        var cheatWords = MoggleState.Solver.GetPossibleWords(state.Board);
+
+        state = state with { CheatWords = cheatWords.ToImmutableList() };
         return state;
     }
 }

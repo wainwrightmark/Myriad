@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Moggle
@@ -17,10 +18,17 @@ public class Solver
 
     public static Solver FromWordList(IEnumerable<string> words)
     {
+        var sw = Stopwatch.StartNew();
+        Console.WriteLine("Loading words from word list");
         var legalWords = words.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        Console.WriteLine($"{legalWords.Count} words found {sw.ElapsedMilliseconds}ms");
 
-        var legalPrefixes = legalWords.SelectMany(GetAllPrefixes)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var legalPrefixes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var legalWord in legalWords)
+            AddAllPrefixes(legalWord, legalPrefixes);
+
+        Console.WriteLine($"{legalPrefixes.Count} prefixes found {sw.ElapsedMilliseconds}ms");
 
         return new Solver(legalWords, legalPrefixes);
     }
@@ -32,33 +40,18 @@ public class Solver
         return FromWordList(words);
     }
 
-    //public static async Task<Solver> FromDictionaryHelperAsync(CancellationToken ct)
-    //{
-    //    var words = await new DictionaryHelper().GetNormalWordsAsync(ct);
-    //    return FromWordList(words.Select(OnlyLetters));
-    //}
-
-    //private static string OnlyLetters(string s)
-    //{
-    //    if (s.All(char.IsLetter))
-    //        return s;
-
-    //    return new string(s.Where(char.IsLetter).ToArray());
-    //}
-
-    //public static Solver FromDictionaryHelperAsync()
-    //{
-    //    var words = new DictionaryHelper().GetNormalWords();
-    //    return FromWordList(words.Select(OnlyLetters));
-    //}
-
     public readonly IReadOnlySet<string> LegalWords;
     public readonly IReadOnlySet<string> LegalPrefixes;
 
-    private static IEnumerable<string> GetAllPrefixes(string s)
+    private static void AddAllPrefixes(string s, ISet<string> set)
     {
-        for (var length = 1; length < s.Length; length++)
-            yield return s.Substring(0, length);
+        for (var length = s.Length - 1; length >= 1; length--)
+        {
+            var substring = s.Substring(0, length);
+
+            if (!set.Add(substring))
+                return; //We already have this prefix and therefore all prior prefixes
+        }
     }
 
     public IEnumerable<string> GetPossibleWords(MoggleBoard board)
@@ -67,7 +60,7 @@ public class Solver
 
         finder.Run();
 
-        return finder.WordsSoFar.OrderBy(x => x);
+        return finder.WordsSoFar.OrderBy(x => x).Where(x=>x.Length >= board.MinWordLength);
     }
 
     private class WordFinder
@@ -81,11 +74,11 @@ public class Solver
         public readonly ISet<string> WordsSoFar =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        private Solver _solver;
+        private readonly Solver _solver;
 
-        public MoggleBoard Board { get; }
+        private MoggleBoard Board { get; }
 
-        public ConcurrentQueue<(string prefix, ImmutableList<Coordinate> usedCoordinates)> Queue =
+        private readonly ConcurrentQueue<(string prefix, ImmutableList<Coordinate> usedCoordinates)> _queue =
             new();
 
         public void Run()
@@ -95,10 +88,10 @@ public class Solver
                 var prefix = Board.GetLetterAtCoordinate(coordinate).WordText;
                 var list   = ImmutableList.Create(coordinate);
 
-                Queue.Enqueue((prefix, list));
+                _queue.Enqueue((prefix, list));
             }
 
-            while (Queue.TryDequeue(out var a))
+            while (_queue.TryDequeue(out var a))
             {
                 FindWords(a.prefix, a.usedCoordinates);
             }
@@ -119,7 +112,7 @@ public class Solver
 
                 if (_solver.LegalPrefixes.Contains(newPrefix))
                 {
-                    Queue.Enqueue((newPrefix, usedCoordinates.Add(adjacentCoordinate)));
+                    _queue.Enqueue((newPrefix, usedCoordinates.Add(adjacentCoordinate)));
                 }
             }
         }

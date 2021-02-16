@@ -167,7 +167,7 @@ public record NodeGrid(
         return new MoggleBoard(
             dice.ToImmutableArray(),
             positions.ToImmutableList(),
-            MaxCoordinate.Column + 1
+            MaxCoordinate.Column + 1, 3
         );
     }
 

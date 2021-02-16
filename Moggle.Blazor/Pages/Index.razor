@@ -23,8 +23,9 @@
       var duration = parseDict.TryGetValue("duration", out var d) && int.TryParse(d, out var d1) ? d1 : 120;
       var classic = parseDict.TryGetValue("classic", out var c) && bool.TryParse(c, out var c1) && c1;
       var cheat = parseDict.TryGetValue("cheat", out var ch) && bool.TryParse(ch, out var ch1) && ch1;
+      var minLength = parseDict.TryGetValue("minLength", out var ml) && int.TryParse(ml, out var ml1) ? ml1 : 3;
 
-      _startGameAction = new StartGameAction(sv, width, height, classic, duration, cheat);
+      _startGameAction = new StartGameAction(sv, width, height, classic, duration, cheat, minLength);
 
     }
   }

@@ -10,7 +10,8 @@ namespace Moggle
 public record MoggleBoard(
     ImmutableArray<BoggleDice> Dice,
     ImmutableList<DicePosition> Positions,
-    int Width)
+    int Width,
+    int MinWordLength)
 {
     private static ImmutableArray<BoggleDice> ClassicDice = ImmutableArray.Create<BoggleDice>(
         new("AACIOT"),
@@ -68,13 +69,13 @@ public record MoggleBoard(
             .Select(x => new DicePosition(x, 0))
             .ToImmutableList();
 
-        return new MoggleBoard(dice, positions, c.Column + 1);
+        return new MoggleBoard(dice, positions, c.Column + 1, 3);
     }
 
-    public static MoggleBoard Create(bool classic, int width, int height) => new(
+    public static MoggleBoard Create(bool classic, int width, int height, int minWordLength) => new(
         classic ? ClassicDice : ModernDice,
         Enumerable.Range(0, width * height).Select(x => new DicePosition(x, 0)).ToImmutableList(),
-        width
+        width, minWordLength
     );
 
     public MoggleBoard Randomize(string seed)
@@ -91,7 +92,7 @@ public record MoggleBoard(
 
         var code = GetNumber(seed);
 
-        Console.WriteLine(code);
+        Console.WriteLine($"Random Seed: {code}");
         return Randomize(new Random(code));
     }
 
