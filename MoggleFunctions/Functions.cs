@@ -21,11 +21,11 @@ namespace MoggleFunctions
                 databaseName: "Moggle",
                 collectionName: "Game",
                 ConnectionStringSetting = "DBConnectionString",
-                SqlQuery = "Select * from c Where c.GameId={id} ORDER BY c._ts DESC"
+                SqlQuery = "Select * from c Where c.gameId={Query.gameId} ORDER BY c._ts DESC"
             )]
             IEnumerable<Game> games,
             ILogger log,
-            string id
+            int gameId
             )
         {
             if (games == null)
