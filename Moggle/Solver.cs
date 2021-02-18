@@ -16,6 +16,38 @@ public class Solver
         LegalPrefixes = legalPrefixes;
     }
 
+    public bool IsLegal(string s)
+    {
+        if (LegalWords.Contains(s))
+            return true;
+
+        if (s.All(IsMath))
+            return IsTrueMathOperation(s);
+
+        return false;
+    }
+
+    private static bool IsTrueMathOperation(string s)
+    {
+        return MathParser.IsValidEquation(s);
+    }
+
+    private static bool IsMath(char c)
+    {
+        if (char.IsDigit(c))
+            return true;
+
+        if (Operators.Contains(c))
+            return true;
+
+        return false;
+    }
+
+    private static readonly IReadOnlySet<char> Operators = new HashSet<char>()
+    {
+        '+', '=', '-', '*','/'
+    };
+
     public static Solver FromWordList(IEnumerable<string> words)
     {
         var sw = Stopwatch.StartNew();

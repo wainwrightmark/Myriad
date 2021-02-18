@@ -17,9 +17,7 @@ public record MoggleState(
     ImmutableHashSet<string> DisabledWords,
     ImmutableList<string>? CheatWords)
 {
-
     public static readonly Solver Solver = Solver.FromResourceFile();
-
 
     public static readonly MoggleState DefaultState = new(
         MoggleBoard.Create(false, 4, 4, 3),
@@ -107,15 +105,14 @@ public record MoggleState(
 
         if (ChosenPositions.Last().Equals(coordinate))
         {
-
-            if (ChosenPositions.Count >= Board.MinWordLength)//Complete a word
+            if (ChosenPositions.Count >= Board.MinWordLength) //Complete a word
             {
                 var word = string.Join(
                     "",
                     ChosenPositions.Select(GetLetterAtCoordinate).Select(x => x.WordText)
                 );
 
-                if (!Solver.LegalWords.Contains(word))
+                if (!Solver.IsLegal(word))
                     return null;
 
                 return this with
@@ -124,12 +121,13 @@ public record MoggleState(
                     FoundWords = FoundWords.Add(word)
                 };
             }
-            else if (ChosenPositions.Count <= Board.MinWordLength) //Give up on this path
+
+            if (ChosenPositions.Count <= Board.MinWordLength) //Give up on this path
             {
                 return this with { ChosenPositions = ImmutableList<Coordinate>.Empty };
             }
-            else//Do nothing
-                return null;
+
+            return null;
         }
 
         var index = ChosenPositions.LastIndexOf(coordinate);
