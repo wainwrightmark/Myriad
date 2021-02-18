@@ -9,7 +9,7 @@ namespace Moggle
 public class StartGameEffect : Effect<StartGameAction>
 {
     /// <inheritdoc />
-    protected override async Task HandleAsync(StartGameAction action, IDispatcher dispatcher)
+    public override async Task HandleAsync(StartGameAction action, IDispatcher dispatcher)
     {
         Timer t = null;
 

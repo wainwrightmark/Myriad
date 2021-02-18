@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fluxor" Version="3.9.0" />
-    <PackageReference Include="Fluxor.Blazor.Web" Version="3.9.0" />
+    <PackageReference Include="Fluxor" Version="4.0.0" />
+    <PackageReference Include="Fluxor.Blazor.Web" Version="4.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.2" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />

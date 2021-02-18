@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fluxor" Version="3.9.0" />
+    <PackageReference Include="Fluxor" Version="4.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="protobuf-net" Version="3.0.73" />
   </ItemGroup>
