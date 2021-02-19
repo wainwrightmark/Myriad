@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +18,38 @@ namespace Moggle.Tests
         public UnitTest1(ITestOutputHelper testOutputHelper)
         {
             TestOutputHelper = testOutputHelper;
-            _solver = new Lazy<Solver>(Solver.FromResourceFile);
+            _wordList = new Lazy<WordList>(WordList.FromResourceFile);
+        }
+
+        private readonly Lazy<WordList> _wordList;
+
+
+        private MoggleState CreateFromSeed(string seed, bool classic = false, int width = 4, int height = 4)
+        {
+            IMoggleGameMode mode = classic ? ClassicGameMode.Instance : ModernGameMode.Instance;
+
+            return MoggleState.StartNewGame(
+                _wordList.Value,
+                mode,
+                ImmutableDictionary.CreateRange(
+                    new[]
+                    {
+                        new KeyValuePair<string, string>(
+                            BagGameMode.Seed.Name,
+                            seed
+                        ),
+                        new KeyValuePair<string, string>(
+                            BagGameMode.Width.Name,
+                            width.ToString()
+                        ),
+                        new KeyValuePair<string, string>(
+                            BagGameMode.Height.Name,
+                            height.ToString()
+                        ),
+                    }
+                ),
+                120
+            );
         }
 
         [Theory]
@@ -26,19 +58,16 @@ namespace Moggle.Tests
         [InlineData("World")]
         public async Task SameSeedShouldProduceSameGame(string seed)
         {
-            var board1 = MoggleState.DefaultState.StartNewGame(seed, 5, 5, false, 120, 3);
+            var board1 = CreateFromSeed(seed).Board;
 
             await Task.Delay(100);
 
-            var board2 = MoggleState.DefaultState.StartNewGame(seed, 5, 5, false, 120,  3);
+            var board2 = CreateFromSeed(seed).Board;
 
-            var b1String = string.Join(", ", board1.Board.Positions.Select(x => x.ToString()));
-            var b2String = string.Join(", ", board2.Board.Positions.Select(x => x.ToString()));
+            TestOutputHelper.WriteLine(board1.ToString());
+            TestOutputHelper.WriteLine(board2.ToString());
 
-            TestOutputHelper.WriteLine(b1String);
-            TestOutputHelper.WriteLine(b2String);
-
-            board1.Board.Positions.Should().BeEquivalentTo(board2.Board.Positions);
+            board1.ToString().Should().Be(board2.ToString());
         }
 
 
@@ -48,24 +77,15 @@ namespace Moggle.Tests
         [InlineData("ruth")]
         public void Test1(string key)
         {
-            var s = MoggleState.DefaultState.StartNewGame(key, 4, 4, false, 120,  3).Board;
+            var s = CreateFromSeed(key).Board;
 
 
             s.Height.Should().Be(4);
             s.Width.Should().Be(4);
 
-            s.Positions.Should().HaveCount(16);
-            s.Dice.Should().HaveCount(16);
+            s.Letters.Should().HaveCount(16);
 
-            for (var r = 0; r < s.Height; r++)
-            {
-                for (var c = 0; c < s.Width; c++)
-                {
-                    var val = s.GetLetterAtCoordinate(new Coordinate(r, c));
-
-                    TestOutputHelper.WriteLine($"{r}, {c}: {val}");
-                }
-            }
+            TestOutputHelper.WriteLine(s.ToMultiLineString());
         }
 
         [Theory]
@@ -78,7 +98,7 @@ namespace Moggle.Tests
 
             for (var i = 0; i < 1000; i++)
             {
-                var s = MoggleState.DefaultState.StartNewGame(i.ToString(), 4, 4, classic, 120,  3);
+                var s = CreateFromSeed(i.ToString(), classic);
 
 
                 for (var j = 0; j < 16; j++)
@@ -103,11 +123,11 @@ namespace Moggle.Tests
         {
             var seeds = new List<(string, int)>();
             var sw = Stopwatch.StartNew();
-            foreach (var seed in _solver.Value.LegalWords)
+            foreach (var seed in _wordList.Value.LegalWords)
             {
-                var state = MoggleState.DefaultState.StartNewGame(seed, width, height, classic, 120,  3);
+                var state = CreateFromSeed(seed, classic, width, height);
 
-                var words = _solver.Value.GetPossibleWords(state.Board).ToList();
+                var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
 
                 seeds.Add((seed, words.Count));
             }
@@ -130,7 +150,7 @@ namespace Moggle.Tests
 
 
 
-        private readonly Lazy<Solver> _solver;
+
 
         [Theory]
         [InlineData("abc", false, 4,4)]
@@ -143,10 +163,10 @@ namespace Moggle.Tests
         [InlineData("my hovercraft is full of eels", false, 6,6)]
         public void TestSolver(string seed, bool classic, int height, int width)
         {
-            var state = MoggleState.DefaultState.StartNewGame(seed, width, height, classic, 120,  3);
+            var state = CreateFromSeed(seed, classic, width, height);
 
             var sw = Stopwatch.StartNew();
-            var words = _solver.Value.GetPossibleWords(state.Board).ToList();
+            var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
             sw.Stop();
 
             TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
@@ -177,8 +197,8 @@ namespace Moggle.Tests
             var sw = Stopwatch.StartNew();
             for (var i = 0; i < trials; i++)
             {
-                var state = MoggleState.DefaultState.StartNewGame(i.ToString(), width, height, classic, 120,  3);
-                var words = _solver.Value.GetPossibleWords(state.Board).ToList();
+                var state = CreateFromSeed(i.ToString(), classic, width, height);
+                var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
                 var score = words.Select(x => x.Length).Select(MoggleState.ScoreWord).Sum();
 
                 if (score > bestScore)
@@ -214,8 +234,8 @@ namespace Moggle.Tests
             var sw = Stopwatch.StartNew();
             for (var i = 0; i < numberOfTests; i++)
             {
-                var state = MoggleState.DefaultState.StartNewGame(i.ToString(), width, height, classic, 120,  3);
-                var words = _solver.Value.GetPossibleWords(state.Board).ToList();
+                var state = CreateFromSeed(i.ToString(), classic, width, height);
+                var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
                 totalWords += words.Count;
                 totalScore += words.Select(x => x.Length).Select(MoggleState.ScoreWord).Sum();
             }
@@ -233,7 +253,7 @@ namespace Moggle.Tests
         [Fact]
         public void GenerateWordList()
         {
-            foreach (var word in _solver.Value.LegalWords.OrderBy(x=>x))
+            foreach (var word in _wordList.Value.LegalWords.OrderBy(x=>x))
             {
                 TestOutputHelper.WriteLine(word);
             }

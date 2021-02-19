@@ -1,128 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 
 namespace Moggle
 {
 
-public record MoggleBoard(
-    ImmutableArray<BoggleDice> Dice,
-    ImmutableList<DicePosition> Positions,
-    int Width,
-    int MinWordLength)
+public record MoggleBoard(ImmutableArray<Letter> Letters, int Width)
 {
-    private static ImmutableArray<BoggleDice> ClassicDice = ImmutableArray.Create<BoggleDice>(
-        new("AACIOT"),
-        new("ABILTY"),
-        new("ABJMOQu"),
-        new("ACDEMP"),
-        new("ACELRS"),
-        new("ADENVZ"),
-        new("AHMORS"),
-        new("BIFORX"),
-        new("DENOSW"),
-        new("DKNOTU"),
-        new("EEFHIY"),
-        new("EGKLUY"),
-        new("EGINTV"),
-        new("EHINPS"),
-        new("ELPSTU"),
-        new("GILRUW")
-    );
-
-    private static ImmutableArray<BoggleDice> ModernDice = ImmutableArray.Create<BoggleDice>(
-        new("AAEEGN"),
-        new("ABBJOO"),
-        new("ACHOPS"),
-        new("AFFKPS"),
-        new("AOOTTW"),
-        new("CIMOTU"),
-        new("DEILRX"),
-        new("DELRVY"),
-        new("DISTTY"),
-        new("EEGHNW"),
-        new("EEINSU"),
-        new("EHRTVW"),
-        new("EIOSST"),
-        new("ELRTTY"),
-        new("HIMNUQ"),
-        new("HLNNRZ")
-    );
-
-    public static readonly Rune PaddingRune = "😊".EnumerateRunes().Single();
-
-    public static MoggleBoard CreateFromString(string s)
-    {
-        var c = Coordinate.GetMaxCoordinateForSquareGrid(s.EnumerateRunes().Count());
-
-        var total = (c.Column + 1) * (c.Row + 1);
-        var runes = s.EnumerateRunes().ToList();
-
-        if (runes.Count < total)
-            runes.AddRange(Enumerable.Repeat(PaddingRune, total - runes.Count));
-
-        var dice = runes.Select(x => new BoggleDice(ImmutableList.Create(x))).ToImmutableArray();
-
-        var positions = Enumerable.Range(0, runes.Count)
-            .Select(x => new DicePosition(x, 0))
-            .ToImmutableList();
-
-        return new MoggleBoard(dice, positions, c.Column + 1, 3);
-    }
-
-    public static MoggleBoard Create(bool classic, int width, int height, int minWordLength) => new(
-        classic ? ClassicDice : ModernDice,
-        Enumerable.Range(0, width * height).Select(x => new DicePosition(x, 0)).ToImmutableList(),
-        width, minWordLength
-    );
-
-    public MoggleBoard Randomize(string seed)
-    {
-        if (string.IsNullOrWhiteSpace(seed))
-            return this with
-            {
-                Positions = Positions.OrderBy(x => x.DiceIndex)
-                    .Select(x => x with { FaceIndex = 0 })
-                    .ToImmutableList()
-            };
-
-        seed = seed.Trim().ToLowerInvariant();
-
-        var code = GetNumber(seed);
-
-        Console.WriteLine($"Random Seed: {code}");
-        return Randomize(new Random(code));
-    }
-
-    private static int GetNumber(string s)
-    {
-        var current = 1;
-
-        foreach (var v in s)
-        {
-            current += v;
-            current *= v;
-        }
-
-        return current;
-    }
-
-    public MoggleBoard Randomize(Random random)
-    {
-        var newPositions = Positions
-            .Select(pos => (pos, random.Next(1000)))
-            .OrderBy(x => x.Item2)
-            .ThenBy(x => x.pos.DiceIndex)
-            .Select(x => x.pos)
-            .ToList()
-            .Select(x => x.RandomizeFace(random))
-            .ToImmutableList();
-
-        return this with { Positions = newPositions };
-    }
-
     public Letter GetLetterAtCoordinate(Coordinate coordinate)
     {
         var index = (coordinate.Row * Width) + coordinate.Column;
@@ -132,13 +16,10 @@ public record MoggleBoard(
 
     public Letter GetLetterAtIndex(int i)
     {
-        var position = Positions[i % Positions.Count];
-        var die      = Dice[position.DiceIndex % Dice.Length];
-        var letter   = die.Runes[position.FaceIndex % die.Runes.Count];
-        return Letter.Create(letter);
+        return Letters[i % Letters.Length];
     }
 
-    public int Height => Positions.Count / Width;
+    public int Height => Letters.Length / Width;
 
     public Coordinate MaxCoordinate => new(Height - 1, Width - 1);
 

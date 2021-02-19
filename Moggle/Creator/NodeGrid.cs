@@ -146,10 +146,9 @@ public record NodeGrid(
             HashCode.Combine(obj.Key, obj.Value.Count, obj.Value.First().Id);
     }
 
-    public MoggleBoard ToMoggleBoard(Rune fillerRune)
+    public MoggleBoard ToMoggleBoard(Func<Rune> getFillerRune)
     {
-        var dice      = new List<BoggleDice>();
-        var positions = new List<DicePosition>();
+        var builder = new List<Letter>();
 
         foreach (var coordinate in MaxCoordinate.GetPositionsUpTo())
         {
@@ -158,23 +157,19 @@ public record NodeGrid(
             if (Dictionary.TryGetValue(coordinate, out var node))
                 rune = node.First().Rune;
             else
-                rune = fillerRune;
+                rune = getFillerRune();
 
-            positions.Add(new DicePosition(dice.Count, 0));
-            dice.Add(new BoggleDice(ImmutableList.Create(rune)));
+            builder.Add(Letter.Create(rune));
         }
 
-        return new MoggleBoard(
-            dice.ToImmutableArray(),
-            positions.ToImmutableList(),
-            MaxCoordinate.Column + 1, 3
+        return new MoggleBoard(builder.ToImmutableArray(), MaxCoordinate.Column + 1
         );
     }
 
     /// <inheritdoc />
     public override string ToString()
     {
-        return ToMoggleBoard(new Rune('-')).ToString();
+        return ToMoggleBoard(()=>new Rune('-')).ToString();
     }
 }
 

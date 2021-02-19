@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using Divergic.Logging.Xunit;
 using FluentAssertions;
@@ -31,23 +30,23 @@ public class CreatorTests
     //[InlineData(TotalEclipseChorus)]
     //[InlineData(TotalEclipse)]
     //[InlineData(StacysMum)]
-
     public void TestCreator(string wordsString)
     {
         const int msDelay = 10000;
-        var grid = Creator.GridCreator.CreateNodeGridFromText(wordsString, new TestOutputLogger("Test", TestOutputHelper), msDelay);
+        var       logger  = new TestOutputLogger("Test", TestOutputHelper);
 
-        TestOutputHelper.WriteLine(grid.ToMoggleBoard(new Rune('*')).ToMultiLineString());
+        var grid = Creator.GridCreator.CreateNodeGridFromText(wordsString, logger, msDelay);
+
+        TestOutputHelper.WriteLine(grid.ToMoggleBoard(() => new Rune('*')).ToMultiLineString());
 
         var allWords = Creator.GridCreator.GetAllWords(wordsString).ToList();
 
-        var solver = Solver.FromWordList(allWords);
+        var solver = new Solver(WordList.FromWords(allWords), new SolveSettings(2, false, null));
 
-        var possibleWords = solver.GetPossibleWords(grid.ToMoggleBoard(new Rune('*')));
+        var possibleWords = solver.GetPossibleSolutions(grid.ToMoggleBoard(() => new Rune('*')));
 
-        possibleWords.Should().BeEquivalentTo(allWords.Where(x=>x.Length > 1));
+        possibleWords.Should().BeEquivalentTo(allWords.Where(x => x.Length > 1));
     }
-
 
     public const string StacysMomChorus = @"
 Stacy's mom has got it goin' on

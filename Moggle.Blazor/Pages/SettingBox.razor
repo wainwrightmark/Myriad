@@ -1,0 +1,55 @@
+﻿@if (Setting is Setting.Bool _)
+{
+
+  <MudCheckBox @bind-Checked="@BoolValue" Label="@Setting.Name"/>
+}
+else if (Setting is Setting.Integer integerSetting)
+{
+  <MudTextField  @bind-Value="@IntValue" Label="@Setting.Name" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Filled.ArrowUpward" OnAdornmentClick="() => IntValue+= integerSetting.Increment"/>
+}
+else if (Setting is Setting.String stringSetting)
+{
+  Func<string, bool> isValid = stringSetting.IsValid;
+
+  @if (stringSetting.GetRandomValue is null)
+  {
+    <MudTextField @bind-Value="StringValue" Placeholder="@stringSetting.Placeholder" Validation="@isValid" Variant="Variant.Outlined"/>
+  }
+  else
+  {
+  <MudTextField @bind-Value="StringValue" Placeholder="@stringSetting.Placeholder" Validation="@isValid" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Filled.Casino" OnAdornmentClick="(() => StringValue= stringSetting.GetRandomValue!(new Random()))"/>
+  }
+
+}
+else
+{
+  <MudText>Could not render setting.</MudText>
+}
+
+@code {
+
+    [Parameter]
+    public Setting Setting { get; set; }
+
+    [Parameter]
+    public Dictionary<string, string> Values { get; set; }
+
+    public bool BoolValue
+    {
+      get => (Setting as Setting.Bool)!.Get(Values);
+      set => Values[Setting.Name] = value.ToString();
+    }
+
+    public int IntValue
+    {
+      get => (Setting as Setting.Integer)!.Get(Values);
+      set => Values[Setting.Name] = value.ToString();
+    }
+
+  public string StringValue
+  {
+    get => (Setting as Setting.String)!.Get(Values);
+    set => Values[Setting.Name] = value;
+  }
+
+}

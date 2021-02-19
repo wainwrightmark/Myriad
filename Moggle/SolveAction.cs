@@ -8,7 +8,7 @@ public record SolveAction(Solver Solver) : IAction<MoggleState>
     /// <inheritdoc />
     public MoggleState Reduce(MoggleState state)
     {
-        var words = Solver.GetPossibleWords(state.Board).ToImmutableList();
+        var words = Solver.GetPossibleSolutions(state.Board).ToImmutableList();
         return state with { CheatWords = words };
     }
 }

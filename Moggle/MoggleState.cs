@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moggle.Creator;
 
 namespace Moggle
 {
 
 public record MoggleState(
     MoggleBoard Board,
+    Solver Solver,
     DateTime? FinishTime,
     int Rotation,
     ImmutableList<Coordinate> ChosenPositions,
@@ -17,76 +16,31 @@ public record MoggleState(
     ImmutableHashSet<string> DisabledWords,
     ImmutableList<string>? CheatWords)
 {
-    public static readonly Solver Solver = Solver.FromResourceFile();
+    public static readonly MoggleState DefaultState =
+        StartNewGame(
+            WordList.FromWords(new[] { "welcome", "moggle", "come" }),
+            ModernGameMode.Instance, ImmutableDictionary<string, string>.Empty,
+            0
+        );
 
-    public static readonly MoggleState DefaultState = new(
-        MoggleBoard.Create(false, 4, 4, 3),
-        null,
-        0,
-        ImmutableList<Coordinate>.Empty,
-        ImmutableSortedSet<string>.Empty,
-        ImmutableHashSet<string>.Empty,
-        null
-    );
-
-    public static MoggleState CreateFromString(string s) => new(
-        MoggleBoard.CreateFromString(s),
-        null,
-        0,
-        ImmutableList<Coordinate>.Empty,
-        ImmutableSortedSet<string>.Empty,
-        ImmutableHashSet<string>.Empty,
-        null
-    );
-
-    public MoggleState StartNewGame(
-        string seed,
-        int width,
-        int height,
-        bool classic,
-        int duration,
-        int minWordLength)
+    public static MoggleState StartNewGame(
+        WordList wordList,
+        IMoggleGameMode gameMode,
+        ImmutableDictionary<string, string> settings,
+        int duration)
     {
-        MoggleState newState;
+        var (board, solveSettings) = gameMode.CreateGame(settings);
 
-        if (seed.StartsWith('_')) //this is a bit hacky
-        {
-            newState = CreateFromString(seed.TrimStart('_'))
-                with
-                {
-                    FinishTime = DateTime.Now.AddSeconds(duration)
-                };
-        }
-        else if (seed.StartsWith("?")) //also cheeky
-        {
-            var grid = GridCreator.CreateNodeGridFromText(
-                seed.TrimStart('?'),
-                NullLogger<MoggleState>.Instance,
-                1000
-            );
-
-            newState = new MoggleState(
-                grid.ToMoggleBoard(MoggleBoard.PaddingRune),
-                DateTime.Now.AddSeconds(duration),
-                Rotation,
-                ImmutableList<Coordinate>.Empty,
-                ImmutableSortedSet<string>.Empty,
-                ImmutableHashSet<string>.Empty,
-                null
-            );
-        }
-        else
-        {
-            newState = new MoggleState(
-                MoggleBoard.Create(classic, width, height, minWordLength).Randomize(seed),
-                DateTime.Now.AddSeconds(duration),
-                Rotation,
-                ImmutableList<Coordinate>.Empty,
-                ImmutableSortedSet<string>.Empty,
-                ImmutableHashSet<string>.Empty,
-                null
-            );
-        }
+        MoggleState newState = new(
+            board,
+            new Solver(wordList, solveSettings),
+            DateTime.Now.AddSeconds(duration),
+            0,
+            ImmutableList<Coordinate>.Empty,
+            ImmutableSortedSet<string>.Empty,
+            ImmutableHashSet<string>.Empty,
+            null
+        );
 
         return newState;
     }
@@ -105,7 +59,7 @@ public record MoggleState(
 
         if (ChosenPositions.Last().Equals(coordinate))
         {
-            if (ChosenPositions.Count >= Board.MinWordLength) //Complete a word
+            if (ChosenPositions.Count >= Solver.SolveSettings.MinimumTermLength) //Complete a word
             {
                 var word = string.Join(
                     "",
@@ -122,7 +76,7 @@ public record MoggleState(
                 };
             }
 
-            if (ChosenPositions.Count <= Board.MinWordLength) //Give up on this path
+            if (ChosenPositions.Count <= Solver.SolveSettings.MinimumTermLength) //Give up on this path
             {
                 return this with { ChosenPositions = ImmutableList<Coordinate>.Empty };
             }

@@ -1,76 +1,49 @@
 ﻿using System;
 using System.Linq.Expressions;
 using Superpower;
-using Superpower.Display;
 using Superpower.Parsers;
 using Superpower.Tokenizers;
 
-namespace Moggle
+namespace Moggle.MathParser
 {
 
-    public enum ArithmeticExpressionToken
-    {
-        None,
-
-        Number,
-
-        [Token(Category = "operator", Example = "+")]
-        Plus,
-
-        [Token(Category = "operator", Example = "-")]
-        Minus,
-
-        [Token(Category = "operator", Example = "*")]
-        Times,
-
-        [Token(Category = "operator", Example = "-")]
-        Divide,
-
-        [Token(Category = "operator", Example = "=")]
-        Equals,
-
-        [Token(Example = "(")] LParen,
-
-        [Token(Example = ")")] RParen
-    }
-
-
-public record Equation(Expression Left, Expression Right)
+public static class Parser
 {
-    public bool IsValid
+    public static bool IsValidEquation(string pattern)
     {
-        get
-        {
+        var tokenListResult = Tokenizer.TryTokenize(pattern);
 
-
-            var l = Expression.Lambda<Func<int>>(Left).Compile().Invoke();
-            var r = Expression.Lambda<Func<int>>(Right).Compile().Invoke();
-
-            return l == r;
-        }
-    }
-}
-
-public static class MathParser
-{
-    public static bool IsValidEquation(string s)
-    {
-        var r = tokenizer.TryTokenize(s);
-
-        if (!r.HasValue)
+        if (!tokenListResult.HasValue)
             return false;
 
-        var pv = Equation.TryParse(r.Value);
+        var parseResult = Equation.TryParse(tokenListResult.Value);
 
-        if (!pv.HasValue)
+        if (!parseResult.HasValue)
             return false;
 
-        var isValid = pv.Value.IsValid;
+        var isValid = parseResult.Value.IsValid;
 
         return isValid;
     }
 
-    public static readonly Tokenizer<ArithmeticExpressionToken> tokenizer =
+    public static int? GetExpressionValue(string pattern)
+    {
+        var tokenListResult = Tokenizer.TryTokenize(pattern);
+
+        if (!tokenListResult.HasValue)
+            return null;
+
+        var parseResult = Lambda.TryParse(tokenListResult.Value);
+
+        if (!parseResult.HasValue)
+            return null;
+
+        var value = parseResult.Value.Compile().Invoke();
+
+        return value;
+    }
+
+    public static readonly Tokenizer<ArithmeticExpressionToken> Tokenizer =
         new TokenizerBuilder<ArithmeticExpressionToken>()
             .Ignore(Span.WhiteSpace)
             .Match(Character.EqualTo('+'), ArithmeticExpressionToken.Plus)

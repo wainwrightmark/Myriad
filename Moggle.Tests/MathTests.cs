@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Moggle.MathParser;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,10 +26,28 @@ namespace Moggle.Tests
         [InlineData("2=3*", false)]
         public void ShouldParseEquation(string text, bool expectedResult)
         {
-            var r= MathParser.IsValidEquation(text);
+            var r= Parser.IsValidEquation(text);
 
             r.Should().Be(expectedResult);
         }
+
+        [Theory]
+        [InlineData("", null)]
+        [InlineData("0", 0)]
+        [InlineData("12", 12)]
+        [InlineData("1+2", 3)]
+        [InlineData("11+12", 23)]
+        [InlineData("11*12", 134)]
+        [InlineData("11-12", -1)]
+        [InlineData("1+*-12", null)]
+        [InlineData("1+2=3", null)]
+        public void ShouldParseExpression(string text, int? expectedResult)
+        {
+            var r = Parser.GetExpressionValue(text);
+
+            r.Should().Be(expectedResult);
+        }
+
 
     }
 }

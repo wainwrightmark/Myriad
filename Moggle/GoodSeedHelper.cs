@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Moggle
 {
     public static class GoodSeedHelper
     {
 
-        public static string GetGoodSeed()
+        public static string GetGoodSeed(Random random)
         {
-            var r = new Random();
-            return GoodSeeds.Value[r.Next(GoodSeeds.Value.Count)];
+            return GoodSeeds.Value[random.Next(GoodSeeds.Value.Count)];
         }
 
 

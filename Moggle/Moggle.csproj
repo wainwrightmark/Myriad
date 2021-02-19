@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Fluxor" Version="4.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="morelinq.temp" Version="3.3.2" />
     <PackageReference Include="protobuf-net" Version="3.0.73" />
     <PackageReference Include="Superpower" Version="2.3.0" />
   </ItemGroup>

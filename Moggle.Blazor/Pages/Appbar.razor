@@ -53,8 +53,7 @@
 
   private async Task OpenDialog()
   {
-    var parameters = new DialogParameters { { nameof(StartDialog.State), State } };
-    var d = Dialog.Show<StartDialog>("Start Game", parameters);
+    var d = Dialog.Show<StartDialog>("Start Game");
 
     var r = await d.Result;
 

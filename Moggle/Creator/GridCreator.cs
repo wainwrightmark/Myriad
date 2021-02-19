@@ -12,10 +12,9 @@ namespace Moggle.Creator
 
 public static class GridCreator
 {
-    public static NodeGrid CreateNodeGridFromText(string text, ILogger logger, int msCancellation)
+    public static NodeGrid CreateNodeGridFromText(string text, ILogger? logger, int msCancellation)
     {
         var words = GetAllWords(text);
-
 
         return CreateNodeGrid(words, logger, msCancellation);
     }
@@ -37,7 +36,10 @@ public static class GridCreator
         string LettersOnly(string s) => new(s.Where(char.IsLetter).ToArray());
     }
 
-    public static NodeGrid CreateNodeGrid(IEnumerable<string> allWords, ILogger logger, int msCancellation)
+    public static NodeGrid CreateNodeGrid(
+        IEnumerable<string> allWords,
+        ILogger? logger,
+        int msCancellation)
     {
         var words = RemoveSubstrings(
                 allWords.Select(x => x.ToUpper()),
@@ -45,15 +47,14 @@ public static class GridCreator
             )
             .ToList();
 
-
-            logger.LogInformation(words.Count + " words");
-        logger.LogInformation(string.Join(", ", words));
+        logger?.LogInformation(words.Count + " words");
+        logger?.LogInformation(string.Join(", ", words));
 
         var runeMultiplicities = CreateMultiplicities(words).ToDictionary(x => x.Rune);
 
         var rmString = string.Join(", ", runeMultiplicities.Select(x => x.Value));
 
-        logger.LogInformation(rmString);
+        logger?.LogInformation(rmString);
 
         var sw = Stopwatch.StartNew();
 
@@ -71,13 +72,17 @@ public static class GridCreator
 
             var solver = new Creator();
 
-            var r = solver.Create(new SolveState(emptyGrid, nodes.ToImmutableList()), new CancellationTokenSource(msCancellation).Token, logger);
+            var r = solver.Create(
+                new SolveState(emptyGrid, nodes.ToImmutableList()),
+                new CancellationTokenSource(msCancellation).Token,
+                logger
+            );
 
             if (r is not null)
             {
                 sw.Stop();
 
-                logger.LogInformation(
+                logger?.LogInformation(
                     $"{numberOfNodes} cell Grid Found in " + sw.ElapsedMilliseconds
                                                            + $"ms after {solver.TriedGrids.Count} tries"
                 );
@@ -91,7 +96,7 @@ public static class GridCreator
 
             var newNumber = mostConstrainedNode.RootNodes.Count + 1;
 
-            logger.LogInformation(
+            logger?.LogInformation(
                 $"No Grid found after {sw.ElapsedMilliseconds}ms, increasing {mostConstrainedNode.Rune} to {mostConstrainedNode.RootNodes.Count + 1} after {solver.TriedGrids.Count} tries"
             );
 

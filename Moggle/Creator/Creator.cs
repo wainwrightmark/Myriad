@@ -9,7 +9,7 @@ namespace Moggle.Creator
 
 public class Creator
 {
-    public NodeGrid? Create(SolveState start, CancellationToken ct, ILogger logger)
+    public NodeGrid? Create(SolveState start, CancellationToken ct, ILogger? logger)
     {
         SolveStates.Add(start);
 
@@ -18,7 +18,7 @@ public class Creator
         return r;
     }
 
-    private NodeGrid? Solve(CancellationToken ct, ILogger logger)
+    private NodeGrid? Solve(CancellationToken ct, ILogger? logger)
     {
         while (!ct.IsCancellationRequested && SolveStates.TryTake(out var ss)) //TODO combine depth and breadth
         {
@@ -44,8 +44,8 @@ public class Creator
 
         if (SolveStates.Any())
         {
-                logger.LogInformation($"Giving up with {SolveStates.First().RemainingNodes.Count} nodes remaining to place");
-                logger.LogInformation(SolveStates.First().Grid.ToString());
+                logger?.LogInformation($"Giving up with {SolveStates.First().RemainingNodes.Count} nodes remaining to place");
+                logger?.LogInformation(SolveStates.First().Grid.ToString());
         }
 
 

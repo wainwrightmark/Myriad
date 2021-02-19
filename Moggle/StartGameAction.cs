@@ -1,22 +1,20 @@
-﻿namespace Moggle
+﻿using System.Collections.Immutable;
+
+namespace Moggle
 {
 
 public record StartGameAction(
-    string Seed,
-    int Width,
-    int Height,
-    bool Classic,
-    int Duration,
-    int MinWordLength) : IAction<MoggleState>
+    WordList WordList,
+    IMoggleGameMode GameMode,
+    ImmutableDictionary<string, string> Settings,
+    int Duration) : IAction<MoggleState>
 {
     /// <inheritdoc />
-    public MoggleState Reduce(MoggleState board) => board.StartNewGame(
-        Seed,
-        Width,
-        Height,
-        Classic,
-        Duration,
-        MinWordLength
+    public MoggleState Reduce(MoggleState board) => MoggleState.StartNewGame(
+        WordList,
+        GameMode,
+        Settings,
+        Duration
     );
 }
 
