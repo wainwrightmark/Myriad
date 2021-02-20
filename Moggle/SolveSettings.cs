@@ -7,7 +7,7 @@ public record SolveSettings(int? MinWordLength, bool AllowTrueEquations, (int Mi
 
     public bool AllowWords => MinWordLength.HasValue;
 
-    public int MinimumTermLength => MinWordLength ?? 2;
+    public int MinimumTermLength => MinWordLength ?? 1;
 }
 
 }

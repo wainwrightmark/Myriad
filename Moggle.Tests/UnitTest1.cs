@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MoreLinq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -180,12 +181,12 @@ namespace Moggle.Tests
         }
 
         [Theory]
-        [InlineData(10,100, 3, 3)]
+        [InlineData(10,1000, 3, 3)]
         public void FindBestExpressionSeeds(int numberToGet, int numberToTake, int width, int height)
         {
             var seeds = new List<(string, int)>();
             var sw = Stopwatch.StartNew();
-            foreach (var seed in _wordList.Value.LegalWords.Take(numberToTake))
+            foreach (var seed in _wordList.Value.LegalWords.Shuffle(new Random(0)).Take(numberToTake))
             {
                 var state = CreateMathStateFromSeed(seed, false, width, height);
 

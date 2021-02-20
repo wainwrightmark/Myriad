@@ -130,7 +130,13 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             foreach (var coordinate in Board.GetAllCoordinates())
             {
                 var prefix = Board.GetLetterAtCoordinate(coordinate).WordText;
-                var list   = ImmutableList.Create(coordinate);
+
+                var w = _solver.CheckLegal(prefix);
+
+                if (w != null)
+                    WordsSoFar.Add(w);
+
+                var list = ImmutableList.Create(coordinate);
 
                 _queue.Enqueue((prefix, list));
             }
@@ -152,7 +158,8 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
                 var newPrefix = prefix + l.WordText;
 
                 var w = _solver.CheckLegal(newPrefix);
-                if(w != null)
+
+                if (w != null)
                     WordsSoFar.Add(w);
 
                 if (_solver.IsLegalPrefix(newPrefix))
