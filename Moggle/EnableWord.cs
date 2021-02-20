@@ -1,7 +1,7 @@
 ﻿namespace Moggle
 {
 
-public record EnableWord(string Word, bool Enable) : IAction<MoggleState>
+public record EnableWord(FoundWord Word, bool Enable) : IAction<MoggleState>
 {
     /// <inheritdoc />
     public MoggleState Reduce(MoggleState board)

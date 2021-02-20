@@ -38,14 +38,19 @@ public record FixedGameMode : IMoggleGameMode
         if (minWordLength < 0)
             minWordLength = null;
 
-        int? target = Target.Get(settings);
+        var minimum = Minimum.Get(settings);
+        var maximum = Minimum.Get(settings);
 
-        if (target < 0)
-            target = null;
+        (int, int)? range;
+
+        if (minimum < 0)
+            range = null;
+        else
+            range = (minimum, maximum);
 
         var allowEquations = letters.Any(x => x.WordText.Equals("="));
 
-        var solveSettings = new SolveSettings(minWordLength, allowEquations, target);
+        var solveSettings = new SolveSettings(minWordLength, allowEquations, range);
 
         return (board, solveSettings);
     }
@@ -57,16 +62,18 @@ public record FixedGameMode : IMoggleGameMode
 
     public static readonly Setting.Integer MinWordLength = new(nameof(MinWordLength), -1, 8, 3);
 
-    public static readonly Setting.Integer Target = new(nameof(Target), -1, int.MaxValue, -1);
+        public static readonly Setting.Integer Minimum = new(nameof(Minimum), -1, int.MaxValue, -1);
+        public static readonly Setting.Integer Maximum = new(nameof(Maximum), -1, int.MaxValue, -1);
 
-    /// <inheritdoc />
-    public IEnumerable<Setting> Settings
+        /// <inheritdoc />
+        public IEnumerable<Setting> Settings
     {
         get
         {
             yield return Letters;
             yield return MinWordLength;
-            yield return Target;
+            yield return Minimum;
+            yield return Maximum;
         }
     }
 }

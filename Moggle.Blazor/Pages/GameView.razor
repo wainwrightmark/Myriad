@@ -10,14 +10,20 @@
       @for (var col = 0; col < State.Value.Board.Width; col++)
       {
         var coordinate = new Coordinate(r, col);
+
+        var (color, disabled) = GetColor(coordinate);
+
+        <button On></button>
+
         <MudButton
           @key="@coordinate"
            Size="Size.Small"
            Variant="Variant.Filled"
            Class="square"
-           Color="@GetColor(coordinate)"
+           Color="@color"
            Style="transition: background-color 1s"
-           Disabled="@(!State.Value.IsMoveLegal(coordinate))"
+           Disabled="@disabled"
+
            OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
           @(State.Value.GetLetterAtCoordinate(coordinate).ButtonText)
         </MudButton>
@@ -47,7 +53,7 @@
       <MudCheckBox
         Disabled="@(IsGameVisible)"
         CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableWord(word, b)); }"
-        Label=@word
+        Label=@word.Display
         Checked="@(!State.Value.DisabledWords.Contains(word))"/>
     }
   }
@@ -84,19 +90,24 @@
 
   public bool IsGameVisible => State.Value.FinishTime.HasValue;
 
-  public Color GetColor(Coordinate coordinate)
+  public (Color Color, bool Disabled) GetColor(Coordinate coordinate)
   {
     if (!IsGameVisible || !State.Value.ChosenPositions.Any())
-      return Color.Default;
+      return (Color.Default, false);
 
-    if (State.Value.ChosenPositions.Last() == coordinate)
-      return Color.Primary;
-    else if (State.Value.ChosenPositions.Contains(coordinate))
-      return Color.Tertiary;
-    else if (State.Value.IsMoveLegal(coordinate))
-      return Color.Success;
-    else
-      return Color.Dark;
+    var moveResult = State.Value.TryGetMoveResult(coordinate);
+
+    return moveResult switch
+    {
+      MoveResult.IllegalMove      => (Color.Dark, true),
+      MoveResult.InvalidWord      => (Color.Secondary, true),
+      MoveResult.MoveRetraced    => (Color.Tertiary, false),
+      MoveResult.TimeElapsed      => (Color.Dark, true),
+      MoveResult.WordAbandoned  => (Color.Tertiary, false),
+      MoveResult.WordComplete    => (Color.Primary, false),
+      MoveResult.WordContinued  => (Color.Success, false),
+      _ => throw new ArgumentOutOfRangeException(nameof(moveResult))
+      };
   }
 
 }

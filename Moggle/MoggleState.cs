@@ -12,15 +12,16 @@ public record MoggleState(
     DateTime? FinishTime,
     int Rotation,
     ImmutableList<Coordinate> ChosenPositions,
-    ImmutableSortedSet<string> FoundWords,
-    ImmutableHashSet<string> DisabledWords,
-    ImmutableList<string>? CheatWords)
+    ImmutableSortedSet<FoundWord> FoundWords,
+    ImmutableHashSet<FoundWord> DisabledWords,
+    ImmutableList<FoundWord>? CheatWords)
 {
     public static readonly MoggleState DefaultState =
         StartNewGame(
-            WordList.FromWords(new[] { "welcome", "moggle", "come" }),
-            ModernGameMode.Instance, ImmutableDictionary<string, string>.Empty,
-            0
+            WordList.LazyInstance.Value,
+            ModernGameMode.Instance,
+            ImmutableDictionary<string, string>.Empty,
+            120
         );
 
     public static MoggleState StartNewGame(
@@ -37,8 +38,8 @@ public record MoggleState(
             DateTime.Now.AddSeconds(duration),
             0,
             ImmutableList<Coordinate>.Empty,
-            ImmutableSortedSet<string>.Empty,
-            ImmutableHashSet<string>.Empty,
+            ImmutableSortedSet<FoundWord>.Empty,
+            ImmutableHashSet<FoundWord>.Empty,
             null
         );
 
@@ -47,15 +48,18 @@ public record MoggleState(
 
     public int MaxDimension => Math.Max(Board.Width, Board.Height);
 
-    public bool IsMoveLegal(Coordinate coordinate) => TryGetMoveResult(coordinate) != null;
-
-    public MoggleState? TryGetMoveResult(Coordinate coordinate)
+    public MoveResult TryGetMoveResult(Coordinate coordinate)
     {
         if (FinishTime == null)
-            return null;
+            return MoveResult.IllegalMove.Instance;
+
+        if (FinishTime.Value.CompareTo(DateTime.Now) < 0)
+            return new MoveResult.TimeElapsed(this with { FinishTime = null });
 
         if (!ChosenPositions.Any())
-            return this with { ChosenPositions = ChosenPositions.Add(coordinate) };
+            return new MoveResult.WordContinued(
+                this with { ChosenPositions = ChosenPositions.Add(coordinate) }
+            );
 
         if (ChosenPositions.Last().Equals(coordinate))
         {
@@ -66,22 +70,29 @@ public record MoggleState(
                     ChosenPositions.Select(GetLetterAtCoordinate).Select(x => x.WordText)
                 );
 
-                if (!Solver.IsLegal(word))
-                    return null;
+                var foundWord = Solver.CheckLegal(word);
 
-                return this with
+                if (foundWord is null)
+                    return MoveResult.InvalidWord.Instance;
+
+                var stateWithWord = this with
                 {
                     ChosenPositions = ImmutableList<Coordinate>.Empty,
-                    FoundWords = FoundWords.Add(word)
+                    FoundWords = FoundWords.Add(foundWord)
                 };
+
+                return new MoveResult.WordComplete(stateWithWord);
             }
 
-            if (ChosenPositions.Count <= Solver.SolveSettings.MinimumTermLength) //Give up on this path
+            if (ChosenPositions.Count <= Solver.SolveSettings.MinimumTermLength
+            ) //Give up on this path
             {
-                return this with { ChosenPositions = ImmutableList<Coordinate>.Empty };
+                return new MoveResult.WordAbandoned(
+                    this with { ChosenPositions = ImmutableList<Coordinate>.Empty }
+                );
             }
 
-            return null;
+            return MoveResult.IllegalMove.Instance;
         }
 
         var index = ChosenPositions.LastIndexOf(coordinate);
@@ -89,19 +100,26 @@ public record MoggleState(
         switch (index)
         {
             //Give up on this path
-            case 0 or 1: return this with { ChosenPositions = ImmutableList<Coordinate>.Empty };
+            case 0:
+                return new MoveResult.WordAbandoned(
+                    this with { ChosenPositions = ImmutableList<Coordinate>.Empty }
+                );
             //Go back some number of steps
-            case > 1:
-                return this with
-                {
-                    ChosenPositions = ChosenPositions.Take(index + 1).ToImmutableList()
-                };
+            case >= 1:
+                return new MoveResult.MoveRetraced(
+                    this with
+                    {
+                        ChosenPositions = ChosenPositions.Take(index + 1).ToImmutableList()
+                    }
+                );
         }
 
         if (ChosenPositions.Last().IsAdjacent(coordinate)) //add this coordinate to the list
-            return this with { ChosenPositions = ChosenPositions.Add(coordinate) };
+            return new MoveResult.WordContinued(
+                this with { ChosenPositions = ChosenPositions.Add(coordinate) }
+            );
 
-        return null;
+        return MoveResult.IllegalMove.Instance;
     }
 
     public Letter GetLetterAtCoordinate(Coordinate coordinate)
@@ -110,31 +128,17 @@ public record MoggleState(
         return Board.GetLetterAtCoordinate(newCoordinate);
     }
 
-    public static int ScoreWord(int length)
-    {
-        return length switch
-        {
-            < 3  => 0,
-            3    => 1,
-            4    => 1,
-            5    => 2,
-            6    => 3,
-            7    => 4,
-            >= 8 => 11
-        };
-    }
-
     public int Score
     {
         get
         {
-            return Words.Sum(s => ScoreWord(s.Length));
+            return Words.Sum(s =>s.Points);
         }
     }
 
     public int NumberOfWords => Words.Count();
 
-    private IEnumerable<string> Words
+    private IEnumerable<FoundWord> Words
     {
         get
         {

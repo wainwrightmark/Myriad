@@ -1,9 +1,9 @@
 ﻿namespace Moggle
 {
 
-public record SolveSettings(int? MinWordLength, bool AllowTrueEquations, int? AllowedMathExpression)
+public record SolveSettings(int? MinWordLength, bool AllowTrueEquations, (int Min, int Max)? MathExpressionsRange)
 {
-    public bool AllowMath => AllowTrueEquations || AllowedMathExpression.HasValue;
+    public bool AllowMath => AllowTrueEquations || MathExpressionsRange is not null;
 
     public bool AllowWords => MinWordLength.HasValue;
 

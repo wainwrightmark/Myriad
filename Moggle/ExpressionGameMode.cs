@@ -35,7 +35,7 @@ public record ExpressionGameMode : BagGameMode
                 ('+', 6),
                 ('*', 6),
                 ('-', 4),
-                ('/', 2)
+                //('/', 2) Can't do divide yet - remainders are bad
             };
 
             foreach (var (c, number) in terms)
@@ -48,12 +48,14 @@ public record ExpressionGameMode : BagGameMode
     /// <inheritdoc />
     public override SolveSettings GetSolveSettings(ImmutableDictionary<string, string> settings)
     {
-        var target = Target.Get(settings);
+        var min = Minimum.Get(settings);
+        var max = Maximum.Get(settings);
 
-        return new SolveSettings(null, false, target);
+        return new SolveSettings(null, false, (min, max));
     }
 
-    public static readonly Setting.Integer Target = new(nameof(Target), 0, int.MaxValue, 42);
+    public static readonly Setting.Integer Minimum = new(nameof(Minimum), int.MinValue, int.MaxValue, 1);
+    public static readonly Setting.Integer Maximum = new(nameof(Maximum), 0, int.MaxValue, 99);
 
         /// <inheritdoc />
         public override string GetDefaultLetters(int width, int height)
@@ -72,7 +74,8 @@ public record ExpressionGameMode : BagGameMode
     {
         get
         {
-            yield return Target;
+            yield return Minimum;
+            yield return Maximum;
         }
     }
 }

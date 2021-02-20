@@ -52,6 +52,45 @@ namespace Moggle.Tests
             );
         }
 
+
+        private MoggleState CreateMathStateFromSeed(
+            string seed,
+            bool equation = false,
+            int width = 4,
+            int height = 4)
+        {
+            IMoggleGameMode mode = equation ? EquationGameMode.Instance : ExpressionGameMode.Instance;
+
+            return MoggleState.StartNewGame(
+                    _wordList.Value,
+                    mode,
+                    ImmutableDictionary.CreateRange(
+                    new[]
+                    {
+                        new KeyValuePair<string, string>(
+                            BagGameMode.Seed.Name,
+                            seed
+                        ),
+                        new KeyValuePair<string, string>(
+                            BagGameMode.Width.Name,
+                            width.ToString()
+                        ),
+                        new KeyValuePair<string, string>(
+                            BagGameMode.Height.Name,
+                            height.ToString()
+                        ),
+                        new KeyValuePair<string, string>(
+                            BagGameMode.Height.Name,
+                            height.ToString()
+                        )
+                    }
+                ),
+                120
+
+
+                    );
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("Hello")]
@@ -142,15 +181,33 @@ namespace Moggle.Tests
             }
         }
 
-        [Fact]
-        public void TestGoodSeeds()
+        [Theory]
+        [InlineData(10,100, 3, 3)]
+        public void FindBestExpressionSeeds(int numberToGet, int numberToTake, int width, int height)
         {
-            GoodSeedHelper.GoodSeeds.Value.Count.Should().Be(1000);
+            var seeds = new List<(string, int)>();
+            var sw = Stopwatch.StartNew();
+            foreach (var seed in _wordList.Value.LegalWords.Take(numberToTake))
+            {
+                var state = CreateMathStateFromSeed(seed, false, width, height);
+
+                var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
+
+                seeds.Add((seed, words.Count));
+            }
+            sw.Stop();
+
+            TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
+            TestOutputHelper.WriteLine(seeds.Max(x => x.Item2) + "Words");
+
+            foreach (var p in seeds.OrderByDescending(x => x.Item2).Take(numberToGet))
+            {
+                TestOutputHelper.WriteLine(p.Item1);
+            }
         }
 
-
-
-
+        [Fact]
+        public void TestGoodSeeds() => GoodSeedHelper.GoodSeeds.Value.Count.Should().Be(1000);
 
         [Theory]
         [InlineData("abc", false, 4,4)]
@@ -178,10 +235,43 @@ namespace Moggle.Tests
             words.Should().NotBeEmpty();
 
             foreach (var word in words)
-            {
-                TestOutputHelper.WriteLine(word);
-            }
+                TestOutputHelper.WriteLine(word.Display);
 
+        }
+
+        [Theory]
+        [InlineData("abc", false, 3, 3)]
+        [InlineData("abhors", false, 3, 3)]
+        [InlineData("abc", true, 3, 3)]
+        [InlineData("abc", false, 4, 4)]
+
+        [InlineData("ham", false, 4, 4)]
+        [InlineData("alphabet", false, 4, 4)]
+        [InlineData("concurrent", false, 4, 4)]
+        [InlineData("hyperventilate", false, 4, 4)]
+        [InlineData("my hovercraft is full of eels", false, 4, 4)]
+        [InlineData("my hovercraft is full of eels", false, 5, 5)]
+        [InlineData("my hovercraft is full of eels", false, 6, 6)]
+        public void TestMathSolver(string seed, bool equation, int height, int width)
+        {
+            var state = CreateMathStateFromSeed(seed, equation, width, height);
+
+            TestOutputHelper.WriteLine(state.Board.ToMultiLineString());
+
+            var sw = Stopwatch.StartNew();
+            var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
+            sw.Stop();
+
+            TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
+            TestOutputHelper.WriteLine(words.Count + "Words");
+
+            TestOutputHelper.WriteLine("");
+            TestOutputHelper.WriteLine("");
+
+            words.Should().NotBeEmpty();
+
+            foreach (var word in words)
+                TestOutputHelper.WriteLine(word.Display);
         }
 
         [Theory]
@@ -199,7 +289,7 @@ namespace Moggle.Tests
             {
                 var state = CreateFromSeed(i.ToString(), classic, width, height);
                 var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
-                var score = words.Select(x => x.Length).Select(MoggleState.ScoreWord).Sum();
+                var score = words.Sum(x=>x.Points);
 
                 if (score > bestScore)
                 {
@@ -237,7 +327,7 @@ namespace Moggle.Tests
                 var state = CreateFromSeed(i.ToString(), classic, width, height);
                 var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
                 totalWords += words.Count;
-                totalScore += words.Select(x => x.Length).Select(MoggleState.ScoreWord).Sum();
+                totalScore += words.Sum(x=>x.Points);
             }
             sw.Stop();
 

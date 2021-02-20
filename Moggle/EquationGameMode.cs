@@ -8,7 +8,7 @@ namespace Moggle
 public record EquationGameMode : BagGameMode
 {
     private EquationGameMode() { }
-    public static EquationGameMode Instance { get; } = new EquationGameMode();
+    public static EquationGameMode Instance { get; } = new ();
 
     /// <inheritdoc />
     public override string Name => "Equation";
@@ -36,7 +36,7 @@ public record EquationGameMode : BagGameMode
                 ('+', 6),
                 ('*', 6),
                 ('-', 4),
-                ('/', 2)
+                //('/', 2) Can't do divide yet - remainders are bad
             };
 
             foreach (var (c, number) in terms)

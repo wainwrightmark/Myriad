@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -10,36 +9,46 @@ namespace Moggle
 
 public record Solver(WordList WordList, SolveSettings SolveSettings)
 {
-    public bool IsLegal(string s)
+    public FoundWord? CheckLegal(string s)
     {
         if (SolveSettings.MinWordLength.HasValue && s.Length >= SolveSettings.MinWordLength
                                                  && WordList.LegalWords.Contains(s))
-            return true;
+            return new StringWord(s);
 
         if (SolveSettings.AllowMath && s.All(IsMath))
         {
             if (SolveSettings.AllowTrueEquations && Parser.IsValidEquation(s))
-                return true;
+                return new EquationWord(s);
 
-            if (SolveSettings.AllowedMathExpression.HasValue)
+            if (SolveSettings.MathExpressionsRange is not null)
             {
-                var r = Parser.GetExpressionValue(s);
+                var w = MathExpressionWord.TryCreate(s);
 
-                if (r.HasValue && r.Value == SolveSettings.AllowedMathExpression.Value)
-                    return true;
+                if (w is not null
+                 && SolveSettings.MathExpressionsRange.Value.Min <= w.Result
+                 && w.Result <= SolveSettings.MathExpressionsRange.Value.Max)
+                    return w;
             }
         }
 
-        return false;
+        return null;
     }
 
     public bool IsLegalPrefix(string prefix)
     {
+        if (string.IsNullOrWhiteSpace(prefix))
+            return true;
+
         if (SolveSettings.AllowWords && WordList.LegalPrefixes.Contains(prefix))
             return true;
 
         if (SolveSettings.AllowMath && prefix.All(IsMath))
         {
+            var first = prefix[0];
+
+            if (!char.IsNumber(first) && first != '-')
+                return false;
+
             for (var i = 1;
                  i < prefix.Length;
                  i++) //Check that two operators never follow one another
@@ -89,7 +98,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         return false;
     }
 
-    public IEnumerable<string> GetPossibleSolutions(MoggleBoard board)
+    public IEnumerable<FoundWord> GetPossibleSolutions(MoggleBoard board)
     {
         var finder = new WordFinder(board, this);
 
@@ -106,8 +115,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             _solver = solver;
         }
 
-        public readonly ISet<string> WordsSoFar =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public readonly ISet<FoundWord> WordsSoFar = new HashSet<FoundWord>();
 
         private readonly Solver _solver;
 
@@ -143,8 +151,9 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
                 var l         = Board.GetLetterAtCoordinate(adjacentCoordinate);
                 var newPrefix = prefix + l.WordText;
 
-                if (_solver.IsLegal(newPrefix))
-                    WordsSoFar.Add(newPrefix);
+                var w = _solver.CheckLegal(newPrefix);
+                if(w != null)
+                    WordsSoFar.Add(w);
 
                 if (_solver.IsLegalPrefix(newPrefix))
                 {

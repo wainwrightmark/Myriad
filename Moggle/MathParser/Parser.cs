@@ -38,7 +38,16 @@ public static class Parser
         if (!parseResult.HasValue)
             return null;
 
-        var value = parseResult.Value.Compile().Invoke();
+        int value;
+
+        try
+        {
+            value= parseResult.Value.Compile().Invoke();
+        }
+        catch (Exception)
+        {
+            return null;
+        }
 
         return value;
     }
