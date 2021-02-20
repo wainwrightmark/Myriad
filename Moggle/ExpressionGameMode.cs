@@ -77,6 +77,12 @@ public record ExpressionGameMode : BagGameMode
         public override Setting.Integer Height => base.Height with { Default = 3 };
 
         /// <inheritdoc />
+        public override Setting.String Seed => base.Seed with
+        {
+            GetRandomValue = GoodSeedHelper.GetGoodExpressionSeed
+        };
+
+        /// <inheritdoc />
         public override IEnumerable<Setting> Settings
         {
             get

@@ -36,7 +36,7 @@ namespace Moggle.Tests
                     new[]
                     {
                         new KeyValuePair<string, string>(
-                            BagGameMode.Seed.Name,
+                            ModernGameMode.Instance.Seed.Name,
                             seed
                         ),
                         new KeyValuePair<string, string>(
@@ -68,7 +68,7 @@ namespace Moggle.Tests
                     new[]
                     {
                         new KeyValuePair<string, string>(
-                            BagGameMode.Seed.Name,
+                            EquationGameMode.Instance.Seed.Name,
                             seed
                         ),
                         new KeyValuePair<string, string>(
@@ -181,10 +181,10 @@ namespace Moggle.Tests
         }
 
         [Theory]
-        [InlineData(10,1000, 3, 3)]
+        [InlineData(10,100, 3, 3)]
         public void FindBestExpressionSeeds(int numberToGet, int numberToTake, int width, int height)
         {
-            var seeds = new List<(string, int)>();
+            var seeds = new List<(string text, int wordCount)>();
             var sw = Stopwatch.StartNew();
             foreach (var seed in _wordList.Value.LegalWords.Shuffle(new Random(0)).Take(numberToTake))
             {
@@ -197,11 +197,15 @@ namespace Moggle.Tests
             sw.Stop();
 
             TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
-            TestOutputHelper.WriteLine(seeds.Max(x => x.Item2) + "Words");
+            TestOutputHelper.WriteLine( $"Min words: {seeds.Min(x=>x.wordCount)}");
 
-            foreach (var p in seeds.OrderByDescending(x => x.Item2).Take(numberToGet))
+            var bestSeeds = seeds.OrderByDescending(x => x.wordCount).Take(numberToGet).ToList();
+
+            TestOutputHelper.WriteLine( $"{bestSeeds.Min(x => x.wordCount)} Words to {bestSeeds.Max(x => x.wordCount)}");
+
+            foreach (var p in bestSeeds)
             {
-                TestOutputHelper.WriteLine(p.Item1);
+                TestOutputHelper.WriteLine(p.text);
             }
         }
 
@@ -241,16 +245,8 @@ namespace Moggle.Tests
         [Theory]
         [InlineData("abc", false, 3, 3)]
         [InlineData("abhors", false, 3, 3)]
-        [InlineData("abc", true, 3, 3)]
-        [InlineData("abc", false, 4, 4)]
-
-        [InlineData("ham", false, 4, 4)]
-        [InlineData("alphabet", false, 4, 4)]
-        [InlineData("concurrent", false, 4, 4)]
-        [InlineData("hyperventilate", false, 4, 4)]
-        [InlineData("my hovercraft is full of eels", false, 4, 4)]
-        [InlineData("my hovercraft is full of eels", false, 5, 5)]
-        [InlineData("my hovercraft is full of eels", false, 6, 6)]
+        [InlineData("proxys", false, 3, 3)]
+        [InlineData("equation", false, 3, 3)]
         public void TestMathSolver(string seed, bool equation, int height, int width)
         {
             var state = CreateMathStateFromSeed(seed, equation, width, height);

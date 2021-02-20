@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
+using System.Net.Http.Headers;
 using Superpower;
 using Superpower.Parsers;
 using Superpower.Tokenizers;
@@ -28,29 +30,38 @@ public static class Parser
 
     public static int? GetExpressionValue(string pattern)
     {
-        var tokenListResult = Tokenizer.TryTokenize(pattern);
+        var r = _expressionValuesCache.GetOrAdd(pattern, Calculate);
+        return r;
 
-        if (!tokenListResult.HasValue)
-            return null;
-
-        var parseResult = Lambda.TryParse(tokenListResult.Value);
-
-        if (!parseResult.HasValue)
-            return null;
-
-        int value;
-
-        try
+        static int? Calculate(string pattern)
         {
-            value= parseResult.Value.Compile().Invoke();
-        }
-        catch (Exception)
-        {
-            return null;
-        }
+            var tokenListResult = Tokenizer.TryTokenize(pattern);
 
-        return value;
+            if (!tokenListResult.HasValue)
+                return null;
+
+            var parseResult = Lambda.TryParse(tokenListResult.Value);
+
+            if (!parseResult.HasValue)
+                return null;
+
+            int value;
+
+            try
+            {
+                value = parseResult.Value.Compile().Invoke();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+            return value;
+        }
     }
+
+    private static readonly ConcurrentDictionary<string, int?> _expressionValuesCache =
+        new();
 
     public static readonly Tokenizer<ArithmeticExpressionToken> Tokenizer =
         new TokenizerBuilder<ArithmeticExpressionToken>()

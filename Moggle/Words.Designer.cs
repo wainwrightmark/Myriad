@@ -61,54 +61,72 @@ namespace Moggle {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to baptism
-        ///black
-        ///heptathlon
-        ///custodianship
-        ///backslapping
-        ///canons
-        ///pundit
-        ///played
-        ///manacling
-        ///impregnability
-        ///draftings
-        ///glands
-        ///sport
-        ///glissandi
-        ///absenteeism
-        ///vegan
-        ///chunter
-        ///preshrank
-        ///battering
-        ///airtight
-        ///flawlessly
-        ///history
-        ///induced
-        ///unhallowed
-        ///cynosure
-        ///genuflect
-        ///circumcised
-        ///governable
-        ///sinceritys
-        ///truisms
-        ///rehabilitations
-        ///scavenged
-        ///climber
-        ///iceman
-        ///burglarises
-        ///dignifying
-        ///parameterised
-        ///condensates
-        ///rhythmical
-        ///pedagogic
-        ///rotundas
-        ///standpoints
-        ///effigies
-        ///antimony
-        ///sachets
-        ///spinsters
-        ///divining
-        ///ven [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to proxys
+        ///sludges
+        ///searchingly
+        ///impeacher
+        ///restudy
+        ///stemmed
+        ///ukases
+        ///gates
+        ///languorously
+        ///equation
+        ///.
+        /// </summary>
+        internal static string GoodExpressionSeeds {
+            get {
+                return ResourceManager.GetString("GoodExpressionSeeds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to stomached
+        ///mutual
+        ///manse
+        ///rabidness
+        ///bordered
+        ///odder
+        ///framework
+        ///enclosure
+        ///baldrics
+        ///taxon
+        ///height
+        ///altruistic
+        ///disputing
+        ///neurology
+        ///professionalisms
+        ///tomfooleries
+        ///coddled
+        ///configuration
+        ///strikebreaker
+        ///heartbeats
+        ///dreadnoughts
+        ///skippers
+        ///southward
+        ///execrations
+        ///spectrometers
+        ///victuals
+        ///firework
+        ///postilion
+        ///reconsidered
+        ///blvd
+        ///subtropics
+        ///reequips
+        ///woodlands
+        ///delightedly
+        ///dipsomaniac
+        ///fishily
+        ///holier
+        ///psoriasis
+        ///pogroms
+        ///vocalist
+        ///dipsos
+        ///sheetlike
+        ///shipbuildings
+        ///soundtracks
+        ///twang
+        ///weighbridge
+        ///federal [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string GoodSeeds {
             get {

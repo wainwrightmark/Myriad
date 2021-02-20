@@ -21,7 +21,7 @@ public abstract record BagGameMode : IMoggleGameMode
     {
         var width  = Width.Get(settings);
         var height = Height.Get(settings);
-        var seed   = Seed.Get(settings);
+        var seed = Seed.Get(settings);
 
         var size = width * height;
 
@@ -79,8 +79,7 @@ public abstract record BagGameMode : IMoggleGameMode
 
     public virtual Setting.Integer DurationSetting => TimeSituation.Duration;
 
-    public static readonly Setting.String Seed =
-        new(nameof(Seed), null, "", "Random Seed") { GetRandomValue = GoodSeedHelper.GetGoodSeed };
+    public virtual Setting.String Seed => new(nameof(Seed), null, "", "Random Seed") { GetRandomValue = GoodSeedHelper.GetGoodSeed };
 
     public abstract string GetDefaultLetters(int width, int height);
 

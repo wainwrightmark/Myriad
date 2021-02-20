@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using System.Collections.Immutable
 @inject NavigationManager NavigationManager
 
 
@@ -17,20 +18,15 @@
 
       _cheat = parseDict.TryGetValue("cheat", out var ch) && bool.TryParse(ch, out var ch1) && ch1;
 
-      //if (parseDict.TryGetValue("seed", out var sv))
-      //{
-      //  var width = parseDict.TryGetValue("width", out var w) && int.TryParse(w, out var w1) ? w1 : 4;
-      //  var height = parseDict.TryGetValue("height", out var h) && int.TryParse(h, out var h1) ? h1 : 4;
-      //  var duration = parseDict.TryGetValue("duration", out var d) && int.TryParse(d, out var d1) ? d1 : 120;
-      //  var classic = parseDict.TryGetValue("classic", out var c) && bool.TryParse(c, out var c1) && c1;
+      if (parseDict.TryGetValue("mode", out var modeString) && AllGameModes.Modes.TryGetValue(modeString, out var mode))
+      {
+        var dict2 = parseDict.ToImmutableDictionary(x => x.Key, x => x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
 
-      //  var minLength = parseDict.TryGetValue("minLength", out var ml) && int.TryParse(ml, out var ml1) ? ml1 : 3;
-
-      //  _startGameAction = new StartGameAction(sv, width, height, classic, duration, minLength);
-      //}
+        _startGameAction = new StartGameAction(WordList.LazyInstance.Value, mode, dict2);
+      }
     }
 
-  private StartGameAction? _startGameAction = null;
+    private StartGameAction? _startGameAction = null;
 
     private bool _cheat;
 }
