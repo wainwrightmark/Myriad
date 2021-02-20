@@ -16,7 +16,7 @@ public abstract record BagGameMode : IMoggleGameMode
     public abstract string Name { get; }
 
     /// <inheritdoc />
-    public (MoggleBoard board, SolveSettings solveSettings) CreateGame(
+    public (MoggleBoard board, SolveSettings solveSettings, TimeSituation TimeSituation) CreateGame(
         ImmutableDictionary<string, string> settings)
     {
         var width  = Width.Get(settings);
@@ -66,36 +66,33 @@ public abstract record BagGameMode : IMoggleGameMode
 
         var solveSettings = GetSolveSettings(settings);
 
-        return (board, solveSettings);
+        var ts = TimeSituation.GetFromSettings(TimeSituation.Duration, settings);
+
+        return (board, solveSettings, ts);
     }
 
     public abstract string Letters { get; }
     public abstract SolveSettings GetSolveSettings(ImmutableDictionary<string, string> settings);
 
-    public static readonly Setting.Integer Width = new(nameof(Width), 1, int.MaxValue, 4);
-    public static readonly Setting.Integer Height = new(nameof(Height), 1, int.MaxValue, 4);
+    public virtual Setting.Integer Width => new(nameof(Width), 1, int.MaxValue, 4);
+    public virtual Setting.Integer Height => new(nameof(Height), 1, int.MaxValue, 4);
+
+    public virtual Setting.Integer DurationSetting => TimeSituation.Duration;
 
     public static readonly Setting.String Seed =
         new(nameof(Seed), null, "", "Random Seed") { GetRandomValue = GoodSeedHelper.GetGoodSeed };
 
     public abstract string GetDefaultLetters(int width, int height);
 
-    public abstract IEnumerable<Setting> ExtraSettings
-    {
-        get;
-    }
-
     /// <inheritdoc />
-    public IEnumerable<Setting> Settings
+    public virtual IEnumerable<Setting> Settings
     {
         get
         {
             yield return Seed;
             yield return Width;
             yield return Height;
-
-            foreach (var extraSetting in ExtraSettings)
-                yield return extraSetting;
+            yield return DurationSetting;
         }
     }
 }

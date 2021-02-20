@@ -13,9 +13,9 @@
         }
       </MudSelect>
 
-      @foreach (var setting in GameMode.Settings.Append(Duration))
+      @foreach (var setting in GameMode.Settings)
       {
-        <SettingBox @key="@setting.Name" Values="@SetValues" Setting="@setting"/>
+        <SettingBox Values="@SetValues" Setting="@setting"/>
       }
     </MudContainer>
   </DialogContent>
@@ -37,14 +37,13 @@
   void Submit()
   {
 
-    var duration = Duration.Get(SetValues);
 
-    var action = new StartGameAction(WordList.LazyInstance.Value, GameMode, SetValues.ToImmutableDictionary(), duration);
+    var action = new StartGameAction(WordList.LazyInstance.Value, GameMode, SetValues.ToImmutableDictionary());
 
     MudDialog.Close(DialogResult.Ok(action));
   }
 
-  private static readonly Setting.Integer Duration = new (nameof(Duration), 1, int.MaxValue, 120, 10);
+
 
   void Cancel() => MudDialog.Cancel();
 

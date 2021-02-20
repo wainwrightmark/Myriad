@@ -70,14 +70,25 @@ public record ExpressionGameMode : BagGameMode
         }
 
         /// <inheritdoc />
-        public override IEnumerable<Setting> ExtraSettings
-    {
-        get
+        public override Setting.Integer DurationSetting => TimeSituation.Duration with{Default = 0};
+
+        /// <inheritdoc />
+        public override Setting.Integer Width => base.Width with { Default = 3 };
+        public override Setting.Integer Height => base.Height with { Default = 3 };
+
+        /// <inheritdoc />
+        public override IEnumerable<Setting> Settings
         {
-            yield return Minimum;
-            yield return Maximum;
+            get
+            {
+                yield return Seed;
+                yield return Width;
+                yield return Height;
+                yield return Minimum;
+                yield return Maximum;
+                yield return DurationSetting;
+            }
         }
-    }
 }
 
 }

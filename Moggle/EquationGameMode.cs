@@ -63,15 +63,6 @@ public record EquationGameMode : BagGameMode
     {
         return new(null, true, null);
     }
-
-    /// <inheritdoc />
-    public override IEnumerable<Setting> ExtraSettings
-    {
-        get
-        {
-            yield break;
-        }
-    }
 }
 
 }

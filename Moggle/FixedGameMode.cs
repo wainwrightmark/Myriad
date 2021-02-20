@@ -14,7 +14,7 @@ public record FixedGameMode : IMoggleGameMode
     public string Name => "Fixed";
 
     /// <inheritdoc />
-    public (MoggleBoard board, SolveSettings solveSettings) CreateGame(
+    public (MoggleBoard board, SolveSettings solveSettings, TimeSituation TimeSituation) CreateGame(
         ImmutableDictionary<string, string> settings)
     {
         var letters = Letters.Get(settings)
@@ -52,7 +52,9 @@ public record FixedGameMode : IMoggleGameMode
 
         var solveSettings = new SolveSettings(minWordLength, allowEquations, range);
 
-        return (board, solveSettings);
+            var ts = TimeSituation.GetFromSettings(TimeSituation.Duration, settings);
+
+            return (board, solveSettings, ts);
     }
 
     private static readonly Letter PaddingLetter = Letter.Create("😊".EnumerateRunes().Single());
@@ -74,6 +76,7 @@ public record FixedGameMode : IMoggleGameMode
             yield return MinWordLength;
             yield return Minimum;
             yield return Maximum;
+            yield return TimeSituation.Duration;
         }
     }
 }

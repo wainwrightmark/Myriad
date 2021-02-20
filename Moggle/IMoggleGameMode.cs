@@ -8,7 +8,8 @@ public interface IMoggleGameMode
 {
         string Name { get; }
 
-    (MoggleBoard board, SolveSettings solveSettings) CreateGame(ImmutableDictionary<string, string> settings);
+    (MoggleBoard board, SolveSettings solveSettings, TimeSituation TimeSituation) CreateGame(
+        ImmutableDictionary<string, string> settings);
 
     IEnumerable<Setting> Settings { get; }
 

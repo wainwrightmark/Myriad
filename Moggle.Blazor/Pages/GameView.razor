@@ -51,7 +51,7 @@
     {
       var word = w;
       <MudCheckBox
-        Disabled="@(IsGameVisible)"
+        Disabled="@(IsGameInProgress)"
         CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableWord(word, b)); }"
         Label=@word.Display
         Checked="@(!State.Value.DisabledWords.Contains(word))"/>
@@ -88,11 +88,11 @@
     base.OnParametersSet();
   }
 
-  public bool IsGameVisible => State.Value.FinishTime.HasValue;
+  public bool IsGameInProgress => !State.Value.TimeSituation.IsFinished;
 
   public (Color Color, bool Disabled) GetColor(Coordinate coordinate)
   {
-    if (!IsGameVisible || !State.Value.ChosenPositions.Any())
+    if (!IsGameInProgress || !State.Value.ChosenPositions.Any())
       return (Color.Default, false);
 
     var moveResult = State.Value.TryGetMoveResult(coordinate);

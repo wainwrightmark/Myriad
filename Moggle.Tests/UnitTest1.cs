@@ -39,16 +39,15 @@ namespace Moggle.Tests
                             seed
                         ),
                         new KeyValuePair<string, string>(
-                            BagGameMode.Width.Name,
+                            ModernGameMode.Instance.Width.Name,
                             width.ToString()
                         ),
                         new KeyValuePair<string, string>(
-                            BagGameMode.Height.Name,
+                            ModernGameMode.Instance.Height.Name,
                             height.ToString()
                         ),
                     }
-                ),
-                120
+                )
             );
         }
 
@@ -72,20 +71,19 @@ namespace Moggle.Tests
                             seed
                         ),
                         new KeyValuePair<string, string>(
-                            BagGameMode.Width.Name,
+                            EquationGameMode.Instance.Width.Name,
                             width.ToString()
                         ),
                         new KeyValuePair<string, string>(
-                            BagGameMode.Height.Name,
+                            EquationGameMode.Instance.Height.Name,
                             height.ToString()
                         ),
                         new KeyValuePair<string, string>(
-                            BagGameMode.Height.Name,
+                            EquationGameMode.Instance.Height.Name,
                             height.ToString()
                         )
                     }
-                ),
-                120
+                )
 
 
                     );

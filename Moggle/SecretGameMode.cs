@@ -13,7 +13,7 @@ public record SecretGameMode : IMoggleGameMode
     public string Name => "Secret";
 
     /// <inheritdoc />
-    public (MoggleBoard board, SolveSettings solveSettings) CreateGame(
+    public (MoggleBoard board, SolveSettings solveSettings, TimeSituation TimeSituation) CreateGame(
         ImmutableDictionary<string, string> settings)
     {
         var words = Words.Get(settings);
@@ -27,7 +27,9 @@ public record SecretGameMode : IMoggleGameMode
         var board         = grid.ToMoggleBoard(() => ModernGameMode.Instance.GetRandomRune(random));
         var solveSettings = new SolveSettings(minWordLength, false, null);
 
-        return (board, solveSettings);
+        var ts = TimeSituation.GetFromSettings(TimeSituation.Duration, settings);
+
+        return (board, solveSettings, ts);
     }
 
     public static readonly Setting.String Words =
@@ -47,6 +49,7 @@ public record SecretGameMode : IMoggleGameMode
         {
             yield return MinWordLength;
             yield return Words;
+            yield return TimeSituation.Duration;
         }
     }
 }

@@ -31,10 +31,13 @@ public record ClassicGameMode : BagGameMode
     }
 
     /// <inheritdoc />
-    public override IEnumerable<Setting> ExtraSettings
+    public override IEnumerable<Setting> Settings
     {
         get
         {
+            foreach (var setting in base.Settings)
+                yield return setting;
+
             yield return MinWordLength;
         }
     }

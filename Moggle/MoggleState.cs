@@ -6,10 +6,52 @@ using System.Linq;
 namespace Moggle
 {
 
+public abstract record TimeSituation
+{
+    public record Infinite : TimeSituation
+    {
+        private Infinite() { }
+        public static Infinite Instance { get; } = new();
+
+        /// <inheritdoc />
+        public override bool IsFinished => false;
+    }
+
+    public record Finished : TimeSituation
+    {
+        private Finished() { }
+        public static Finished Instance { get; } = new();
+
+        /// <inheritdoc />
+        public override bool IsFinished => true;
+    }
+
+    public record FinishAt(DateTime DateTime) : TimeSituation
+    {
+        /// <inheritdoc />
+        public override bool IsFinished => DateTime.CompareTo(DateTime.Now) < 0;
+    }
+
+    public abstract bool IsFinished { get; }
+
+    public static TimeSituation GetFromSettings(Setting.Integer durationSetting, IReadOnlyDictionary<string, string> settings)
+    {
+        var duration = durationSetting.Get(settings);
+
+        TimeSituation ts = duration <= 0
+            ? Infinite.Instance
+            : new FinishAt(DateTime.Now.AddSeconds(duration));
+
+        return ts;
+    }
+
+    public static readonly Setting.Integer Duration = new (nameof(Duration), -1, int.MaxValue, 120, 10);
+}
+
 public record MoggleState(
     MoggleBoard Board,
     Solver Solver,
-    DateTime? FinishTime,
+    TimeSituation TimeSituation,
     int Rotation,
     ImmutableList<Coordinate> ChosenPositions,
     ImmutableSortedSet<FoundWord> FoundWords,
@@ -20,22 +62,20 @@ public record MoggleState(
         StartNewGame(
             WordList.LazyInstance.Value,
             ModernGameMode.Instance,
-            ImmutableDictionary<string, string>.Empty,
-            120
+            ImmutableDictionary<string, string>.Empty
         );
 
     public static MoggleState StartNewGame(
         WordList wordList,
         IMoggleGameMode gameMode,
-        ImmutableDictionary<string, string> settings,
-        int duration)
+        ImmutableDictionary<string, string> settings)
     {
-        var (board, solveSettings) = gameMode.CreateGame(settings);
+        var (board, solveSettings, timeSituation) = gameMode.CreateGame(settings);
 
         MoggleState newState = new(
             board,
             new Solver(wordList, solveSettings),
-            DateTime.Now.AddSeconds(duration),
+            timeSituation,
             0,
             ImmutableList<Coordinate>.Empty,
             ImmutableSortedSet<FoundWord>.Empty,
@@ -50,11 +90,11 @@ public record MoggleState(
 
     public MoveResult TryGetMoveResult(Coordinate coordinate)
     {
-        if (FinishTime == null)
+        if (TimeSituation is TimeSituation.Finished)
             return MoveResult.IllegalMove.Instance;
 
-        if (FinishTime.Value.CompareTo(DateTime.Now) < 0)
-            return new MoveResult.TimeElapsed(this with { FinishTime = null });
+        if (TimeSituation.IsFinished)
+            return new MoveResult.TimeElapsed(this with { TimeSituation = TimeSituation.Finished.Instance});
 
         if (!ChosenPositions.Any())
             return new MoveResult.WordContinued(
@@ -132,7 +172,7 @@ public record MoggleState(
     {
         get
         {
-            return Words.Sum(s =>s.Points);
+            return Words.Sum(s => s.Points);
         }
     }
 
