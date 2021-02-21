@@ -10,8 +10,11 @@
   @if (State.Value.ChosenPositions.Any())
   {
     <g>
-      @foreach (var ((r1, c1), (r2, c2)) in State.Value.ChosenPositions.Pairwise((a, b) => (a, b)))
+      @foreach (var ((r1, c1), (r2, c2)) in State.Value.ChosenPositions
+        .Pairwise((a, b) => (a, b)))
       {
+
+
         var id = $"line-{r1}_{c1}-{r2}_{c2}";
         var x1 = c1 * SquareSize + SquareSize * 0.5;
         var y1 = r1 * SquareSize + SquareSize * 0.5;
@@ -30,12 +33,13 @@
 
   @foreach (var coordinate in State.Value.Board.GetAllCoordinates())
   {
+    var rotated = coordinate.Rotate(State.Value.Board.MaxCoordinate,- State.Value.Rotation);
     var color = GetColor(coordinate);
 
-    var cx = coordinate.Column * SquareSize
+    var cx = rotated .Column * SquareSize
              + SquareSize * 0.5;
 
-    var cy = coordinate.Row * SquareSize
+    var cy = rotated.Row * SquareSize
              + SquareSize * 0.5;
 
     <g @onclick="@(() => CellClicked(coordinate))">
