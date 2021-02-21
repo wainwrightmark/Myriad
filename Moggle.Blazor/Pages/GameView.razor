@@ -10,21 +10,31 @@
   @if (State.Value.ChosenPositions.Any())
   {
     <g>
-      @foreach (var ((r1, c1), (r2, c2)) in State.Value.ChosenPositions
-        .Pairwise((a, b) => (a, b)))
-      {
+      @{
+        var index = 0;
+        @foreach (var ((r1, c1), (r2, c2)) in State.Value.ChosenPositions
+          .Pairwise((a, b) => (a, b)))
+        {
+          var x1 = c1 * SquareSize + SquareSize * 0.5;
+          var y1 = r1 * SquareSize + SquareSize * 0.5;
+          var x2 = c2 * SquareSize + SquareSize * 0.5;
+          var y2 = r2 * SquareSize + SquareSize * 0.5;
 
+          <line id="@($"line-{index}")" x1="@x1" x2="@x2" y1="@y1" y2="@y2"
+                stroke-width="@(LineWidth)"
+                stroke="@Colors.Green.Default"
+                style="transition: 2s ease-out">
+          </line>
+          index++;
+        }
 
-        var id = $"line-{r1}_{c1}-{r2}_{c2}";
-        var x1 = c1 * SquareSize + SquareSize * 0.5;
-        var y1 = r1 * SquareSize + SquareSize * 0.5;
-        var x2 = c2 * SquareSize + SquareSize * 0.5;
-        var y2 = r2 * SquareSize + SquareSize * 0.5;
-
-        <line id="@id" x1="@x1" x2="@x2" y1="@y1" y2="@y2"
-              stroke-width="@(LineWidth)"
-              stroke="@Colors.Green.Default"/>
+        <line id="@($"line-{index}")"
+                stroke-width="@(LineWidth)"
+                stroke="@Colors.Green.Default"
+                style="opacity: 0;  transition: 2s ease-out">
+          </line>
       }
+
 
       _svgHelper1.Cmd_Render(g1, 0, builder);
     </g>
@@ -33,32 +43,39 @@
 
   @foreach (var coordinate in State.Value.Board.GetAllCoordinates())
   {
-    var rotated = coordinate.Rotate(State.Value.Board.MaxCoordinate,- State.Value.Rotation);
+    var rotated = coordinate.Rotate(State.Value.Board.MaxCoordinate, -State.Value.Rotation);
     var color = GetColor(coordinate);
 
-    var cx = rotated .Column * SquareSize
+    var cx = rotated.Column * SquareSize
              + SquareSize * 0.5;
 
     var cy = rotated.Row * SquareSize
              + SquareSize * 0.5;
 
-    <g @onclick="@(() => CellClicked(coordinate))">
-      <circle id="@($"{coordinate}_bigCircle")"
-              r="@CircleRadius"
-              cx="@cx"
-              cy="@cy"
-              stroke-width="@CircleStrokeWidth"
-              fill="@color"
-              stroke="@Colors.BlueGrey.Default">
+    <g
+      style="transform: translate(@(cx)px, @(cy)px); transition: 2s ease-out;"
+
+      @onclick="@(() => CellClicked(rotated))">
+      <circle
+
+        id="@($"{coordinate}_bigCircle")"
+
+        fill="@color"
+        r="@CircleRadius"
+        style="transition: fill 2s ease-out"
+
+        stroke-width="@CircleStrokeWidth"
+        stroke="@Colors.BlueGrey.Default">
       </circle>
 
       <text
-        x="@cx"
-        y="@cy"
+        id="@($"{coordinate}_text")"
+
         dominant-baseline="middle"
         text-anchor="middle"
         fill="@Colors.Shades.Black">
         @State.Value.Board.GetLetterAtCoordinate(coordinate).ButtonText
+
       </text>
     </g>
   }
@@ -175,7 +192,7 @@
     -ms-user-select: none;
     user-select: none;
     cursor: default;
-    font-size: @(144 / Math.Max(Columns, Rows) )px;
+    font-size: @(144 / Math.Max(Columns, Rows))px;
     width: 100%;
     font-weight: bold;
   }

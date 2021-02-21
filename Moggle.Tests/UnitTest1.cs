@@ -209,9 +209,9 @@ namespace Moggle.Tests
 
             TestOutputHelper.WriteLine( $"{bestSeeds.Min(x => x.wordCount)} Words to {bestSeeds.Max(x => x.wordCount)}");
 
-            foreach (var p in bestSeeds)
+            foreach (var (text, _) in bestSeeds)
             {
-                TestOutputHelper.WriteLine(p.text);
+                TestOutputHelper.WriteLine(text);
             }
         }
 
