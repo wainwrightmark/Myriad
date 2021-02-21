@@ -7,7 +7,12 @@ namespace Moggle
 
 public abstract record Setting(string Name)
 {
-    public record Integer(string Name, int Min, int Max, int Default, int Increment = 1) : SettingBase<int>(Name, Default)
+    public record Integer(
+        string Name,
+        int Min,
+        int Max,
+        int Default,
+        int Increment = 1) : SettingBase<int>(Name, Default)
     {
         /// <inheritdoc />
         public override bool TryGet(string s, out int value)
@@ -19,7 +24,11 @@ public abstract record Setting(string Name)
         }
     }
 
-    public record String(string Name, string? Pattern, string Default, string Placeholder) : SettingBase<string>(Name, Default)
+    public record String
+        (string Name, string? Pattern, string Default, string Placeholder) : SettingBase<string>(
+            Name,
+            Default
+        )
     {
         /// <inheritdoc />
         public override bool TryGet(string s, out string value)
@@ -39,6 +48,25 @@ public abstract record Setting(string Name)
             if (bool.TryParse(s, out value))
                 return true;
 
+            return false;
+        }
+    }
+
+
+    public record Enum(string Name, string Default, Func<string, object?> TryGetValue) : SettingBase<string>(Name, Default)
+    {
+        /// <inheritdoc />
+        public override bool TryGet(string s, out string value)
+        {
+            var v = TryGetValue(s);
+
+            if(v is not null)
+            {
+                value = v!.ToString()!;
+                return true;
+            }
+
+            value = Default;
             return false;
         }
     }

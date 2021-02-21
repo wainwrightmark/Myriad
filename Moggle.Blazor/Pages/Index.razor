@@ -3,7 +3,7 @@
 @inject NavigationManager NavigationManager
 
 
-<GameView StartGameAction="_startGameAction" AllowCheating="_cheat"/>
+<GameView StartGameAction="_startGameAction"/>
 
 
 @code
@@ -16,8 +16,6 @@
 
       var parseDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
 
-      _cheat = parseDict.TryGetValue("cheat", out var ch) && bool.TryParse(ch, out var ch1) && ch1;
-
       if (parseDict.TryGetValue("mode", out var modeString) && AllGameModes.Modes.TryGetValue(modeString, out var mode))
       {
         var dict2 = parseDict.ToImmutableDictionary(x => x.Key, x => x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
@@ -27,6 +25,4 @@
     }
 
     private StartGameAction? _startGameAction = null;
-
-    private bool _cheat;
 }

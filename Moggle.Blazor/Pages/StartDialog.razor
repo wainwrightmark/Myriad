@@ -12,11 +12,14 @@
           <MudSelectItem Value="@gm"/>
         }
       </MudSelect>
-
-      @foreach (var setting in GameMode.Settings)
+      @if (GameMode is not null)
       {
-        <SettingBox Values="@SetValues" Setting="@setting"/>
+        @foreach (var setting in GameMode.Settings)
+        {
+          <SettingBox Values="@SetValues" Setting="@setting"/>
+        }
       }
+
     </MudContainer>
   </DialogContent>
 
@@ -27,23 +30,23 @@
   [CascadingParameter]
   MudDialogInstance MudDialog { get; set; }
 
-  public string GameModeName { get; set; } = ModernGameMode.Instance.Name;
+  [Parameter]
+  public string GameModeName { get; set; }
 
-  public IMoggleGameMode GameMode => AllGameModes.CreateFromString(GameModeName)!;
+  public IMoggleGameMode? GameMode => AllGameModes.CreateFromString(GameModeName)!;
 
-  public Dictionary<string, string> SetValues { get; set; } = new();
-
+  [Parameter]
+  public Dictionary<string, string> SetValues { get; set; }
 
   void Submit()
   {
+    if (GameMode is not null)
+    {
+      var action = new StartGameAction(WordList.LazyInstance.Value, GameMode, SetValues.ToImmutableDictionary());
 
-
-    var action = new StartGameAction(WordList.LazyInstance.Value, GameMode, SetValues.ToImmutableDictionary());
-
-    MudDialog.Close(DialogResult.Ok(action));
+      MudDialog.Close(DialogResult.Ok(action));
+    }
   }
-
-
 
   void Cancel() => MudDialog.Cancel();
 

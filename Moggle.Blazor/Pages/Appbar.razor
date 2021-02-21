@@ -1,7 +1,9 @@
 ﻿@using System.Threading
 @using Fluxor
+@using System.IO
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
+@inject NavigationManager NavManager
 
 
 <MudFab Color="Color.Secondary" Icon="@Filled.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(false))"/>
@@ -53,7 +55,13 @@
 
   private async Task OpenDialog()
   {
-    var d = Dialog.Show<StartDialog>("Start Game");
+    var parameters = new DialogParameters
+    {
+      { nameof(StartDialog.SetValues), State.Value.LastSettings.ToDictionary(x => x.Key, x => x.Value) },
+      { nameof(StartDialog.GameModeName), State.Value.LastGameMode.Name }
+    };
+
+    var d = Dialog.Show<StartDialog>("Start Game", parameters);
 
     var r = await d.Result;
 
@@ -62,6 +70,15 @@
 
     if (r.Data is StartGameAction sga)
     {
+      var uri = NavManager.BaseUri;
+      uri += $"?mode={sga.GameMode.Name}";
+      @foreach (var s in sga.Settings)
+      {
+        uri += $"&{s.Key}={s.Value}";
+      }
+
+      NavManager.NavigateTo(uri);
+
       Dispatcher.Dispatch(sga);
     }
   }

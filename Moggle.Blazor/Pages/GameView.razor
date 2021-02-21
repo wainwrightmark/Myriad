@@ -74,7 +74,7 @@
   {
     @foreach (var w in State.Value.CheatWords)
     {
-      <MudChip Label="true">@w</MudChip>
+      <MudChip Label="true">@w.Display</MudChip>
     }
   }
   else
@@ -105,8 +105,7 @@
   [Inject]
   public IDispatcher Dispatcher { get; set; }
 
-  [Parameter]
-  public bool AllowCheating { get; set; }
+  public bool AllowCheating => State.Value.LastSettings.ContainsKey("cheat");
 
   [Parameter]
   public StartGameAction? StartGameAction { get; set; }

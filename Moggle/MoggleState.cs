@@ -55,7 +55,9 @@ public record MoggleState(
     ImmutableList<Coordinate> ChosenPositions,
     ImmutableSortedSet<FoundWord> FoundWords,
     ImmutableHashSet<FoundWord> DisabledWords,
-    ImmutableList<FoundWord>? CheatWords)
+    ImmutableList<FoundWord>? CheatWords,
+    IMoggleGameMode LastGameMode,
+    ImmutableDictionary<string, string> LastSettings)
 {
     public static readonly MoggleState DefaultState =
         StartNewGame(
@@ -79,7 +81,9 @@ public record MoggleState(
             ImmutableList<Coordinate>.Empty,
             ImmutableSortedSet<FoundWord>.Empty,
             ImmutableHashSet<FoundWord>.Empty,
-            null
+            null,
+            gameMode,
+            settings
         );
 
         return newState;
