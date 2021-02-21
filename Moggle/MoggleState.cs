@@ -34,9 +34,8 @@ public abstract record TimeSituation
 
     public abstract bool IsFinished { get; }
 
-    public static TimeSituation GetFromSettings(Setting.Integer durationSetting, IReadOnlyDictionary<string, string> settings)
+    public static TimeSituation Create(int duration)
     {
-        var duration = durationSetting.Get(settings);
 
         TimeSituation ts = duration <= 0
             ? Infinite.Instance
@@ -131,8 +130,7 @@ public record MoggleState(
                 return new MoveResult.WordComplete(stateWithWord);
             }
 
-            if (ChosenPositions.Count <= Solver.SolveSettings.MinimumTermLength
-            ) //Give up on this path
+            if (ChosenPositions.Count <= 1) //Give up on this path
             {
                 return new MoveResult.WordAbandoned(
                     this with { ChosenPositions = ImmutableList<Coordinate>.Empty }

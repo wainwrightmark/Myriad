@@ -66,7 +66,7 @@ public abstract record BagGameMode : IMoggleGameMode
 
         var solveSettings = GetSolveSettings(settings);
 
-        var ts = TimeSituation.GetFromSettings(TimeSituation.Duration, settings);
+        var ts = TimeSituation.Create(DurationSetting.Get(settings));
 
         return (board, solveSettings, ts);
     }

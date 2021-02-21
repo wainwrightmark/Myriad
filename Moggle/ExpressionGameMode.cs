@@ -61,16 +61,16 @@ public record ExpressionGameMode : BagGameMode
         public override string GetDefaultLetters(int width, int height)
         {
             if (width == 3 && height == 3)
-                return "123+7*654";
+                return "1238+4765";
 
-            if (width == 4 && height == 4)
-                return "12345+-87*/64321";
+            //if (width == 4 && height == 4)
+            //    return "12345+-87*/64321";
 
-            return "123+4=6*789";
+            return "123+456*789";
         }
 
         /// <inheritdoc />
-        public override Setting.Integer DurationSetting => TimeSituation.Duration with{Default = 0};
+        public override Setting.Integer DurationSetting => TimeSituation.Duration with{Default = -1};
 
         /// <inheritdoc />
         public override Setting.Integer Width => base.Width with { Default = 3 };

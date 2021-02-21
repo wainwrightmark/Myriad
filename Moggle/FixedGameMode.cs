@@ -52,7 +52,7 @@ public record FixedGameMode : IMoggleGameMode
 
         var solveSettings = new SolveSettings(minWordLength, allowEquations, range);
 
-            var ts = TimeSituation.GetFromSettings(TimeSituation.Duration, settings);
+            var ts = TimeSituation.Create(TimeSituation.Duration.Get(settings));
 
             return (board, solveSettings, ts);
     }

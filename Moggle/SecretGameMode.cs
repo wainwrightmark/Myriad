@@ -27,7 +27,7 @@ public record SecretGameMode : IMoggleGameMode
         var board         = grid.ToMoggleBoard(() => ModernGameMode.Instance.GetRandomRune(random));
         var solveSettings = new SolveSettings(minWordLength, false, null);
 
-        var ts = TimeSituation.GetFromSettings(TimeSituation.Duration, settings);
+        var ts = TimeSituation.Create(TimeSituation.Duration.Get(settings));
 
         return (board, solveSettings, ts);
     }
