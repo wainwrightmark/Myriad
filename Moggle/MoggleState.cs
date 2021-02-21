@@ -86,7 +86,7 @@ public record MoggleState(
         return newState;
     }
 
-    public int MaxDimension => Math.Max(Board.Width, Board.Height);
+    public int MaxDimension => Math.Max(Board.Columns, Board.Rows);
 
     public MoveResult TryGetMoveResult(Coordinate coordinate)
     {
@@ -97,9 +97,16 @@ public record MoggleState(
             return new MoveResult.TimeElapsed(this with { TimeSituation = TimeSituation.Finished.Instance});
 
         if (!ChosenPositions.Any())
-            return new MoveResult.WordContinued(
-                this with { ChosenPositions = ChosenPositions.Add(coordinate) }
-            );
+        {
+            if (Solver.IsLegalPrefix(GetLetterAtCoordinate(coordinate).WordText))
+                return new MoveResult.WordContinued(this with
+                {
+                    ChosenPositions =
+                    ChosenPositions.Add(coordinate)
+                });
+
+            return MoveResult.IllegalMove.Instance;
+        }
 
         if (ChosenPositions.Last().Equals(coordinate))
         {

@@ -1,36 +1,68 @@
 ﻿@using Fluxor
+@using MoreLinq.Extensions
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
 
-<div class="box">
-  @for (var row = 0; row < State.Value.Board.Height; row++)
+
+<svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
+
+  <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
+  @if (State.Value.ChosenPositions.Any())
   {
-    var r = row;
-    <div>
-      @for (var col = 0; col < State.Value.Board.Width; col++)
+    <g>
+      @foreach (var ((r1, c1), (r2, c2)) in State.Value.ChosenPositions.Pairwise((a, b) => (a, b)))
       {
-        var coordinate = new Coordinate(r, col);
+        var id = $"line-{r1}_{c1}-{r2}_{c2}";
+        var x1 = c1 * SquareSize + SquareSize * 0.5;
+        var y1 = r1 * SquareSize + SquareSize * 0.5;
+        var x2 = c2 * SquareSize + SquareSize * 0.5;
+        var y2 = r2 * SquareSize + SquareSize * 0.5;
 
-        var (color, disabled) = GetColor(coordinate);
-
-        <button On></button>
-
-        <MudButton
-          @key="@coordinate"
-           Size="Size.Small"
-           Variant="Variant.Filled"
-           Class="square"
-           Color="@color"
-           Style="transition: background-color 1s"
-           Disabled="@disabled"
-
-           OnClick="() => Dispatcher.Dispatch(new ChooseCellAction(coordinate))">
-          @(State.Value.GetLetterAtCoordinate(coordinate).ButtonText)
-        </MudButton>
+        <line id="@id" x1="@x1" x2="@x2" y1="@y1" y2="@y2"
+              stroke-width="@(LineWidth)"
+              stroke="@Colors.Green.Default"/>
       }
-    </div>
+
+      _svgHelper1.Cmd_Render(g1, 0, builder);
+    </g>
   }
-</div>
+
+
+  @foreach (var coordinate in State.Value.Board.GetAllCoordinates())
+  {
+    var color = GetColor(coordinate);
+
+    var cx = coordinate.Column * SquareSize
+             + SquareSize * 0.5;
+
+    var cy = coordinate.Row * SquareSize
+             + SquareSize * 0.5;
+
+    <g @onclick="@(() => CellClicked(coordinate))">
+      <circle id="@($"{coordinate}_bigCircle")"
+              r="@CircleRadius"
+              cx="@cx"
+              cy="@cy"
+              stroke-width="@CircleStrokeWidth"
+              fill="@color"
+              stroke="@Colors.BlueGrey.Default">
+      </circle>
+
+      <text
+        x="@cx"
+        y="@cy"
+        dominant-baseline="middle"
+        text-anchor="middle"
+        fill="@Colors.Shades.Black">
+        @State.Value.Board.GetLetterAtCoordinate(coordinate).ButtonText
+      </text>
+    </g>
+  }
+
+
+
+</svg>
+
 
 <MudChip Icon="@Filled.MilitaryTech">@State.Value.Score</MudChip>
 <MudChip Icon="@Filled.Notes">@(State.Value.NumberOfWords)</MudChip>
@@ -90,47 +122,58 @@
 
   public bool IsGameInProgress => !State.Value.TimeSituation.IsFinished;
 
-  public (Color Color, bool Disabled) GetColor(Coordinate coordinate)
+  public string GetColor(Coordinate coordinate)
   {
     if (!IsGameInProgress || !State.Value.ChosenPositions.Any())
-      return (Color.Default, false);
+      return Colors.Grey.Default;
 
-    var moveResult = State.Value.TryGetMoveResult(coordinate);
+    var result = State.Value.TryGetMoveResult(coordinate);
 
-    return moveResult switch
+    var color = result switch
     {
-      MoveResult.IllegalMove      => (Color.Dark, true),
-      MoveResult.InvalidWord      => (Color.Secondary, true),
-      MoveResult.MoveRetraced    => (Color.Tertiary, false),
-      MoveResult.TimeElapsed      => (Color.Dark, true),
-      MoveResult.WordAbandoned  => (Color.Tertiary, false),
-      MoveResult.WordComplete    => (Color.Primary, false),
-      MoveResult.WordContinued  => (Color.Success, false),
-      _ => throw new ArgumentOutOfRangeException(nameof(moveResult))
+      MoveResult.IllegalMove   => Colors.Grey.Default,
+      MoveResult.InvalidWord   => Colors.Grey.Darken1,
+      MoveResult.MoveRetraced  => Colors.Green.Lighten3,
+      MoveResult.TimeElapsed   => Colors.Grey.Default,
+      MoveResult.WordAbandoned => Colors.Green.Lighten5,
+      MoveResult.WordComplete  => Colors.Green.Darken2,
+      MoveResult.WordContinued => Colors.Green.Default,
+      _                        => throw new ArgumentOutOfRangeException(nameof(result))
       };
+
+    return color;
+  }
+
+  public double CircleRadius => FullWidth / Math.Max(Columns, Rows) * 0.325;
+  public double SquareSize => FullWidth / Math.Max(Columns, Rows);
+
+    public const double FullWidth = 360;
+    public const double FullHeight = 360;
+
+  public double LineWidth => FullWidth * 0.05;
+  public double CircleStrokeWidth => FullWidth * 0.01;
+
+  public int Columns => State.Value.Board.Columns;
+  public int Rows => State.Value.Board.Rows;
+
+  public void CellClicked(Coordinate coordinate)
+  {
+    Dispatcher.Dispatch(new ChooseCellAction(coordinate));
   }
 
 }
 
 <style>
 
-  .box { display: block }
-
-  .cell {
-    top: calc(90vmin / @State.Value.MaxDimension);
-    right: calc(90vmin / @State.Value.MaxDimension);
-  }
-
-  .square {
-
-    position: relative;
-    width: calc(100% / @State.Value.MaxDimension);
-    height: calc(100% / @State.Value.MaxDimension);
+  .moggleSVG {
     font-family: monospace;
-    font-size: 8px;
-    font-size: calc(30vmin / @State.Value.MaxDimension);
-    min-width: 8px;
-    min-height: 8px;
-    transition: top 2s, left 2s;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+    font-size: @(144 / Math.Max(Columns, Rows) )px;
+    width: 100%;
+    font-weight: bold;
   }
 </style>

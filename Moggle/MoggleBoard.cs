@@ -5,11 +5,11 @@ using System.Text;
 namespace Moggle
 {
 
-public record MoggleBoard(ImmutableArray<Letter> Letters, int Width)
+public record MoggleBoard(ImmutableArray<Letter> Letters, int Columns)
 {
     public Letter GetLetterAtCoordinate(Coordinate coordinate)
     {
-        var index = (coordinate.Row * Width) + coordinate.Column;
+        var index = (coordinate.Row * Columns) + coordinate.Column;
 
         return GetLetterAtIndex(index);
     }
@@ -19,14 +19,14 @@ public record MoggleBoard(ImmutableArray<Letter> Letters, int Width)
         return Letters[i % Letters.Length];
     }
 
-    public int Height => Letters.Length / Width;
+    public int Rows => Letters.Length / Columns;
 
-    public Coordinate MaxCoordinate => new(Height - 1, Width - 1);
+    public Coordinate MaxCoordinate => new(Rows - 1, Columns - 1);
 
     public IEnumerable<Coordinate> GetAllCoordinates()
     {
-        for (var c = 0; c < Width; c++)
-        for (var r = 0; r < Height; r++)
+        for (var c = 0; c < Columns; c++)
+        for (var r = 0; r < Rows; r++)
             yield return new Coordinate(r, c);
     }
 
@@ -34,9 +34,9 @@ public record MoggleBoard(ImmutableArray<Letter> Letters, int Width)
     {
         StringBuilder sb = new();
 
-        for (var r = 0; r < Height; r++)
+        for (var r = 0; r < Rows; r++)
         {
-            for (var c = 0; c < Width; c++)
+            for (var c = 0; c < Columns; c++)
             {
                 var l = GetLetterAtCoordinate(new Coordinate(r, c));
                 sb.Append(l.ButtonText);

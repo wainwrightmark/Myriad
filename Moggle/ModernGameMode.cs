@@ -52,10 +52,9 @@ public record ModernGameMode : BagGameMode
         get
         {
             foreach (var setting in base.Settings)
-            {
                 yield return setting;
-                yield return MinWordLength;
-            }
+
+            yield return MinWordLength;
         }
     }
 

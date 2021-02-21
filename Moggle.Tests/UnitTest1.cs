@@ -118,8 +118,8 @@ namespace Moggle.Tests
             var s = CreateFromSeed(key).Board;
 
 
-            s.Height.Should().Be(4);
-            s.Width.Should().Be(4);
+            s.Rows.Should().Be(4);
+            s.Columns.Should().Be(4);
 
             s.Letters.Should().HaveCount(16);
 

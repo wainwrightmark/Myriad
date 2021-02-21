@@ -17,7 +17,7 @@ public record RotateAction(bool Clockwise) : IAction<MoggleState>
             ChosenPositions = state.ChosenPositions
                 .Select(x => x.Rotate(state.Board.MaxCoordinate, Clockwise ? -1 : 1))
                 .ToImmutableList(),
-            Board = state.Board with{Width = state.Board.Height}
+            Board = state.Board with{Columns = state.Board.Rows}
         };
     }
 }
