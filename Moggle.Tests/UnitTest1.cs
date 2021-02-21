@@ -181,11 +181,13 @@ namespace Moggle.Tests
         }
 
         [Theory]
-        [InlineData(10,100, 3, 3)]
+        [InlineData(1000,1000000, 3, 3)]
         public void FindBestExpressionSeeds(int numberToGet, int numberToTake, int width, int height)
         {
-            var seeds = new List<(string text, int wordCount)>();
-            var sw = Stopwatch.StartNew();
+            var seeds  = new List<(string text, int wordCount)>();
+            var sw     = Stopwatch.StartNew();
+            var target = ExpressionGameMode.Maximum.Default - ExpressionGameMode.Minimum.Default + 1;
+
             foreach (var seed in _wordList.Value.LegalWords.Shuffle(new Random(0)).Take(numberToTake))
             {
                 var state = CreateMathStateFromSeed(seed, false, width, height);
@@ -193,6 +195,10 @@ namespace Moggle.Tests
                 var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
 
                 seeds.Add((seed, words.Count));
+
+                if(words.Count >= target)
+                    TestOutputHelper.WriteLine(seed);
+
             }
             sw.Stop();
 
@@ -247,6 +253,8 @@ namespace Moggle.Tests
         [InlineData("abhors", false, 3, 3)]
         [InlineData("proxys", false, 3, 3)]
         [InlineData("equation", false, 3, 3)]
+        [InlineData("caricaturist", false, 3, 3)]
+        [InlineData("gaiety", false, 3, 3)]
         public void TestMathSolver(string seed, bool equation, int height, int width)
         {
             var state = CreateMathStateFromSeed(seed, equation, width, height);

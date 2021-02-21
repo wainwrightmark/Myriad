@@ -55,7 +55,7 @@ public record ExpressionGameMode : BagGameMode
     }
 
     public static readonly Setting.Integer Minimum = new(nameof(Minimum), int.MinValue, int.MaxValue, 1);
-    public static readonly Setting.Integer Maximum = new(nameof(Maximum), 0, int.MaxValue, 99);
+    public static readonly Setting.Integer Maximum = new(nameof(Maximum), 0, int.MaxValue, 100);
 
         /// <inheritdoc />
         public override string GetDefaultLetters(int width, int height)
