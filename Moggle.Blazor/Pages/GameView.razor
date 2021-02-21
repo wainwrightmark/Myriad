@@ -44,7 +44,7 @@
   @foreach (var coordinate in State.Value.Board.GetAllCoordinates())
   {
     var rotated = coordinate.Rotate(State.Value.Board.MaxCoordinate, -State.Value.Rotation);
-    var color = GetColor(coordinate);
+    var color = GetColor(rotated);
 
     var cx = rotated.Column * SquareSize
              + SquareSize * 0.5;
