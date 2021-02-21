@@ -12,18 +12,24 @@
     <g>
       @{
         var index = 0;
-        @foreach (var ((r1, c1), (r2, c2)) in State.Value.ChosenPositions
+        @foreach (var (co1, co2) in State.Value.ChosenPositions
           .Pairwise((a, b) => (a, b)))
         {
-          var x1 = c1 * SquareSize + SquareSize * 0.5;
-          var y1 = r1 * SquareSize + SquareSize * 0.5;
-          var x2 = c2 * SquareSize + SquareSize * 0.5;
-          var y2 = r2 * SquareSize + SquareSize * 0.5;
+          var x1 = co1.Column * SquareSize + SquareSize * 0.5;
+          var y1 = co1.Row * SquareSize + SquareSize * 0.5;
 
-          <line id="@($"line-{index}")" x1="@x1" x2="@x2" y1="@y1" y2="@y2"
+
+          var angle = ((co1.GetAngle(co2)) % 360) +"deg";
+
+          <line id="@($"line-{index}")"
                 stroke-width="@(LineWidth)"
                 stroke="@Colors.Green.Default"
-                style="transition: 2s ease-out">
+                style="transform: translate(@(x1)px, @(y1)px) rotate(@angle); opacity: 1; transition: 2s ease-out;"
+                x1 ="0"
+                y1 ="0"
+                x2 ="@SquareSize"
+                y2="0">
+
           </line>
           index++;
         }
@@ -31,6 +37,10 @@
         <line id="@($"line-{index}")"
                 stroke-width="@(LineWidth)"
                 stroke="@Colors.Green.Default"
+                x1 ="0"
+                y1 ="0"
+                x2 ="@SquareSize"
+                y2="0"
                 style="opacity: 0;  transition: 2s ease-out">
           </line>
       }

@@ -25,6 +25,16 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
         };
     }
 
+    /// <summary>
+    /// Gets the angle in degrees from this coordinate to the other
+    /// </summary>
+    public double GetAngle(Coordinate other)
+    {
+        float xDiff = other.Column - Column;
+        float yDiff = other.Row - Row;
+        return Math.Atan2(yDiff, xDiff) * 180.0 / Math.PI;
+    }
+
     public Coordinate ReflectColumn(int maxColumn) => new(Row, maxColumn - Column);
     public Coordinate ReflectRow(int maxRow) => new(maxRow - Row, Column);
 
@@ -70,40 +80,43 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
     }
 
     public bool HasAtLeastXNeighbors(int x, Coordinate maxCoordinate)
+    {
+        int requiredDimensions;
+
+        switch (x)
         {
-            int requiredDimensions;
-            switch (x)
-            {
-                case <= 0: return true;
-                case <= 1: requiredDimensions = 1;
-                    break;
-                case <= 3: requiredDimensions = 2;
-                    break;
-                case <= 5: requiredDimensions = 3;
-                    break;
-                case <= 8: requiredDimensions = 4;
-                    break;
-                default:   return false;
-            }
-
-            var dimensions = 0;
-
-            if (Row > 0)
-                dimensions++;
-
-            if (Row < maxCoordinate.Row)
-                dimensions++;
-
-            if (Column > 0)
-                dimensions++;
-
-            if (Column < maxCoordinate.Column)
-                dimensions++;
-
-            return dimensions >= requiredDimensions;
-
-
+            case <= 0: return true;
+            case <= 1:
+                requiredDimensions = 1;
+                break;
+            case <= 3:
+                requiredDimensions = 2;
+                break;
+            case <= 5:
+                requiredDimensions = 3;
+                break;
+            case <= 8:
+                requiredDimensions = 4;
+                break;
+            default: return false;
         }
+
+        var dimensions = 0;
+
+        if (Row > 0)
+            dimensions++;
+
+        if (Row < maxCoordinate.Row)
+            dimensions++;
+
+        if (Column > 0)
+            dimensions++;
+
+        if (Column < maxCoordinate.Column)
+            dimensions++;
+
+        return dimensions >= requiredDimensions;
+    }
 
     public IEnumerable<Coordinate> GetPositionsUpTo()
     {
