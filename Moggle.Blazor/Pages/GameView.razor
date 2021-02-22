@@ -162,7 +162,7 @@
       MoveResult.InvalidWord   => Colors.Grey.Darken1,
       MoveResult.MoveRetraced  => Colors.Green.Lighten3,
       MoveResult.TimeElapsed   => Colors.Grey.Default,
-      MoveResult.WordAbandoned => Colors.Green.Lighten5,
+      MoveResult.WordAbandoned => Colors.Orange.Default,
       MoveResult.WordComplete  => Colors.Green.Darken2,
       MoveResult.WordContinued => Colors.Green.Default,
       _                        => throw new ArgumentOutOfRangeException(nameof(result))
@@ -171,7 +171,7 @@
     return color;
   }
 
-  public double CircleRadius => FullWidth / Math.Max(Columns, Rows) * 0.325;
+  public double CircleRadius => FullWidth / Math.Max(Columns, Rows) * 0.4;
   public double SquareSize => FullWidth / Math.Max(Columns, Rows);
 
     public const double FullWidth = 360;

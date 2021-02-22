@@ -24,7 +24,7 @@ public record MathExpressionWord : FoundWord
     protected override int CompareTo(FoundWord fw)
     {
         if (fw is MathExpressionWord mew)
-            return Result.CompareTo(mew.Result);
+            return -Result.CompareTo(mew.Result);
 
         return base.CompareTo(fw);
     }

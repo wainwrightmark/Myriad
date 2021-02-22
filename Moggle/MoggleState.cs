@@ -36,7 +36,6 @@ public abstract record TimeSituation
 
     public static TimeSituation Create(int duration)
     {
-
         TimeSituation ts = duration <= 0
             ? Infinite.Instance
             : new FinishAt(DateTime.Now.AddSeconds(duration));
@@ -44,7 +43,13 @@ public abstract record TimeSituation
         return ts;
     }
 
-    public static readonly Setting.Integer Duration = new (nameof(Duration), -1, int.MaxValue, 120, 10);
+    public static readonly Setting.Integer Duration = new(
+        nameof(Duration),
+        -1,
+        int.MaxValue,
+        120,
+        10
+    );
 }
 
 public record MoggleState(
@@ -97,76 +102,53 @@ public record MoggleState(
             return MoveResult.IllegalMove.Instance;
 
         if (TimeSituation.IsFinished)
-            return new MoveResult.TimeElapsed(this with { TimeSituation = TimeSituation.Finished.Instance});
-
-        if (!ChosenPositions.Any())
-        {
-            if (Solver.IsLegalPrefix(GetLetterAtCoordinate(coordinate).WordText))
-                return new MoveResult.WordContinued(this with
+            return new MoveResult.TimeElapsed(
+                this with
                 {
-                    ChosenPositions =
-                    ChosenPositions.Add(coordinate)
-                });
+                    TimeSituation = TimeSituation.Finished.Instance,
+                    ChosenPositions = ImmutableList<Coordinate>.Empty
+                }
+            );
 
-            return MoveResult.IllegalMove.Instance;
-        }
-
-        if (ChosenPositions.Last().Equals(coordinate))
+        if (ChosenPositions.Any() && ChosenPositions.Last().Equals(coordinate))
         {
-            if (ChosenPositions.Count >= Solver.SolveSettings.MinimumTermLength) //Complete a word
-            {
-                var word = string.Join(
-                    "",
-                    ChosenPositions.Select(GetLetterAtCoordinate).Select(x => x.WordText)
-                );
-
-                var foundWord = Solver.CheckLegal(word);
-
-                if (foundWord is null)
-                    return MoveResult.InvalidWord.Instance;
-
-                var stateWithWord = this with
-                {
-                    ChosenPositions = ImmutableList<Coordinate>.Empty,
-                    FoundWords = FoundWords.Add(foundWord)
-                };
-
-                return new MoveResult.WordComplete(stateWithWord, foundWord);
-            }
-
-            if (ChosenPositions.Count <= 1) //Give up on this path
-            {
-                return new MoveResult.WordAbandoned(
-                    this with { ChosenPositions = ImmutableList<Coordinate>.Empty }
-                );
-            }
-
-            return MoveResult.IllegalMove.Instance;
+            return new MoveResult.WordAbandoned(
+                this with { ChosenPositions = ImmutableList<Coordinate>.Empty }
+            );
         }
 
         var index = ChosenPositions.LastIndexOf(coordinate);
 
-        switch (index)
+        if (index >= 0)
+            return new MoveResult.MoveRetraced(
+                this with { ChosenPositions = ChosenPositions.Take(index + 1).ToImmutableList() }
+            );
+
+        if (!ChosenPositions.Any() || ChosenPositions.Last().IsAdjacent(coordinate))
         {
-            //Give up on this path
-            case 0:
-                return new MoveResult.WordAbandoned(
-                    this with { ChosenPositions = ImmutableList<Coordinate>.Empty }
-                );
-            //Go back some number of steps
-            case >= 1:
-                return new MoveResult.MoveRetraced(
+            var newChosenPositions = ChosenPositions.Add(coordinate);
+
+            var word = string.Join(
+                "",
+                newChosenPositions.Select(GetLetterAtCoordinate).Select(x => x.WordText)
+            );
+
+            var foundWord = Solver.CheckLegal(word);
+
+            if (foundWord is not null && !FoundWords.Contains(foundWord))
+            {
+                return new MoveResult.WordComplete(
                     this with
                     {
-                        ChosenPositions = ChosenPositions.Take(index + 1).ToImmutableList()
-                    }
+                        FoundWords = FoundWords.Add(foundWord),
+                        ChosenPositions = newChosenPositions
+                    },
+                    foundWord
                 );
-        }
+            }
 
-        if (ChosenPositions.Last().IsAdjacent(coordinate)) //add this coordinate to the list
-            return new MoveResult.WordContinued(
-                this with { ChosenPositions = ChosenPositions.Add(coordinate) }
-            );
+            return new MoveResult.WordContinued(this with { ChosenPositions = newChosenPositions });
+        }
 
         return MoveResult.IllegalMove.Instance;
     }
