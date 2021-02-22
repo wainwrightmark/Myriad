@@ -231,12 +231,12 @@
     font-weight: bold;
   }
 
-  .square { transition: 1s ease-out; }
+  .square { transition: 1s cubic-bezier(0, 1.06,0.16,0.461) }
 
   .circle {
     stroke-width: @CircleStrokeWidth;
 
-    transition: 1s ease-out;
+    transition: 1s cubic-bezier(0, 1.45,0.72,1.33)
   }
 
   .circle:hover { transform: scale(1.2) }
@@ -244,7 +244,7 @@
   .line {
     stroke-width: @LineWidth;
     stroke: @Colors.Green.Default;
-    transition: 1s ease-out;
+    transition: 1s cubic-bezier(0, 1.06,0.16,0.461);
   }
 
   .foundWord {
