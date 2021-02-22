@@ -7,6 +7,8 @@
 <svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
 
   <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
+
+
   @if (State.Value.ChosenPositions.Any())
   {
     <g>
@@ -42,12 +44,7 @@
   {
     var rotated = coordinate.Rotate(State.Value.Board.MaxCoordinate, -State.Value.Rotation);
     var color = GetColor(rotated);
-
-    var cx = rotated.Column * SquareSize
-             + SquareSize * 0.5;
-
-    var cy = rotated.Row * SquareSize
-             + SquareSize * 0.5;
+    var (cx, cy) = GetLocation(rotated);
 
     <g class="square"
        style="transform: translate(@(cx)px, @(cy)px);"
@@ -72,6 +69,24 @@
     </g>
   }
 
+  @foreach (var (word, coordinate, _) in _recentFoundWords)
+  {
+      var (cx, cy) = GetLocation(coordinate);
+    <text>
+      <text
+        fill="@Colors.Green.Default"
+        class="foundWord"
+        pointer-events="none"
+        id="score"
+        x="@cx"
+        y="@cy"
+        dominant-baseline="middle"
+        text-anchor="middle">
+        @word.Display
+
+      </text>
+    </text>
+  }
 
 
 </svg>
@@ -168,11 +183,37 @@
   public int Columns => State.Value.Board.Columns;
   public int Rows => State.Value.Board.Rows;
 
+  private List<(FoundWord word, Coordinate coordinate, DateTime expiryDate)> _recentFoundWords = new();
+
   public void CellClicked(Coordinate coordinate)
   {
+    var mr = State.Value.TryGetMoveResult(coordinate);
+
     Dispatcher.Dispatch(new ChooseCellAction(coordinate));
+    UpdateRecentlyFoundWords(mr, coordinate);
   }
 
+  private void UpdateRecentlyFoundWords(MoveResult moveResult, Coordinate coordinate)
+  {
+    _recentFoundWords.RemoveAll(x => x.expiryDate < DateTime.Now);
+
+    if (moveResult is MoveResult.WordComplete wc)
+    {
+      _recentFoundWords.Add((wc.FoundWord, coordinate, DateTime.Now.AddMilliseconds(FoundWordDuration)));
+    }
+  }
+
+  public (double x, double y) GetLocation(Coordinate rotated)
+  {
+    var cx = rotated.Column * SquareSize
+             + SquareSize * 0.5;
+
+    var cy = rotated.Row * SquareSize
+             + SquareSize * 0.5;
+    return (cx, cy);
+  }
+
+      public const int FoundWordDuration = 5000;
 
 }
 
@@ -190,12 +231,12 @@
     font-weight: bold;
   }
 
-  .square { transition: 2s ease-out; }
+  .square { transition: 1s ease-out; }
 
   .circle {
     stroke-width: @CircleStrokeWidth;
 
-    transition: 2s ease-out;
+    transition: 1s ease-out;
   }
 
   .circle:hover { transform: scale(1.2) }
@@ -203,6 +244,30 @@
   .line {
     stroke-width: @LineWidth;
     stroke: @Colors.Green.Default;
-    transition: 2s ease-out;
+    transition: 1s ease-out;
   }
+
+  .foundWord {
+    animation-name: disappearAnimation;
+    animation-duration: @(FoundWordDuration)ms;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-out;
+  }
+
+
+  @@keyframes disappearAnimation {
+    0% { opacity: 1; }
+
+    50% {
+      opacity: 0.5;
+      transform: scale(2, 2);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(4, 4) rotate(360deg);
+    }
+  }
+
+
 </style>

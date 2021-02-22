@@ -7,7 +7,7 @@ public abstract record MoveResult
 
     public abstract record FailResult : MoveResult;
 
-    public record WordComplete(MoggleState MoggleState) : SuccessResult(MoggleState) { }
+    public record WordComplete(MoggleState MoggleState, FoundWord FoundWord) : SuccessResult(MoggleState) { }
     public record WordContinued(MoggleState MoggleState) : SuccessResult(MoggleState) { }
     public record WordAbandoned(MoggleState MoggleState) : SuccessResult(MoggleState) { }
     public record MoveRetraced(MoggleState MoggleState) : SuccessResult(MoggleState) { }

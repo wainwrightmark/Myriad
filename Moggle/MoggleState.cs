@@ -131,7 +131,7 @@ public record MoggleState(
                     FoundWords = FoundWords.Add(foundWord)
                 };
 
-                return new MoveResult.WordComplete(stateWithWord);
+                return new MoveResult.WordComplete(stateWithWord, foundWord);
             }
 
             if (ChosenPositions.Count <= 1) //Give up on this path
