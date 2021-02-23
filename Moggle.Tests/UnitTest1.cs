@@ -48,7 +48,7 @@ namespace Moggle.Tests
                             height.ToString()
                         ),
                     }
-                )
+                ), null
             );
         }
 
@@ -84,7 +84,7 @@ namespace Moggle.Tests
                             height.ToString()
                         )
                     }
-                )
+                ), null
 
 
                     );

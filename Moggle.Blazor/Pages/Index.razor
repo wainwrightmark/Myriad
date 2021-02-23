@@ -2,6 +2,7 @@
 @using System.Collections.Immutable
 @inject NavigationManager NavigationManager
 @using Moggle.Blazor.Pages
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 
 <GameView StartGameAction="_startGameAction"/>
@@ -10,20 +11,26 @@
 @code
 {
 
-    /// <inheritdoc />
-    protected override void OnParametersSet()
+  /// <inheritdoc />
+  protected override async Task OnParametersSetAsync()
+  {
+    var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+    var parseDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+    if (parseDict.TryGetValue("mode", out var modeString) && AllGameModes.Modes.TryGetValue(modeString, out var mode))
     {
-      var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+      var dict2 = parseDict.ToImmutableDictionary(x => x.Key, x => x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
 
-      var parseDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+      var gameKey = Moggle.SavedGame.CreateGameString(mode, dict2);
 
-      if (parseDict.TryGetValue("mode", out var modeString) && AllGameModes.Modes.TryGetValue(modeString, out var mode))
-      {
-        var dict2 = parseDict.ToImmutableDictionary(x => x.Key, x => x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+      var savedGame = await localStorage.GetItemAsync<Moggle.SavedGame>(gameKey);
 
-        _startGameAction = new StartGameAction(WordList.LazyInstance.Value, mode, dict2);
-      }
+      _startGameAction = new StartGameAction(WordList.LazyInstance, mode, dict2, savedGame);
     }
 
-    private StartGameAction? _startGameAction = null;
+    await base.OnParametersSetAsync();
+  }
+
+  private StartGameAction? _startGameAction = null;
 }

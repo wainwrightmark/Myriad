@@ -1,4 +1,6 @@
 ﻿@using System.Collections.Immutable
+
+
 <MudDialog>
   <DialogActions>
     <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -42,13 +44,15 @@
   {
     if (GameMode is not null)
     {
-      var action = new StartGameAction(WordList.LazyInstance.Value, GameMode, SetValues.ToImmutableDictionary());
+      var result = new StartDialogResult(GameMode, SetValues.ToImmutableDictionary());
 
-      MudDialog.Close(DialogResult.Ok(action));
+      MudDialog.Close(DialogResult.Ok(result));
     }
   }
 
   void Cancel() => MudDialog.Cancel();
+
+  public record StartDialogResult(IMoggleGameMode Mode, ImmutableDictionary<string, string> Settings);
 
 
 }

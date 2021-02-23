@@ -66,25 +66,46 @@ public record MoggleState(
 {
     public static readonly MoggleState DefaultState =
         StartNewGame(
-            WordList.LazyInstance.Value,
-            ModernGameMode.Instance,
-            ImmutableDictionary<string, string>.Empty
+            WordList.LazyInstance,
+            CenturyGameMode.Instance,
+            ImmutableDictionary<string, string>.Empty, null
         );
 
     public static MoggleState StartNewGame(
         WordList wordList,
         IMoggleGameMode gameMode,
-        ImmutableDictionary<string, string> settings)
+        ImmutableDictionary<string, string> settings,
+        SavedGame? savedGame) => StartNewGame(
+        new Lazy<WordList>(() => wordList),
+        gameMode,
+        settings,
+        savedGame
+    );
+
+    public static MoggleState StartNewGame(
+        Lazy<WordList> wordList,
+        IMoggleGameMode gameMode,
+        ImmutableDictionary<string, string> settings, SavedGame? savedGame)
     {
         var (board, solveSettings, timeSituation) = gameMode.CreateGame(settings);
 
+        var                           solver = new Solver(wordList, solveSettings);
+        ImmutableSortedSet<FoundWord> foundWords;
+
+        if (savedGame == null)
+            foundWords = ImmutableSortedSet<FoundWord>.Empty;
+        else
+            foundWords = savedGame.FoundWords.Select(solver.CheckLegal)
+                .Where(x => x is not null)
+                .ToImmutableSortedSet()!;
+
         MoggleState newState = new(
             board,
-            new Solver(wordList, solveSettings),
+            solver,
             timeSituation,
             0,
             ImmutableList<Coordinate>.Empty,
-            ImmutableSortedSet<FoundWord>.Empty,
+            foundWords,
             ImmutableHashSet<FoundWord>.Empty,
             null,
             gameMode,

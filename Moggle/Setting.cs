@@ -88,9 +88,14 @@ public abstract record Setting(string Name)
 
             return Default;
         }
+
+        /// <inheritdoc />
+        public override string DefaultString => Default?.ToString()??"";
     }
 
     public abstract bool IsValid(string s);
+
+    public abstract string DefaultString {get;}
 }
 
 }

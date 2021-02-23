@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -9,6 +10,8 @@ namespace Moggle
 
 public record Solver(WordList WordList, SolveSettings SolveSettings)
 {
+        public Solver(Lazy<WordList> wordList, SolveSettings solveSettings) :this(solveSettings.AllowWords? wordList.Value : WordList.Empty, solveSettings){}
+
     public FoundWord? CheckLegal(string s)
     {
         if (SolveSettings.MinWordLength.HasValue && s.Length >= SolveSettings.MinWordLength

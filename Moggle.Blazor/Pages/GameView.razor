@@ -2,6 +2,7 @@
 @using MoreLinq.Extensions
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 
 <svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
@@ -71,7 +72,7 @@
 
   @foreach (var (word, coordinate, _) in _recentFoundWords)
   {
-      var (cx, cy) = GetLocation(coordinate);
+    var (cx, cy) = GetLocation(coordinate);
     <text>
       <text
         fill="@Colors.Green.Default"
@@ -185,21 +186,25 @@
 
   private List<(FoundWord word, Coordinate coordinate, DateTime expiryDate)> _recentFoundWords = new();
 
-  public void CellClicked(Coordinate coordinate)
+  public async Task CellClicked(Coordinate coordinate)
   {
     var mr = State.Value.TryGetMoveResult(coordinate);
 
     Dispatcher.Dispatch(new ChooseCellAction(coordinate));
-    UpdateRecentlyFoundWords(mr, coordinate);
+    await UpdateRecentlyFoundWords(mr, coordinate);
   }
 
-  private void UpdateRecentlyFoundWords(MoveResult moveResult, Coordinate coordinate)
+  private async Task UpdateRecentlyFoundWords(MoveResult moveResult, Coordinate coordinate)
   {
     _recentFoundWords.RemoveAll(x => x.expiryDate < DateTime.Now);
 
     if (moveResult is MoveResult.WordComplete wc)
     {
       _recentFoundWords.Add((wc.FoundWord, coordinate, DateTime.Now.AddMilliseconds(FoundWordDuration)));
+
+      var sessionInfo = SavedGame.Create(wc.MoggleState);
+
+      await localStorage.SetItemAsync(sessionInfo.GameString, sessionInfo);
     }
   }
 
@@ -213,7 +218,8 @@
     return (cx, cy);
   }
 
-      public const int FoundWordDuration = 5000;
+    public const int FoundWordDuration = 5000;
+
 
 }
 
@@ -231,12 +237,12 @@
     font-weight: bold;
   }
 
-  .square { transition: 1s cubic-bezier(0, 1.06,0.16,0.461) }
+  .square { transition: 1s cubic-bezier(0, 1.06, 0.16, 0.461) }
 
   .circle {
     stroke-width: @CircleStrokeWidth;
 
-    transition: 1s cubic-bezier(0, 1.45,0.72,1.33)
+    transition: 1s cubic-bezier(0, 1.45, 0.72, 1.33)
   }
 
   .circle:hover { transform: scale(1.2) }
@@ -244,7 +250,7 @@
   .line {
     stroke-width: @LineWidth;
     stroke: @Colors.Green.Default;
-    transition: 1s cubic-bezier(0, 1.06,0.16,0.461);
+    transition: 1s cubic-bezier(0, 1.06, 0.16, 0.461);
   }
 
   .foundWord {

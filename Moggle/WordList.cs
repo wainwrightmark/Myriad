@@ -44,6 +44,8 @@ public record WordList(IReadOnlySet<string> LegalWords, IReadOnlySet<string> Leg
                 return; //We already have this prefix and therefore all prior prefixes
         }
     }
+
+    public static  WordList Empty { get; } = FromWords(Array.Empty<string>());
 }
 
 }

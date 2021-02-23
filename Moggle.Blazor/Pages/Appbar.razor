@@ -1,9 +1,9 @@
 ﻿@using System.Threading
 @using Fluxor
-@using System.IO
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
 @inject NavigationManager NavManager
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 
 <MudFab Color="Color.Secondary" Icon="@Filled.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(false))"/>
@@ -68,15 +68,15 @@
     if (r.Cancelled)
       return;
 
-    if (r.Data is StartGameAction sga)
+    if (r.Data is StartDialog.StartDialogResult startDialogResult)
     {
-      var uri = NavManager.BaseUri;
-      uri += $"?mode={sga.GameMode.Name}";
-      @foreach (var s in sga.Settings)
-      {
-        uri += $"&{s.Key}={s.Value}";
-      }
+      var gameString = Moggle.SavedGame.CreateGameString(startDialogResult.Mode, startDialogResult.Settings);
+      var savedGame = await localStorage.GetItemAsync<Moggle.SavedGame>(gameString);
 
+
+      var uri = NavManager.BaseUri + $"?{gameString}";
+
+      var sga = new StartGameAction(WordList.LazyInstance, startDialogResult.Mode, startDialogResult.Settings, savedGame);
       NavManager.NavigateTo(uri);
 
       Dispatcher.Dispatch(sga);

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Blazored.LocalStorage;
 using Fluxor;
 using MudBlazor;
 using MudBlazor.Services;
@@ -27,6 +28,9 @@ namespace Moggle.Blazor
             builder.Services.AddMudBlazorDialog();
             builder.Services.AddMudBlazorSnackbar();
             builder.Services.AddMudBlazorResizeListener();
+
+            builder.Services.AddBlazoredLocalStorage();
+
 
             var host = builder.Build();
 
