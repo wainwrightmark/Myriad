@@ -59,7 +59,7 @@ namespace Moggle.Tests
             int width = 4,
             int height = 4)
         {
-            IMoggleGameMode mode = equation ? EquationGameMode.Instance : ExpressionGameMode.Instance;
+            IMoggleGameMode mode = equation ? EquationGameMode.Instance : CenturyGameMode.Instance;
 
             return MoggleState.StartNewGame(
                     _wordList.Value,
@@ -186,7 +186,7 @@ namespace Moggle.Tests
         {
             var seeds  = new List<(string text, int wordCount)>();
             var sw     = Stopwatch.StartNew();
-            var target = ExpressionGameMode.Maximum.Default - ExpressionGameMode.Minimum.Default + 1;
+            var target = CenturyGameMode.Maximum.Default - CenturyGameMode.Minimum.Default + 1;
 
             foreach (var seed in _wordList.Value.LegalWords.Shuffle(new Random(0)).Take(numberToTake))
             {

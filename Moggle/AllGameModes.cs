@@ -11,9 +11,10 @@ public static class AllGameModes
         new List<IMoggleGameMode>()
         {
             ModernGameMode.Instance,
+            CenturyGameMode.Instance,
             ClassicGameMode.Instance,
             EquationGameMode.Instance,
-            ExpressionGameMode.Instance,
+
             FixedGameMode.Instance,
             SecretGameMode.Instance
         }.ToDictionary(x=>x.Name, StringComparer.OrdinalIgnoreCase);

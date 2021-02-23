@@ -5,13 +5,13 @@ using System.Text;
 namespace Moggle
 {
 
-public record ExpressionGameMode : BagGameMode
+public record CenturyGameMode : BagGameMode
 {
-    private ExpressionGameMode() { }
-    public static ExpressionGameMode Instance { get; } = new();
+    private CenturyGameMode() { }
+    public static CenturyGameMode Instance { get; } = new();
 
     /// <inheritdoc />
-    public override string Name => "Expression";
+    public override string Name => "Century";
 
     /// <inheritdoc />
     public override string Letters
@@ -20,7 +20,7 @@ public record ExpressionGameMode : BagGameMode
         {
             var sb = new StringBuilder();
 
-            var terms = new List<(char c, int number)>()
+            var terms = new List<(char c, int number)>() //TODO find best ratios
             {
                 ('1', 4),
                 ('2', 4),
@@ -62,9 +62,6 @@ public record ExpressionGameMode : BagGameMode
         {
             if (width == 3 && height == 3)
                 return "1238+4765";
-
-            //if (width == 4 && height == 4)
-            //    return "12345+-87*/64321";
 
             return "123+456*789";
         }
