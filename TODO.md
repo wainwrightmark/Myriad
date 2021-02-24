@@ -1,0 +1,9 @@
+- [ ] Come up with a better name
+- [ ] Database of Century Games
+- [ ] Create a good loading animation
+- [ ] Create animator
+- [ ] Allow division
+- [ ] Allow roman numerals
+- [ ] More english words
+- [ ] Change saved game settings (remove seed from key)
+- [ ] Animations for all found words
