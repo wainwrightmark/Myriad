@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -11,12 +12,32 @@ public abstract record Step
     public record Move(Coordinate Coordinate) : Step;
 }
 
-public record Animation(ImmutableList<Step> Steps, int CurrentIndex)
+public record StepWithResult(Step Step, MoveResult? MoveResult, int NewIndex)
 {
 
-    public Step Current => Steps[CurrentIndex % Steps.Count];
+}
 
-    public (Animation animation, Step step) Increment() => (this with { CurrentIndex = CurrentIndex + 1 }, Current);
+public record Animation(ImmutableList<Step> Steps)
+{
+    public StepWithResult GetStepWithResult(MoggleState state, int index)
+    {
+        var c = Steps[index % Steps.Count];
+
+        switch (c)
+        {
+            case Step.Move move:
+            {
+                var mr = state.TryGetMoveResult(move.Coordinate);
+                return new StepWithResult(c, mr, index + 1);
+            }
+            case Step.Rotate: return new StepWithResult(c, null, index +1 );
+            default:                 throw new ArgumentOutOfRangeException(nameof(index));
+        }
+    }
+
+    //public Step Current => Steps[CurrentIndex % Steps.Count];
+
+    //public (Animation animation, Step step) Increment() => (this with { CurrentIndex = CurrentIndex + 1 }, Current);
 
     public static Animation? Create(IEnumerable<string> allWords, MoggleBoard board)
     {
@@ -34,7 +55,7 @@ public record Animation(ImmutableList<Step> Steps, int CurrentIndex)
             }
         }
 
-        return steps.Any() ? new Animation(steps.ToImmutableList(), 0) : null;
+        return steps.Any() ? new Animation(steps.ToImmutableList()) : null;
     }
 }
 

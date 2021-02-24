@@ -54,7 +54,7 @@
   private async void DateTimeCallback(object state)
   {
     if(UiState.Value.Animation != null)
-      Dispatcher.Dispatch(new AnimateAction(UiState.Value.Animation));
+      Dispatcher.Dispatch(new AnimateAction(UiState.Value.Animation.GetStepWithResult(State.Value, UiState.Value.AnimationFrame)));
 
     await InvokeAsync(StateHasChanged);
   }

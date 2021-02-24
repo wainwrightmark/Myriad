@@ -22,7 +22,7 @@ public record StartGameAction(
     {
         var animation = GameMode.GetAnimation(Settings, WordList);
 
-        var newState = state with { Animation = animation, Rotate = state.Rotate + 1};
+        var newState = state with { Animation = animation, Rotate = (state.Rotate + 1) % 4};
         return newState;
     }
 }

@@ -12,7 +12,7 @@ public abstract record MoveResult
     )
     {
         /// <inheritdoc />
-        public override AnimationWord AnimationWord => new (
+        public override AnimationWord AnimationWord => new(
             FoundWord.AnimationString,
             AnimationWord.WordType.Found
         );
@@ -21,27 +21,28 @@ public abstract record MoveResult
     public record WordContinued
         (MoggleState MoggleState, AnimationWord AnimationWord1) : SuccessResult(MoggleState)
     {
-            /// <inheritdoc />
-            public override AnimationWord AnimationWord => AnimationWord1;
-        }
+        /// <inheritdoc />
+        public override AnimationWord AnimationWord => AnimationWord1;
+    }
 
     public record WordAbandoned(MoggleState MoggleState) : SuccessResult(MoggleState)
     {
-            /// <inheritdoc />
-            public override AnimationWord? AnimationWord => null;
-        }
+        /// <inheritdoc />
+        public override AnimationWord? AnimationWord => null;
+    }
 
-    public record MoveRetraced(MoggleState MoggleState, AnimationWord AnimationWord1) : SuccessResult(MoggleState)
+    public record MoveRetraced
+        (MoggleState MoggleState, AnimationWord AnimationWord1) : SuccessResult(MoggleState)
     {
-            /// <inheritdoc />
-            public override AnimationWord AnimationWord => AnimationWord1;
-        }
+        /// <inheritdoc />
+        public override AnimationWord AnimationWord => AnimationWord1;
+    }
 
     public record TimeElapsed(MoggleState MoggleState) : SuccessResult(MoggleState)
     {
-            /// <inheritdoc />
-            public override AnimationWord? AnimationWord => null;
-        }
+        /// <inheritdoc />
+        public override AnimationWord? AnimationWord => null;
+    }
 
     public record InvalidWord(AnimationWord AnimationWord1) : FailResult
     {
@@ -63,16 +64,13 @@ public abstract record MoveResult
 
 public record AnimationWord(string Text, AnimationWord.WordType Type)
 {
-        public enum WordType
-        {
-            Found,
-            PreviouslyFound,
-            Invalid,
-            Illegal
-        }
+    public enum WordType
+    {
+        Found,
+        PreviouslyFound,
+        Invalid,
+        Illegal
     }
-
-
-
+}
 
 }

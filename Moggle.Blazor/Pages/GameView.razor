@@ -63,7 +63,7 @@
     </g>
   }
 
-  @foreach (var (word, coordinate, rotate, _) in _recentFoundWords)
+  @foreach (var (word, coordinate, rotate, _) in UIState.Value.RecentWords)
   {
     var (cx, cy) = GetLocation(coordinate.Rotate(State.Value.Board.MaxCoordinate, -rotate), false);
 
@@ -119,8 +119,6 @@
   <MudButton OnClick="() => Dispatcher.Dispatch(new CheatAction())">Cheat</MudButton>
 }
 
-<labe>Rotation: @UIState.Value.Rotate</labe>
-
 
 @code {
 
@@ -163,14 +161,13 @@
     public int Columns => State.Value.Board.Columns;
     public int Rows => State.Value.Board.Rows;
 
-    private List<(AnimationWord word, Coordinate coordinate, int rotate, DateTime expiryDate)> _recentFoundWords = new();
 
     public async Task CellClicked(Coordinate coordinate)
     {
 
       var mr = State.Value.TryGetMoveResult(coordinate);
 
-      Dispatcher.Dispatch(new ChooseCellAction(coordinate));
+      Dispatcher.Dispatch(new MoveAction(mr, coordinate));
       await UpdateRecentlyFoundWords(mr, coordinate, true);
     }
 
@@ -188,12 +185,6 @@
 
     private async Task UpdateRecentlyFoundWords(MoveResult moveResult, Coordinate coordinate, bool save)
     {
-      _recentFoundWords.RemoveAll(x => x.expiryDate < DateTime.Now);
-
-      if (moveResult.AnimationWord is not null)
-      {
-        _recentFoundWords.Add((moveResult.AnimationWord, coordinate, UIState.Value.Rotate, DateTime.Now.AddMilliseconds(FoundWordDuration)));
-      }
 
       if (moveResult is MoveResult.WordComplete wc)
       {

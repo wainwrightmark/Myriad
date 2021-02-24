@@ -1,4 +1,6 @@
-﻿using Fluxor;
+﻿using System;
+using System.Collections.Immutable;
+using Fluxor;
 
 namespace Moggle
 {
@@ -20,10 +22,25 @@ public class UIStateFeature : Feature<UIState>
     /// <inheritdoc />
     protected override UIState GetInitialState()
     {
-        return new(0,  null);
+        return new(0,  null, 0,ImmutableList<RecentWord>.Empty, 5000);
     }
 }
 
-public record UIState(int Rotate, Animation? Animation) { }
+public record UIState(
+    int Rotate,
+    Animation? Animation,
+    int AnimationFrame,
+    ImmutableList<RecentWord> RecentWords,
+    int LingerDuration)
+{
 
 }
+
+public record RecentWord(
+    AnimationWord Word,
+    Coordinate Coordinate,
+    int Rotate,
+    DateTime ExpiryDate);
+
+}
+
