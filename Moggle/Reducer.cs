@@ -10,6 +10,12 @@ public static class Reducer
     {
         return action.Reduce(board);
     }
+
+    [ReducerMethod]
+    public static UIState Reduce(UIState board, IAction<UIState> action)
+    {
+        return action.Reduce(board);
+    }
 }
 
 }

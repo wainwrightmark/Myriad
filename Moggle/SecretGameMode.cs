@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Moggle
 {
@@ -13,23 +15,47 @@ public record SecretGameMode : IMoggleGameMode
     public string Name => "Secret";
 
     /// <inheritdoc />
-    public (MoggleBoard board, SolveSettings solveSettings, TimeSituation TimeSituation) CreateGame(
-        ImmutableDictionary<string, string> settings)
+    public (MoggleBoard board, Solver Solver, TimeSituation TimeSituation)
+        CreateGame(
+            ImmutableDictionary<string, string> settings,
+            Lazy<WordList> wordList)
     {
-        var words = Words.Get(settings);
+        var wordsText = Words.Get(settings);
 
         var minWordLength = MinWordLength.Get(settings);
 
-        var grid = Creator.GridCreator.CreateNodeGridFromText(words, null, 10000);
+        var allWords = Creator.GridCreator.GetAllWords(wordsText).ToList();
 
-        var random = RandomHelper.GetRandom(words);
+        var grid = Creator.GridCreator.CreateNodeGrid(allWords, null, 10000);
+
+        var random = RandomHelper.GetRandom(wordsText);
 
         var board         = grid.ToMoggleBoard(() => ModernGameMode.Instance.GetRandomRune(random));
         var solveSettings = new SolveSettings(minWordLength, false, null);
 
         var ts = TimeSituation.Create(TimeSituation.Duration.Get(settings));
 
-        return (board, solveSettings, ts);
+        var solver = new Solver(wordList.Value.AddWords(allWords), solveSettings);
+
+        return (board, solver, ts);
+    }
+
+    /// <inheritdoc />
+    public Animation? GetAnimation(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList) 
+    {
+        var wordsText = Words.Get(settings);
+        var allWords  = Creator.GridCreator.GetAllWords(wordsText).ToList();
+        var grid      = Creator.GridCreator.CreateNodeGrid(allWords, null, 10000);
+        var random    = RandomHelper.GetRandom(wordsText);
+
+        var board = grid.ToMoggleBoard(() => ModernGameMode.Instance.GetRandomRune(random));
+
+        if (Animate.Get(settings))
+            return Animation.Create(allWords, board);
+
+        return null;
     }
 
     public static readonly Setting.String Words =
@@ -42,6 +68,8 @@ public record SecretGameMode : IMoggleGameMode
 
     public static readonly Setting.Integer MinWordLength = new(nameof(MinWordLength), 2, 8, 3);
 
+    public static readonly Setting.Bool Animate = new(nameof(Animate), false);
+
     /// <inheritdoc />
     public IEnumerable<Setting> Settings
     {
@@ -50,6 +78,7 @@ public record SecretGameMode : IMoggleGameMode
             yield return MinWordLength;
             yield return Words;
             yield return TimeSituation.Duration;
+            yield return Animate;
         }
     }
 }

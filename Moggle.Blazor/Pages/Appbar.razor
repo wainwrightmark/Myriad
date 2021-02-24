@@ -6,7 +6,7 @@
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 
-<MudFab Color="Color.Secondary" Icon="@Filled.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(false))"/>
+<MudFab Color="Color.Secondary" Icon="@Filled.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(-1))"/>
 
 <MudAppBarSpacer/>
 
@@ -19,7 +19,7 @@
 
 <MudFab Color="Color.Primary" OnClick="OpenDialog" Size="Size.Large" Label="New Game"/>
 <MudAppBarSpacer/>
-<MudFab Color="Color.Secondary" Icon="@Filled.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(true))"/>
+<MudFab Color="Color.Secondary" Icon="@Filled.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(1))"/>
 <MudAppBarSpacer/>
 <MudIconButton
   Icon="@Brands.GitHub"
@@ -32,6 +32,9 @@
 
   [Inject]
   private IState<MoggleState> State { get; set; }
+
+  [Inject]
+  private IState<UIState> UiState { get; set; }
 
   [Inject]
   public IDispatcher Dispatcher { get; set; }
@@ -50,6 +53,9 @@
 
   private async void DateTimeCallback(object state)
   {
+    if(UiState.Value.Animation != null)
+      Dispatcher.Dispatch(new AnimateAction(UiState.Value.Animation));
+
     await InvokeAsync(StateHasChanged);
   }
 

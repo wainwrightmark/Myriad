@@ -156,6 +156,28 @@ namespace Moggle.Tests
         }
 
         [Theory]
+        [InlineData(@"fxxxxoxxxxrxxxxt", 4, "fort","0,0 1,1 2,2 3,3" )]
+        public void TestFindWord(string gridLetters, int width, string word,string expectedCoordinatesString)
+        {
+            var board = new MoggleBoard(
+                gridLetters.EnumerateRunes().Select(Letter.Create).ToImmutableArray(),
+                width
+            );
+
+            var letters = board.TryFindWord(word);
+
+            letters.Should().NotBeNull();
+
+            var expectedCoordinates = expectedCoordinatesString.Split(' ')
+                .Select(Coordinate.TryParse)
+                .ToList();
+
+            letters.Should().BeEquivalentTo(expectedCoordinates);
+
+
+        }
+
+        [Theory]
         [InlineData(1000, false, 4, 4)]
         public void FindBestSeeds(int numberToGet, bool classic, int width, int height)
         {

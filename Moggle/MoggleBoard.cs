@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 
 namespace Moggle
@@ -56,6 +57,50 @@ public record MoggleBoard(ImmutableArray<Letter> Letters, int Columns)
             .Replace('\n',   '\t')
             .Replace("\t\t", "\t")
             .Trim();
+    }
+
+    public ImmutableList<Coordinate>? TryFindWord(string word)
+    {
+        var letters =
+            ImmutableStack.CreateRange(word.EnumerateRunes().Select(Letter.Create).Reverse());
+
+        var list = FindAllPathsToWord(letters, ImmutableList<Coordinate>.Empty, this)
+            .FirstOrDefault();
+
+        return list;
+
+        IEnumerable<ImmutableList<Coordinate>> FindAllPathsToWord(
+            ImmutableStack<Letter> remainingLetters,
+            ImmutableList<Coordinate> usedCoordinates,
+            MoggleBoard board)
+        {
+            if (!remainingLetters.Any())
+                yield return usedCoordinates;
+            else
+            {
+                var newRemainingLetters = remainingLetters.Pop(out var letterToFind);
+
+                var last = usedCoordinates.LastOrDefault();
+
+                var coordinatesToCheck = last?.GetAdjacentCoordinates(board.MaxCoordinate) ??
+                                         board.GetAllCoordinates();
+
+                foreach (var adj in coordinatesToCheck.Except(usedCoordinates))
+                {
+                    if (!board.GetLetterAtCoordinate(adj).Equals(letterToFind))
+                        continue;
+
+                    var newCoordinates = usedCoordinates.Add(adj);
+
+                    foreach (var finalList in FindAllPathsToWord(
+                        newRemainingLetters,
+                        newCoordinates,
+                        board
+                    ))
+                        yield return finalList;
+                }
+            }
+        }
     }
 }
 

@@ -6,4 +6,4 @@
 - [ ] Allow roman numerals
 - [ ] More english words
 - [ ] Change saved game settings (remove seed from key)
-- [ ] Animations for all found words
+- [x] Animations for all found words

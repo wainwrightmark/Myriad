@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -14,8 +15,10 @@ public record FixedGameMode : IMoggleGameMode
     public string Name => "Fixed";
 
     /// <inheritdoc />
-    public (MoggleBoard board, SolveSettings solveSettings, TimeSituation TimeSituation) CreateGame(
-        ImmutableDictionary<string, string> settings)
+    public (MoggleBoard board, Solver Solver, TimeSituation TimeSituation)
+        CreateGame(
+            ImmutableDictionary<string, string> settings,
+            Lazy<WordList> wordList)
     {
         var letters = Letters.Get(settings)
             .EnumerateRunes()
@@ -52,23 +55,83 @@ public record FixedGameMode : IMoggleGameMode
 
         var solveSettings = new SolveSettings(minWordLength, allowEquations, range);
 
-            var ts = TimeSituation.Create(TimeSituation.Duration.Get(settings));
+        var    ts = TimeSituation.Create(TimeSituation.Duration.Get(settings));
+        Solver solver;
 
-            return (board, solveSettings, ts);
+        var wordsToAnimate = WordsToAnimate.Get(settings);
+
+        if (string.IsNullOrWhiteSpace(wordsToAnimate))
+        {
+            solver    = new Solver(wordList, solveSettings);
+        }
+        else
+        {
+            var words = wordsToAnimate.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+            );
+            solver    = new Solver(wordList.Value.AddWords(words), solveSettings);
+        }
+
+        return (board, solver, ts);
+    }
+
+    /// <inheritdoc />
+    public Animation? GetAnimation(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
+    {
+        var letters = Letters.Get(settings)
+            .EnumerateRunes()
+            .Select(Letter.Create)
+            .ToImmutableArray();
+
+        var c = Coordinate.GetMaxCoordinateForSquareGrid(letters.Length);
+
+        var total = (c.Column + 1) * (c.Row + 1);
+
+        if (letters.Length < total)
+        {
+            letters = letters.AddRange(Enumerable.Repeat(PaddingLetter, total - letters.Length));
+        }
+
+        var board = new MoggleBoard(letters, c.Column + 1);
+
+        var wordsToAnimate = WordsToAnimate.Get(settings);
+
+        if (string.IsNullOrWhiteSpace(wordsToAnimate))
+            return null;
+
+        var words = wordsToAnimate.Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+        );
+
+        return Animation.Create(words, board);
     }
 
     private static readonly Letter PaddingLetter = Letter.Create("😊".EnumerateRunes().Single());
 
     public static readonly Setting.String Letters =
-        new(nameof(Letters), @".+", "tarantula", "Exact Grid Letters") { GetRandomValue = GoodSeedHelper.GetGoodSeed };
+        new(nameof(Letters), @".+", "tarantula", "Exact Grid Letters")
+        {
+            GetRandomValue = GoodSeedHelper.GetGoodSeed
+        };
 
     public static readonly Setting.Integer MinWordLength = new(nameof(MinWordLength), -1, 8, 3);
 
-        public static readonly Setting.Integer Minimum = new(nameof(Minimum), -1, int.MaxValue, -1);
-        public static readonly Setting.Integer Maximum = new(nameof(Maximum), -1, int.MaxValue, -1);
+    public static readonly Setting.Integer Minimum = new(nameof(Minimum), -1, int.MaxValue, -1);
+    public static readonly Setting.Integer Maximum = new(nameof(Maximum), -1, int.MaxValue, -1);
 
-        /// <inheritdoc />
-        public IEnumerable<Setting> Settings
+    public static readonly Setting.String WordsToAnimate = new(
+        nameof(WordsToAnimate),
+        null,
+        "",
+        "Words to Animate"
+    );
+
+    /// <inheritdoc />
+    public IEnumerable<Setting> Settings
     {
         get
         {
@@ -77,6 +140,7 @@ public record FixedGameMode : IMoggleGameMode
             yield return Minimum;
             yield return Maximum;
             yield return TimeSituation.Duration;
+            yield return WordsToAnimate;
         }
     }
 }

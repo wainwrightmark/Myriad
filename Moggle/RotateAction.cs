@@ -1,25 +1,15 @@
-﻿using System.Collections.Immutable;
-using System.Linq;
-
-namespace Moggle
+﻿namespace Moggle
 {
 
-public record RotateAction(bool Clockwise) : IAction<MoggleState>
+public record RotateAction(int Amount) : IAction<UIState>
 {
+
     /// <inheritdoc />
-    public MoggleState Reduce(MoggleState state)
+    public UIState Reduce(UIState state)
     {
-        var newRotation = Clockwise ? state.Rotation + 1 : state.Rotation - 1;
-
-        return state with
-        {
-            Rotation = newRotation,
-            ChosenPositions = state.ChosenPositions
-                .Select(x => x.Rotate(state.Board.MaxCoordinate, Clockwise ? -1 : 1))
-                .ToImmutableList(),
-            Board = state.Board with{Columns = state.Board.Rows}
-        };
+        return state with { Rotate = state.Rotate + Amount };
     }
 }
+
 
 }

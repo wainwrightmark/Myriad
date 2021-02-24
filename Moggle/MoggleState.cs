@@ -2,62 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Net.Http.Headers;
 
 namespace Moggle
 {
-
-public abstract record TimeSituation
-{
-    public record Infinite : TimeSituation
-    {
-        private Infinite() { }
-        public static Infinite Instance { get; } = new();
-
-        /// <inheritdoc />
-        public override bool IsFinished => false;
-    }
-
-    public record Finished : TimeSituation
-    {
-        private Finished() { }
-        public static Finished Instance { get; } = new();
-
-        /// <inheritdoc />
-        public override bool IsFinished => true;
-    }
-
-    public record FinishAt(DateTime DateTime) : TimeSituation
-    {
-        /// <inheritdoc />
-        public override bool IsFinished => DateTime.CompareTo(DateTime.Now) < 0;
-    }
-
-    public abstract bool IsFinished { get; }
-
-    public static TimeSituation Create(int duration)
-    {
-        TimeSituation ts = duration <= 0
-            ? Infinite.Instance
-            : new FinishAt(DateTime.Now.AddSeconds(duration));
-
-        return ts;
-    }
-
-    public static readonly Setting.Integer Duration = new(
-        nameof(Duration),
-        -1,
-        int.MaxValue,
-        120,
-        10
-    );
-}
 
 public record MoggleState(
     MoggleBoard Board,
     Solver Solver,
     TimeSituation TimeSituation,
-    int Rotation,
     ImmutableList<Coordinate> ChosenPositions,
     ImmutableSortedSet<FoundWord> FoundWords,
     ImmutableHashSet<FoundWord> DisabledWords,
@@ -90,9 +42,8 @@ public record MoggleState(
         ImmutableDictionary<string, string> settings,
         SavedGame? savedGame)
     {
-        var (board, solveSettings, timeSituation) = gameMode.CreateGame(settings);
+        var (board, solver, timeSituation) = gameMode.CreateGame(settings, wordList);
 
-        var                           solver = new Solver(wordList, solveSettings);
         ImmutableSortedSet<FoundWord> foundWords;
 
         if (savedGame == null)
@@ -107,7 +58,6 @@ public record MoggleState(
             board,
             solver,
             timeSituation,
-            0,
             ImmutableList<Coordinate>.Empty,
             foundWords,
             ImmutableHashSet<FoundWord>.Empty,
@@ -118,8 +68,6 @@ public record MoggleState(
 
         return newState;
     }
-
-    public int MaxDimension => Math.Max(Board.Columns, Board.Rows);
 
     public MoveResult TryGetMoveResult(Coordinate coordinate)
     {
@@ -202,8 +150,8 @@ public record MoggleState(
 
     public Letter GetLetterAtCoordinate(Coordinate coordinate)
     {
-        var newCoordinate = coordinate.Rotate(Board.MaxCoordinate, Rotation);
-        return Board.GetLetterAtCoordinate(newCoordinate);
+        //var newCoordinate = coordinate.Rotate(Board.MaxCoordinate, Rotation);
+        return Board.GetLetterAtCoordinate(coordinate);
     }
 
     public int Score
@@ -226,6 +174,20 @@ public record MoggleState(
             return FoundWords.Except(DisabledWords);
         }
     }
+
+    //public MoggleState Rotate(int amount)
+    //{
+    //    var newRotation = (Rotation + amount) % 4;
+    //    var newBoard    = newRotation % 2 == 1 ? Board with { Columns = Board.Rows } : Board;
+    //        return this with
+    //        {
+    //            Rotation = newRotation,
+    //            ChosenPositions = ChosenPositions
+    //            .Select(x => x.Rotate(Board.MaxCoordinate, amount))
+    //            .ToImmutableList(),
+    //            Board = newBoard
+    //        };
+    //    }
 }
 
 }

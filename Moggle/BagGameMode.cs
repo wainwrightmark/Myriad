@@ -16,8 +16,10 @@ public abstract record BagGameMode : IMoggleGameMode
     public abstract string Name { get; }
 
     /// <inheritdoc />
-    public (MoggleBoard board, SolveSettings solveSettings, TimeSituation TimeSituation) CreateGame(
-        ImmutableDictionary<string, string> settings)
+    public (MoggleBoard board, Solver Solver, TimeSituation TimeSituation)
+        CreateGame(
+            ImmutableDictionary<string, string> settings,
+            Lazy<WordList> wordList)
     {
         var width  = Width.Get(settings);
         var height = Height.Get(settings);
@@ -66,9 +68,16 @@ public abstract record BagGameMode : IMoggleGameMode
 
         var solveSettings = GetSolveSettings(settings);
 
-        var ts = TimeSituation.Create(DurationSetting.Get(settings));
+        var ts     = TimeSituation.Create(DurationSetting.Get(settings));
+        var solver = new Solver(wordList, solveSettings);
 
-        return (board, solveSettings, ts);
+        return (board, solver, ts);
+    }
+
+    /// <inheritdoc />
+    public Animation? GetAnimation(ImmutableDictionary<string, string> settings, Lazy<WordList> wordList)
+    {
+        return null;
     }
 
     public abstract string Letters { get; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Moggle
 {
@@ -172,6 +173,18 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
             return rowComparison;
 
         return Column.CompareTo(other.Column);
+    }
+
+    private static readonly Regex _regex = new (@"\A\s*\(?(?<x>\d+)\s*,\s*(?<y>\d+)\)?\s*\Z", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    public static Coordinate? TryParse(string s)
+    {
+        var m = _regex.Match(s);
+
+        if (m.Success)
+            return new Coordinate(int.Parse(m.Groups["x"].Value), int.Parse(m.Groups["y"].Value));
+
+        return null;
     }
 }
 

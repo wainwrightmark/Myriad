@@ -45,7 +45,19 @@ public record WordList(IReadOnlySet<string> LegalWords, IReadOnlySet<string> Leg
         }
     }
 
-    public static  WordList Empty { get; } = FromWords(Array.Empty<string>());
+    public static WordList Empty { get; } = FromWords(Array.Empty<string>());
+
+    public WordList AddWords(IReadOnlyCollection<string> words)
+    {
+        var newWords    = LegalWords.Union(words);
+        var newPrefixes = LegalPrefixes.ToHashSet();
+
+        foreach (var word in words)
+            AddAllPrefixes(word, newPrefixes);
+
+        return new WordList(newWords.ToHashSet(), newPrefixes);
+    }
+
 }
 
 }
