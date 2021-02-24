@@ -1,19 +1,19 @@
 ﻿namespace Moggle
 {
 
-public record MathExpressionWord : FoundWord
+public record ExpressionWord : FoundWord
 {
-    private MathExpressionWord(string text, int result) : base(text)
+    private ExpressionWord(string text, int result) : base(text)
     {
         Result = result;
     }
 
-    public static MathExpressionWord? TryCreate(string s)
+    public static ExpressionWord? TryCreate(string s)
     {
         var v = MathParser.Parser.GetExpressionValue(s);
 
         if (v.HasValue)
-            return new MathExpressionWord(s, v.Value);
+            return new ExpressionWord(s, v.Value);
 
         return null;
     }
@@ -23,7 +23,7 @@ public record MathExpressionWord : FoundWord
     /// <inheritdoc />
     protected override int CompareTo(FoundWord fw)
     {
-        if (fw is MathExpressionWord mew)
+        if (fw is ExpressionWord mew)
             return -Result.CompareTo(mew.Result);
 
         return base.CompareTo(fw);
@@ -34,6 +34,9 @@ public record MathExpressionWord : FoundWord
 
     /// <inheritdoc />
     public override string Comparison => Result.ToString();
+
+    /// <inheritdoc />
+    public override string AnimationString => Result.ToString();
 
     /// <inheritdoc />
     public override int Points => 1;

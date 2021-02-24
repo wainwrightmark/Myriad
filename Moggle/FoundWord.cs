@@ -8,6 +8,11 @@ public abstract record FoundWord(string Text) : IComparable
     public abstract string Display { get; }
     public abstract string Comparison { get; }
 
+    /// <summary>
+    /// The string that appears briefly after a word is found
+    /// </summary>
+    public abstract string AnimationString { get; }
+
     public abstract int Points { get; }
 
     /// <inheritdoc />
@@ -28,5 +33,6 @@ public abstract record FoundWord(string Text) : IComparable
 
     protected virtual int CompareTo(FoundWord fw) => string.Compare(Comparison, fw.Comparison, StringComparison.OrdinalIgnoreCase);
 }
+
 
 }

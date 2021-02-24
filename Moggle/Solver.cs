@@ -8,33 +8,80 @@ using Moggle.MathParser;
 namespace Moggle
 {
 
+public abstract record WordCheckResult(bool IsLegal)
+{
+    public record Invalid : WordCheckResult
+    {
+        private Invalid() : base(false) { }
+        public static Invalid Instance { get; } = new();
+
+        /// <inheritdoc />
+        public override AnimationWord ToAnimationWord(bool previouslyFound, string text)
+        {
+            return new (text, AnimationWord.WordType.Invalid);
+        }
+    }
+
+    public record Legal(FoundWord Word) : WordCheckResult(true)
+    {
+        /// <inheritdoc />
+        public override AnimationWord ToAnimationWord(bool previouslyFound, string text)
+        {
+            return new (
+                Word.AnimationString,
+                previouslyFound
+                    ? AnimationWord.WordType.PreviouslyFound
+                    : AnimationWord.WordType.Found
+            );
+        }
+    }
+
+    public record Illegal(FoundWord Word) : WordCheckResult(false)
+    {
+        /// <inheritdoc />
+        public override AnimationWord ToAnimationWord(bool previouslyFound, string text)
+        {
+            return new (Word.AnimationString, AnimationWord.WordType.Illegal);
+        }
+    }
+
+    public abstract AnimationWord ToAnimationWord(bool previouslyFound, string text);
+}
+
 public record Solver(WordList WordList, SolveSettings SolveSettings)
 {
-        public Solver(Lazy<WordList> wordList, SolveSettings solveSettings) :this(solveSettings.AllowWords? wordList.Value : WordList.Empty, solveSettings){}
+    public Solver(Lazy<WordList> wordList, SolveSettings solveSettings) : this(
+        solveSettings.AllowWords ? wordList.Value : WordList.Empty,
+        solveSettings
+    ) { }
 
-    public FoundWord? CheckLegal(string s)
+    public WordCheckResult CheckLegal(string s)
     {
         if (SolveSettings.MinWordLength.HasValue && s.Length >= SolveSettings.MinWordLength
                                                  && WordList.LegalWords.Contains(s))
-            return new StringWord(s);
+            return new WordCheckResult.Legal(new StringWord(s));
 
         if (SolveSettings.AllowMath && s.All(IsMath))
         {
             if (SolveSettings.AllowTrueEquations && Parser.IsValidEquation(s))
-                return new EquationWord(s);
+                return new WordCheckResult.Legal(new EquationWord(s));
 
             if (SolveSettings.MathExpressionsRange is not null)
             {
-                var w = MathExpressionWord.TryCreate(s);
+                var w = ExpressionWord.TryCreate(s);
 
-                if (w is not null
-                 && SolveSettings.MathExpressionsRange.Value.Min <= w.Result
-                 && w.Result <= SolveSettings.MathExpressionsRange.Value.Max)
-                    return w;
+                if (w is not null)
+                {
+                    if (SolveSettings.MathExpressionsRange.Value.Min <= w.Result
+                     && w.Result <= SolveSettings.MathExpressionsRange.Value.Max)
+                        return new WordCheckResult.Legal(w);
+
+                    return new WordCheckResult.Illegal(w);
+                }
             }
         }
 
-        return null;
+        return WordCheckResult.Invalid.Instance;
     }
 
     public bool IsLegalPrefix(string prefix)
@@ -136,8 +183,8 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
 
                 var w = _solver.CheckLegal(prefix);
 
-                if (w != null)
-                    WordsSoFar.Add(w);
+                if (w is WordCheckResult.Legal legalWord)
+                    WordsSoFar.Add(legalWord.Word);
 
                 var list = ImmutableList.Create(coordinate);
 
@@ -162,8 +209,8 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
 
                 var w = _solver.CheckLegal(newPrefix);
 
-                if (w != null)
-                    WordsSoFar.Add(w);
+                if (w is WordCheckResult.Legal legalWord)
+                    WordsSoFar.Add(legalWord.Word);
 
                 if (_solver.IsLegalPrefix(newPrefix))
                 {

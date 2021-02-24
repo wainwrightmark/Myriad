@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Net.Http.Headers;
 
 namespace Moggle
 {
@@ -68,7 +69,8 @@ public record MoggleState(
         StartNewGame(
             WordList.LazyInstance,
             CenturyGameMode.Instance,
-            ImmutableDictionary<string, string>.Empty, null
+            ImmutableDictionary<string, string>.Empty,
+            null
         );
 
     public static MoggleState StartNewGame(
@@ -85,7 +87,8 @@ public record MoggleState(
     public static MoggleState StartNewGame(
         Lazy<WordList> wordList,
         IMoggleGameMode gameMode,
-        ImmutableDictionary<string, string> settings, SavedGame? savedGame)
+        ImmutableDictionary<string, string> settings,
+        SavedGame? savedGame)
     {
         var (board, solveSettings, timeSituation) = gameMode.CreateGame(settings);
 
@@ -96,7 +99,8 @@ public record MoggleState(
             foundWords = ImmutableSortedSet<FoundWord>.Empty;
         else
             foundWords = savedGame.FoundWords.Select(solver.CheckLegal)
-                .Where(x => x is not null)
+                .OfType<WordCheckResult.Legal>()
+                .Select(x=>x.Word)
                 .ToImmutableSortedSet()!;
 
         MoggleState newState = new(
@@ -141,9 +145,20 @@ public record MoggleState(
         var index = ChosenPositions.LastIndexOf(coordinate);
 
         if (index >= 0)
-            return new MoveResult.MoveRetraced(
-                this with { ChosenPositions = ChosenPositions.Take(index + 1).ToImmutableList() }
+        {
+            var newChosenPositions = ChosenPositions.Take(index + 1).ToImmutableList();
+                var word = string.Join(
+                    "",
+                    newChosenPositions.Select(GetLetterAtCoordinate).Select(x => x.WordText)
+                );
+
+                var animationWord    = Solver.CheckLegal(word).ToAnimationWord(true, word);
+
+                return new MoveResult.MoveRetraced(
+                this with { ChosenPositions = newChosenPositions },
+                animationWord
             );
+        }
 
         if (!ChosenPositions.Any() || ChosenPositions.Last().IsAdjacent(coordinate))
         {
@@ -154,21 +169,32 @@ public record MoggleState(
                 newChosenPositions.Select(GetLetterAtCoordinate).Select(x => x.WordText)
             );
 
-            var foundWord = Solver.CheckLegal(word);
+            var checkResult = Solver.CheckLegal(word);
 
-            if (foundWord is not null && !FoundWords.Contains(foundWord))
+            if (checkResult is WordCheckResult.Legal legal)
             {
+                if (FoundWords.Contains(legal.Word))
+                {
+                    return new MoveResult.WordContinued(
+                        this with { ChosenPositions = newChosenPositions },
+                        checkResult.ToAnimationWord(true, word)
+                    );
+                }
+
                 return new MoveResult.WordComplete(
                     this with
                     {
-                        FoundWords = FoundWords.Add(foundWord),
+                        FoundWords = FoundWords.Add(legal.Word),
                         ChosenPositions = newChosenPositions
                     },
-                    foundWord
+                    legal.Word
                 );
             }
 
-            return new MoveResult.WordContinued(this with { ChosenPositions = newChosenPositions });
+            return new MoveResult.WordContinued(
+                this with { ChosenPositions = newChosenPositions },
+                checkResult.ToAnimationWord(false, word)
+            );
         }
 
         return MoveResult.IllegalMove.Instance;

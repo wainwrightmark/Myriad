@@ -73,9 +73,10 @@
   @foreach (var (word, coordinate, _) in _recentFoundWords)
   {
     var (cx, cy) = GetLocation(coordinate);
+
     <text>
       <text
-        fill="@Colors.Green.Default"
+        fill="@GetColor(word)"
         class="foundWord"
         pointer-events="none"
         id="score"
@@ -83,7 +84,7 @@
         y="@cy"
         dominant-baseline="middle"
         text-anchor="middle">
-        @word.Comparison
+        @word.Text
 
       </text>
     </text>
@@ -184,27 +185,44 @@
   public int Columns => State.Value.Board.Columns;
   public int Rows => State.Value.Board.Rows;
 
-  private List<(FoundWord word, Coordinate coordinate, DateTime expiryDate)> _recentFoundWords = new();
+  private List<(AnimationWord word, Coordinate coordinate, DateTime expiryDate)> _recentFoundWords = new();
 
   public async Task CellClicked(Coordinate coordinate)
   {
     var mr = State.Value.TryGetMoveResult(coordinate);
 
     Dispatcher.Dispatch(new ChooseCellAction(coordinate));
-    await UpdateRecentlyFoundWords(mr, coordinate);
+    await UpdateRecentlyFoundWords(mr, coordinate, true);
   }
 
-  private async Task UpdateRecentlyFoundWords(MoveResult moveResult, Coordinate coordinate)
+  private string GetColor(AnimationWord animationWord)
+  {
+    return animationWord.Type switch
+    {
+      AnimationWord.WordType.Found           => Colors.Green.Default,
+      AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
+      AnimationWord.WordType.Invalid         => Colors.Red.Default,
+      AnimationWord.WordType.Illegal => Colors.Orange.Default,
+      _                                      => throw new ArgumentOutOfRangeException()
+      };
+  }
+
+  private async Task UpdateRecentlyFoundWords(MoveResult moveResult, Coordinate coordinate, bool save)
   {
     _recentFoundWords.RemoveAll(x => x.expiryDate < DateTime.Now);
 
+    if (moveResult.AnimationWord is not null)
+    {
+      _recentFoundWords.Add((moveResult.AnimationWord, coordinate, DateTime.Now.AddMilliseconds(FoundWordDuration)));
+    }
+
     if (moveResult is MoveResult.WordComplete wc)
     {
-      _recentFoundWords.Add((wc.FoundWord, coordinate, DateTime.Now.AddMilliseconds(FoundWordDuration)));
-
-      var sessionInfo = SavedGame.Create(wc.MoggleState);
-
-      await localStorage.SetItemAsync(sessionInfo.GameString, sessionInfo);
+      if (save)
+      {
+        var sessionInfo = SavedGame.Create(wc.MoggleState);
+        await localStorage.SetItemAsync(sessionInfo.GameString, sessionInfo);
+      }
     }
   }
 
@@ -258,6 +276,7 @@
     animation-duration: @(FoundWordDuration)ms;
     animation-fill-mode: forwards;
     animation-timing-function: ease-out;
+    transform-origin: 40% 40%;
   }
 
 
@@ -265,13 +284,13 @@
     0% { opacity: 1; }
 
     50% {
-      opacity: 0.5;
+      opacity: 0.2;
       transform: scale(2, 2);
     }
 
     100% {
       opacity: 0;
-      transform: scale(4, 4) rotate(360deg);
+      transform: scale(4, 4) rotate(120deg);
     }
   }
 

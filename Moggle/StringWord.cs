@@ -7,6 +7,9 @@ public record StringWord(string Text) : FoundWord(Text)
 
     public override string Comparison => Text.ToLowerInvariant();
 
+    /// <inheritdoc />
+    public override string AnimationString => Text;
+
     public override int Points => ScoreWord(Text.Length);
 
     private static int ScoreWord(int length)
