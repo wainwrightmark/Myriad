@@ -1,20 +1,26 @@
-﻿using System.Collections.Immutable;
+﻿using Moggle.States;
 
 namespace Moggle
 {
 
-public record CheatAction : IAction<MoggleState>
+public record CheatAction : IAction<CheatState>
 {
     /// <inheritdoc />
-    public MoggleState Reduce(MoggleState state)
+    public CheatState Reduce(CheatState state)
     {
-        if (state.CheatWords != null)
+        if (!state.AllowCheating)
             return state;
 
-        var cheatWords = state.Solver.GetPossibleSolutions(state.Board);
+        return state with { Revealed = true };
+    }
+}
 
-        state = state with { CheatWords = cheatWords.ToImmutableList() };
-        return state;
+public record EnableCheatingAction : IAction<CheatState>
+{
+    /// <inheritdoc />
+    public CheatState Reduce(CheatState state)
+    {
+        return state with { AllowCheating = true };
     }
 }
 

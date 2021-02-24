@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Moggle.States;
 
 namespace Moggle
 {
@@ -34,10 +35,6 @@ public record Animation(ImmutableList<Step> Steps)
             default:                 throw new ArgumentOutOfRangeException(nameof(index));
         }
     }
-
-    //public Step Current => Steps[CurrentIndex % Steps.Count];
-
-    //public (Animation animation, Step step) Increment() => (this with { CurrentIndex = CurrentIndex + 1 }, Current);
 
     public static Animation? Create(IEnumerable<string> allWords, MoggleBoard board)
     {

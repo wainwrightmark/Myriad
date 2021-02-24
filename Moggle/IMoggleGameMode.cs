@@ -9,8 +9,10 @@ public interface IMoggleGameMode
 {
     string Name { get; }
 
-    (MoggleBoard board, Solver Solver, TimeSituation TimeSituation)
+    (MoggleBoard board, Solver Solver)
         CreateGame(ImmutableDictionary<string, string> settings, Lazy<WordList> wordList);
+
+    TimeSituation CreateTimeSituation(ImmutableDictionary<string, string> settings);
 
     Animation? GetAnimation(ImmutableDictionary<string, string> settings, Lazy<WordList> wordList);
 

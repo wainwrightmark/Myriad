@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
+using Moggle.States;
 
 namespace Moggle
 {
 
-public record MoveAction(MoveResult Result, Coordinate Coordinate) : IAction<MoggleState>,
-    IAction<UIState>
+//TODO less data in this action
+public record MoveAction(MoveResult Result, Coordinate Coordinate, string GameString) : IAction<MoggleState>,
+    IAction<RecentWordsState>
 {
     /// <inheritdoc />
     public MoggleState Reduce(MoggleState state)
@@ -17,25 +19,24 @@ public record MoveAction(MoveResult Result, Coordinate Coordinate) : IAction<Mog
     }
 
     /// <inheritdoc />
-    public UIState Reduce(UIState state)
+    public RecentWordsState Reduce(RecentWordsState state)
     {
-        var newState = state;
+        var newState = state with
+        {
+            RecentWords = state.RecentWords.RemoveAll(x => x.ExpiryDate < DateTime.Now)
+        };
+
         if (Result.AnimationWord is not null)
         {
             var rw = new RecentWord(
                 Result.AnimationWord,
                 Coordinate,
-                state.Rotate,
-                DateTime.Now.AddMilliseconds(state.LingerDuration)
+                state.Rotation,
+                DateTime.Now.AddMilliseconds(Result.AnimationWord.LingerDuration)
             );
 
             newState = newState with { RecentWords = state.RecentWords.Add(rw) };
         }
-
-        newState = newState with
-        {
-            RecentWords = newState.RecentWords.RemoveAll(x => x.ExpiryDate < DateTime.Now)
-        };
 
         return newState;
     }
@@ -55,6 +56,5 @@ public record LoadWordsAction(SavedGame Save) : IAction<MoggleState>
         return state;
     }
 }
-
 
 }

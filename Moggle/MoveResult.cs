@@ -1,4 +1,7 @@
-﻿namespace Moggle
+﻿using System;
+using Moggle.States;
+
+namespace Moggle
 {
 
 public abstract record MoveResult
@@ -38,11 +41,11 @@ public abstract record MoveResult
         public override AnimationWord AnimationWord => AnimationWord1;
     }
 
-    public record TimeElapsed(MoggleState MoggleState) : SuccessResult(MoggleState)
-    {
-        /// <inheritdoc />
-        public override AnimationWord? AnimationWord => null;
-    }
+    //public record TimeElapsed(MoggleState MoggleState) : SuccessResult(MoggleState)
+    //{
+    //    /// <inheritdoc />
+    //    public override AnimationWord? AnimationWord => null;
+    //}
 
     public record InvalidWord(AnimationWord AnimationWord1) : FailResult
     {
@@ -64,6 +67,23 @@ public abstract record MoveResult
 
 public record AnimationWord(string Text, AnimationWord.WordType Type)
 {
+        public int LingerDuration
+        {
+            get
+            {
+                const int basis = 1000;
+
+                return Type switch
+                {
+                    WordType.Found           => basis * 10,
+                    WordType.PreviouslyFound => basis * 5,
+                    WordType.Invalid         => basis * 1,
+                    WordType.Illegal         => basis * 3,
+                    _                        => throw new ArgumentOutOfRangeException()
+                };
+            }
+        }
+
     public enum WordType
     {
         Found,

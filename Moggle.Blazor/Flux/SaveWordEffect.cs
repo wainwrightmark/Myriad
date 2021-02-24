@@ -16,7 +16,7 @@ public class SaveWordEffect : Effect<MoveAction>
     {
         if (action.Result is MoveResult.WordComplete wc)
         {
-            var sessionInfo = SavedGame.Create(wc.MoggleState);
+            var sessionInfo = SavedGame.Create(action.GameString, wc.MoggleState);
             await _iLocalStorageService.SetItemAsync(sessionInfo.GameString, sessionInfo);
         }
     }

@@ -1,4 +1,5 @@
 ﻿@using Fluxor
+@using Moggle.States
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
@@ -36,7 +37,6 @@
 
   @foreach (var coordinate in State.Value.Board.GetAllCoordinates())
   {
-
     var color = GetColor(coordinate);
     var (cx, cy) = GetLocation(coordinate, true);
 
@@ -63,16 +63,17 @@
     </g>
   }
 
-  @foreach (var (word, coordinate, rotate, _) in UIState.Value.RecentWords)
+  @foreach (var (word, coordinate, rotate,_ ) in RecentWordsState.Value.RecentWords)
   {
     var (cx, cy) = GetLocation(coordinate.Rotate(State.Value.Board.MaxCoordinate, -rotate), false);
-
+    var id = $"{word.Text}{coordinate}";
     <text>
       <text
         fill="@GetColor(word)"
         class="foundWord"
+        style="animation-duration: @(word.LingerDuration)ms"
         pointer-events="none"
-        id="score"
+        id="@id"
         x="@cx"
         y="@cy"
         dominant-baseline="middle"
@@ -87,15 +88,15 @@
 </svg>
 
 
-<MudChip Icon="@Filled.MilitaryTech">@State.Value.Score</MudChip>
-<MudChip Icon="@Filled.Notes">@(State.Value.NumberOfWords)</MudChip>
+<MudChip Icon="@Filled.MilitaryTech">@UncheckedWordState.Value.GetScore(State.Value.FoundWords)</MudChip>
+<MudChip Icon="@Filled.Notes">@UncheckedWordState.Value.GetNumberOfWords(State.Value.FoundWords)</MudChip>
 
 
 <MudList>
 
-  @if (State.Value.CheatWords != null)
+  @if (CheatState.Value.Revealed)
   {
-    @foreach (var w in State.Value.CheatWords)
+    @foreach (var w in CheatState.Value.PossibleWords)
     {
       <MudChip Label="true">@w.Display</MudChip>
     }
@@ -107,14 +108,14 @@
       var word = w;
       <MudCheckBox
         Disabled="@(IsGameInProgress)"
-        CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableWord(word, b)); }"
+        CheckedChanged="(bool b) => { Dispatcher.Dispatch(new UnCheckWord(word, b)); }"
         Label=@word.Display
-        Checked="@(!State.Value.DisabledWords.Contains(word))"/>
+        Checked="@(!UncheckedWordState.Value.UncheckedWords.Contains(word))"/>
     }
   }
 </MudList>
 
-@if (State.Value.CheatWords == null && AllowCheating)
+@if (CheatState.Value.AllowCheating && !CheatState.Value.Revealed)
 {
   <MudButton OnClick="() => Dispatcher.Dispatch(new CheatAction())">Cheat</MudButton>
 }
@@ -126,12 +127,25 @@
     private IState<MoggleState> State { get; set; }
 
     [Inject]
-    private IState<UIState> UIState { get; set; }
+    private IState<TimeState> TimeState { get; set; }
+
+    [Inject]
+    private IState<FoundWordsState> UncheckedWordState { get; set; }
+
+    [Inject]
+    private IState<CheatState> CheatState { get; set; }
+
+    [Inject]
+    private IState<AnimationState> AnimationState { get; set; }
+
+    [Inject]
+    private IState<RecentWordsState> RecentWordsState { get; set; }
+
+    [Inject]
+    private IState<GameSettingsState> GameSettingsState { get; set; }
 
     [Inject]
     public IDispatcher Dispatcher { get; set; }
-
-    public bool AllowCheating => State.Value.LastSettings.ContainsKey("cheat");
 
     [Parameter]
     public StartGameAction? StartGameAction { get; set; }
@@ -145,9 +159,7 @@
       base.OnParametersSet();
     }
 
-    public bool IsGameInProgress => !State.Value.TimeSituation.IsFinished;
-
-
+    public bool IsGameInProgress => !TimeState.Value.TimeSituation.IsFinished;
 
     public double CircleRadius => FullWidth / Math.Max(Columns, Rows) * 0.4;
     public double SquareSize => FullWidth / Math.Max(Columns, Rows);
@@ -161,12 +173,13 @@
     public int Columns => State.Value.Board.Columns;
     public int Rows => State.Value.Board.Rows;
 
-
     public void CellClicked(Coordinate coordinate)
     {
-      var mr = State.Value.TryGetMoveResult(coordinate);
-
-      Dispatcher.Dispatch(new MoveAction(mr, coordinate));
+      if(IsGameInProgress)
+      {
+        var mr = State.Value.TryGetMoveResult(coordinate);
+      Dispatcher.Dispatch(new MoveAction(mr, coordinate, GameSettingsState.Value.GameString));
+      }
     }
 
     private string GetColor(AnimationWord animationWord)
@@ -183,11 +196,11 @@
 
     public Coordinate GetRotated(Coordinate coordinate) => coordinate.Rotate(
       State.Value.Board.MaxCoordinate,
-       UIState.Value.Rotate * -1);
+      RecentWordsState.Value.Rotation * -1);
 
-  public (double x, double y) GetLocation(Coordinate coordinate, bool rotate)
-  {
-    var rotated = rotate ? GetRotated(coordinate) : coordinate;
+    public (double x, double y) GetLocation(Coordinate coordinate, bool rotate)
+    {
+      var rotated = rotate ? GetRotated(coordinate) : coordinate;
 
       var cx = rotated.Column * SquareSize
                + SquareSize * 0.5;
@@ -201,6 +214,7 @@
     {
       if (!IsGameInProgress || !State.Value.ChosenPositions.Any())
         return Colors.Grey.Default;
+
       var result = State.Value.TryGetMoveResult(coordinate);
 
       var color = result switch
@@ -208,7 +222,6 @@
         MoveResult.IllegalMove   => Colors.Grey.Default,
         MoveResult.InvalidWord   => Colors.Grey.Darken1,
         MoveResult.MoveRetraced  => Colors.Green.Lighten3,
-        MoveResult.TimeElapsed   => Colors.Grey.Default,
         MoveResult.WordAbandoned => Colors.Orange.Default,
         MoveResult.WordComplete  => Colors.Green.Darken2,
         MoveResult.WordContinued => Colors.Green.Default,
@@ -218,9 +231,8 @@
       return color;
     }
 
-    public const int FoundWordDuration = 5000;
-
-
+    //const string animationTiming = "cubic-bezier(0, 1.06, 0.16, 0.461)";
+    const string animationTiming = "ease-out";
 }
 
 <style>
@@ -237,12 +249,12 @@
     font-weight: bold;
   }
 
-  .square { transition: 1s cubic-bezier(0, 1.06, 0.16, 0.461) }
+  .square { transition: 1s @animationTiming }
 
   .circle {
     stroke-width: @CircleStrokeWidth;
 
-    transition: 1s cubic-bezier(0, 1.45, 0.72, 1.33)
+    transition: 3s cubic-bezier(0, 1.45, 0.72, 1.33)
   }
 
   .circle:hover { transform: scale(1.2) }
@@ -250,12 +262,11 @@
   .line {
     stroke-width: @LineWidth;
     stroke: @Colors.Green.Default;
-    transition: 1s cubic-bezier(0, 1.06, 0.16, 0.461);
+    transition: 1s @animationTiming;
   }
 
   .foundWord {
     animation-name: disappearAnimation;
-    animation-duration: @(FoundWordDuration)ms;
     animation-fill-mode: forwards;
     animation-timing-function: ease-out;
     transform-origin: 40% 40%;

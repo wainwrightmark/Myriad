@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Moggle.States;
 using MoreLinq;
 using Xunit;
 using Xunit.Abstractions;
@@ -374,7 +375,24 @@ namespace Moggle.Tests
             }
         }
 
+        [Theory]
+        [InlineData(100)]
+        public void TestCenturyAnimate(int take)
+        {
+            var c = CenturyGameMode.Instance.GetAnimation(
+                ImmutableDictionary<string, string>.Empty.Add(CenturyGameMode.Instance.AnimateSetting.Name, true.ToString()),
+                WordList.LazyInstance
+            );
+            var (board, _) = CenturyGameMode.Instance.CreateGame(ImmutableDictionary<string, string>.Empty, WordList.LazyInstance);
 
+            foreach (var move in c.Steps.OfType<Step.Move>().Take(take))
+            {
+                var letter = board.GetLetterAtCoordinate(move.Coordinate);
+
+                TestOutputHelper.WriteLine(letter.ButtonText);
+            }
+
+        }
 
 
     }

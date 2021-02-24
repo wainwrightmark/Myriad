@@ -15,7 +15,7 @@ public record SecretGameMode : IMoggleGameMode
     public string Name => "Secret";
 
     /// <inheritdoc />
-    public (MoggleBoard board, Solver Solver, TimeSituation TimeSituation)
+    public (MoggleBoard board, Solver Solver)
         CreateGame(
             ImmutableDictionary<string, string> settings,
             Lazy<WordList> wordList)
@@ -33,17 +33,22 @@ public record SecretGameMode : IMoggleGameMode
         var board         = grid.ToMoggleBoard(() => ModernGameMode.Instance.GetRandomRune(random));
         var solveSettings = new SolveSettings(minWordLength, false, null);
 
-        var ts = TimeSituation.Create(TimeSituation.Duration.Get(settings));
-
         var solver = new Solver(wordList.Value.AddWords(allWords), solveSettings);
 
-        return (board, solver, ts);
+        return (board, solver);
+    }
+
+    /// <inheritdoc />
+    public TimeSituation CreateTimeSituation(ImmutableDictionary<string, string> settings)
+    {
+        var ts = TimeSituation.Create(TimeSituation.Duration.Get(settings));
+        return ts;
     }
 
     /// <inheritdoc />
     public Animation? GetAnimation(
         ImmutableDictionary<string, string> settings,
-        Lazy<WordList> wordList) 
+        Lazy<WordList> wordList)
     {
         var wordsText = Words.Get(settings);
         var allWords  = Creator.GridCreator.GetAllWords(wordsText).ToList();

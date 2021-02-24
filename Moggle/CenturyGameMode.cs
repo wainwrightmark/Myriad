@@ -54,6 +54,9 @@ public record CenturyGameMode : BagGameMode
         return new SolveSettings(null, false, (min, max));
     }
 
+    /// <inheritdoc />
+    public override bool ReverseAnimationOrder => true;
+
     public static readonly Setting.Integer Minimum = new(nameof(Minimum), int.MinValue, int.MaxValue, 1);
     public static readonly Setting.Integer Maximum = new(nameof(Maximum), 0, int.MaxValue, 100);
 
@@ -90,6 +93,7 @@ public record CenturyGameMode : BagGameMode
                 yield return Minimum;
                 yield return Maximum;
                 yield return DurationSetting;
+                yield return AnimateSetting;
             }
         }
 }

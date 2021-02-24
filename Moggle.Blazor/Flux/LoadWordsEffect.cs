@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Fluxor;
+using Moggle.States;
 
 namespace Moggle.Blazor.Flux
 {
@@ -14,7 +15,7 @@ public class LoadWordsEffect : Effect<StartGameAction>
     /// <inheritdoc />
     public override async Task HandleAsync(StartGameAction action, IDispatcher dispatcher)
     {
-        var gameString = Moggle.SavedGame.CreateGameString(action.GameMode, action.Settings);
+        var gameString = GameSettingsState.CreateGameString(action.GameMode, action.Settings);
         var savedGame  = await _iLocalStorageService.GetItemAsync<SavedGame>(gameString);
 
         if (savedGame != null)

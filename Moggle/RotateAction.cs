@@ -1,13 +1,15 @@
-﻿namespace Moggle
+﻿using Moggle.States;
+
+namespace Moggle
 {
 
-public record RotateAction(int Amount) : IAction<UIState>
+public record RotateAction(int Amount) : IAction<RecentWordsState>
 {
 
     /// <inheritdoc />
-    public UIState Reduce(UIState state)
+    public RecentWordsState Reduce(RecentWordsState state)
     {
-        return state with { Rotate = state.Rotate + Amount };
+        return state with { Rotation = (state.Rotation + Amount) % 4 };
     }
 }
 

@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Fluxor;
+using Moggle.States;
 
 namespace Moggle
 {
 
-public record AnimateAction(StepWithResult StepWithResult) : IAction<UIState>
+public record AnimateAction(StepWithResult StepWithResult, string GameString) : IAction<AnimationState>
 {
     /// <inheritdoc />
-    public UIState Reduce(UIState state)
+    public AnimationState Reduce(AnimationState state)
     {
 
         return state with { AnimationFrame = StepWithResult.NewIndex};
@@ -24,7 +25,7 @@ public class AnimateEffect : Effect<AnimateAction>
         switch (action.StepWithResult.Step)
         {
             case Step.Move move:
-                dispatcher.Dispatch(new MoveAction(action.StepWithResult.MoveResult!, move.Coordinate));
+                dispatcher.Dispatch(new MoveAction(action.StepWithResult.MoveResult!, move.Coordinate, action.GameString));
                 break;
             case Step.Rotate rotate:
                 dispatcher.Dispatch(new RotateAction(rotate.Amount));

@@ -15,7 +15,7 @@ public record FixedGameMode : IMoggleGameMode
     public string Name => "Fixed";
 
     /// <inheritdoc />
-    public (MoggleBoard board, Solver Solver, TimeSituation TimeSituation)
+    public (MoggleBoard board, Solver Solver)
         CreateGame(
             ImmutableDictionary<string, string> settings,
             Lazy<WordList> wordList)
@@ -55,14 +55,13 @@ public record FixedGameMode : IMoggleGameMode
 
         var solveSettings = new SolveSettings(minWordLength, allowEquations, range);
 
-        var    ts = TimeSituation.Create(TimeSituation.Duration.Get(settings));
         Solver solver;
 
         var wordsToAnimate = WordsToAnimate.Get(settings);
 
         if (string.IsNullOrWhiteSpace(wordsToAnimate))
         {
-            solver    = new Solver(wordList, solveSettings);
+            solver = new Solver(wordList, solveSettings);
         }
         else
         {
@@ -70,10 +69,18 @@ public record FixedGameMode : IMoggleGameMode
                 ' ',
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
             );
-            solver    = new Solver(wordList.Value.AddWords(words), solveSettings);
+
+            solver = new Solver(wordList.Value.AddWords(words), solveSettings);
         }
 
-        return (board, solver, ts);
+        return (board, solver);
+    }
+
+    /// <inheritdoc />
+    public TimeSituation CreateTimeSituation(ImmutableDictionary<string, string> settings)
+    {
+        var ts = TimeSituation.Create(TimeSituation.Duration.Get(settings));
+        return ts;
     }
 
     /// <inheritdoc />

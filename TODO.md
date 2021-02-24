@@ -1,7 +1,7 @@
 - [ ] Come up with a better name
 - [ ] Database of Century Games
 - [ ] Create a good loading animation
-- [ ] Create animator
+- [x] Create animator
 - [ ] Allow division
 - [ ] Allow roman numerals
 - [ ] More english words

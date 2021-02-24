@@ -114,10 +114,20 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
 
         finder.Run();
 
-        return finder.WordsSoFar.OrderBy(x => x);
+        return finder.WordsSoFar.Keys.OrderBy(x => x);
     }
 
-    private class WordFinder
+        public IEnumerable<KeyValuePair<FoundWord, ImmutableList<Coordinate>>> GetPossiblePaths(MoggleBoard board)
+        {
+            var finder = new WordFinder(board, this);
+
+            finder.Run();
+
+            return finder.WordsSoFar.OrderBy(x => x.Key);
+        }
+
+
+        private class WordFinder
     {
         public WordFinder(MoggleBoard board, Solver solver)
         {
@@ -125,7 +135,8 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             _solver = solver;
         }
 
-        public readonly ISet<FoundWord> WordsSoFar = new HashSet<FoundWord>();
+        public readonly ConcurrentDictionary<FoundWord, ImmutableList<Coordinate>> WordsSoFar =
+            new();
 
         private readonly Solver _solver;
 
@@ -143,10 +154,10 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
 
                 var w = _solver.CheckLegal(prefix);
 
-                if (w is WordCheckResult.Legal legalWord)
-                    WordsSoFar.Add(legalWord.Word);
-
                 var list = ImmutableList.Create(coordinate);
+
+                if (w is WordCheckResult.Legal legalWord)
+                    WordsSoFar.TryAdd(legalWord.Word, list);
 
                 _queue.Enqueue((prefix, list));
             }
@@ -169,12 +180,14 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
 
                 var w = _solver.CheckLegal(newPrefix);
 
+                var newList = usedCoordinates.Add(adjacentCoordinate);
+
                 if (w is WordCheckResult.Legal legalWord)
-                    WordsSoFar.Add(legalWord.Word);
+                    WordsSoFar.TryAdd(legalWord.Word, newList);
 
                 if (_solver.IsLegalPrefix(newPrefix))
                 {
-                    _queue.Enqueue((newPrefix, usedCoordinates.Add(adjacentCoordinate)));
+                    _queue.Enqueue((newPrefix, newList));
                 }
             }
         }

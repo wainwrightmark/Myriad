@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using Moggle.States;
 
 namespace Moggle
 {
@@ -9,10 +9,8 @@ namespace Moggle
 
         public string[] FoundWords { get; set; }
 
-        public static SavedGame Create(MoggleState state)
+        public static SavedGame Create(string gameString, MoggleState state)
         {
-            var gameString = CreateGameString(state.LastGameMode, state.LastSettings);
-
             return new()
             {
                 GameString = gameString,
@@ -20,15 +18,6 @@ namespace Moggle
             };
         }
 
-        public static string CreateGameString(IMoggleGameMode mode, IReadOnlyDictionary<string, string> settings)
-        {
-            var uri = $"mode={mode.Name}";
-            foreach(var (key, value) in mode.FilterSettings(settings))
-            {
-                uri += $"&{key.ToLowerInvariant()}={value}";
-            }
 
-            return uri;
-        }
     }
 }
