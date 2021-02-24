@@ -21,45 +21,32 @@ public record MoggleState(
         StartNewGame(
             WordList.LazyInstance,
             CenturyGameMode.Instance,
-            ImmutableDictionary<string, string>.Empty,
-            null
+            ImmutableDictionary<string, string>.Empty
         );
 
     public static MoggleState StartNewGame(
         WordList wordList,
         IMoggleGameMode gameMode,
-        ImmutableDictionary<string, string> settings,
-        SavedGame? savedGame) => StartNewGame(
+        ImmutableDictionary<string, string> settings) => StartNewGame(
         new Lazy<WordList>(() => wordList),
         gameMode,
-        settings,
-        savedGame
+        settings
     );
 
     public static MoggleState StartNewGame(
         Lazy<WordList> wordList,
         IMoggleGameMode gameMode,
-        ImmutableDictionary<string, string> settings,
-        SavedGame? savedGame)
+        ImmutableDictionary<string, string> settings)
     {
         var (board, solver, timeSituation) = gameMode.CreateGame(settings, wordList);
 
-        ImmutableSortedSet<FoundWord> foundWords;
-
-        if (savedGame == null)
-            foundWords = ImmutableSortedSet<FoundWord>.Empty;
-        else
-            foundWords = savedGame.FoundWords.Select(solver.CheckLegal)
-                .OfType<WordCheckResult.Legal>()
-                .Select(x=>x.Word)
-                .ToImmutableSortedSet()!;
 
         MoggleState newState = new(
             board,
             solver,
             timeSituation,
             ImmutableList<Coordinate>.Empty,
-            foundWords,
+             ImmutableSortedSet<FoundWord>.Empty,
             ImmutableHashSet<FoundWord>.Empty,
             null,
             gameMode,

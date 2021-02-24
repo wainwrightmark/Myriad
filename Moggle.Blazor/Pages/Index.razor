@@ -1,7 +1,6 @@
 ﻿@page "/"
 @using System.Collections.Immutable
 @inject NavigationManager NavigationManager
-@using Moggle.Blazor.Pages
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 
@@ -22,11 +21,7 @@
     {
       var dict2 = parseDict.ToImmutableDictionary(x => x.Key, x => x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
 
-      var gameKey = Moggle.SavedGame.CreateGameString(mode, dict2);
-
-      var savedGame = await localStorage.GetItemAsync<Moggle.SavedGame>(gameKey);
-
-      _startGameAction = new StartGameAction(WordList.LazyInstance, mode, dict2, savedGame);
+      _startGameAction = new StartGameAction(WordList.LazyInstance, mode, dict2);
     }
 
     await base.OnParametersSetAsync();

@@ -7,15 +7,13 @@ namespace Moggle
 public record StartGameAction(
     Lazy<WordList> WordList,
     IMoggleGameMode GameMode,
-    ImmutableDictionary<string, string> Settings,
-    SavedGame? SavedGame) : IAction<MoggleState>, IAction<UIState>
+    ImmutableDictionary<string, string> Settings) : IAction<MoggleState>, IAction<UIState>
 {
     /// <inheritdoc />
     public MoggleState Reduce(MoggleState board) => MoggleState.StartNewGame(
         WordList,
         GameMode,
-        Settings,
-        SavedGame
+        Settings
     );
 
     public UIState Reduce(UIState state)

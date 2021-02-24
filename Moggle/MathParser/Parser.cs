@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
-using System.Net.Http.Headers;
 using Superpower;
 using Superpower.Parsers;
 using Superpower.Tokenizers;

@@ -48,7 +48,7 @@ namespace Moggle.Tests
                             height.ToString()
                         ),
                     }
-                ), null
+                )
             );
         }
 
@@ -65,26 +65,26 @@ namespace Moggle.Tests
                     _wordList.Value,
                     mode,
                     ImmutableDictionary.CreateRange(
-                    new[]
-                    {
-                        new KeyValuePair<string, string>(
-                            EquationGameMode.Instance.Seed.Name,
-                            seed
-                        ),
-                        new KeyValuePair<string, string>(
-                            EquationGameMode.Instance.Width.Name,
-                            width.ToString()
-                        ),
-                        new KeyValuePair<string, string>(
-                            EquationGameMode.Instance.Height.Name,
-                            height.ToString()
-                        ),
-                        new KeyValuePair<string, string>(
-                            EquationGameMode.Instance.Height.Name,
-                            height.ToString()
-                        )
-                    }
-                ), null
+                        new[]
+                        {
+                            new KeyValuePair<string, string>(
+                                EquationGameMode.Instance.Seed.Name,
+                                seed
+                            ),
+                            new KeyValuePair<string, string>(
+                                EquationGameMode.Instance.Width.Name,
+                                width.ToString()
+                            ),
+                            new KeyValuePair<string, string>(
+                                EquationGameMode.Instance.Height.Name,
+                                height.ToString()
+                            ),
+                            new KeyValuePair<string, string>(
+                                EquationGameMode.Instance.Height.Name,
+                                height.ToString()
+                            )
+                        }
+                    )
 
 
                     );

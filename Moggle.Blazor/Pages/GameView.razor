@@ -162,13 +162,11 @@
     public int Rows => State.Value.Board.Rows;
 
 
-    public async Task CellClicked(Coordinate coordinate)
+    public void CellClicked(Coordinate coordinate)
     {
-
       var mr = State.Value.TryGetMoveResult(coordinate);
 
       Dispatcher.Dispatch(new MoveAction(mr, coordinate));
-      await UpdateRecentlyFoundWords(mr, coordinate, true);
     }
 
     private string GetColor(AnimationWord animationWord)
@@ -181,19 +179,6 @@
         AnimationWord.WordType.Illegal => Colors.Orange.Default,
         _                                      => throw new ArgumentOutOfRangeException()
       };
-    }
-
-    private async Task UpdateRecentlyFoundWords(MoveResult moveResult, Coordinate coordinate, bool save)
-    {
-
-      if (moveResult is MoveResult.WordComplete wc)
-      {
-        if (save)
-        {
-          var sessionInfo = SavedGame.Create(wc.MoggleState);
-          await localStorage.SetItemAsync(sessionInfo.GameString, sessionInfo);
-        }
-      }
     }
 
     public Coordinate GetRotated(Coordinate coordinate) => coordinate.Rotate(

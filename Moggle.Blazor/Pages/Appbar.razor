@@ -76,15 +76,7 @@
 
     if (r.Data is StartDialog.StartDialogResult startDialogResult)
     {
-      var gameString = Moggle.SavedGame.CreateGameString(startDialogResult.Mode, startDialogResult.Settings);
-      var savedGame = await localStorage.GetItemAsync<Moggle.SavedGame>(gameString);
-
-
-      var uri = NavManager.BaseUri + $"?{gameString}";
-
-      var sga = new StartGameAction(WordList.LazyInstance, startDialogResult.Mode, startDialogResult.Settings, savedGame);
-      NavManager.NavigateTo(uri);
-
+      var sga = new StartGameAction(WordList.LazyInstance, startDialogResult.Mode, startDialogResult.Settings);
       Dispatcher.Dispatch(sga);
     }
   }

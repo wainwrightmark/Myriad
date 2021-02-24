@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Moggle
 {
@@ -39,5 +40,21 @@ public record MoveAction(MoveResult Result, Coordinate Coordinate) : IAction<Mog
         return newState;
     }
 }
+
+public record LoadWordsAction(SavedGame Save) : IAction<MoggleState>
+{
+    /// <inheritdoc />
+    public MoggleState Reduce(MoggleState state)
+    {
+        var newWords = Save.FoundWords.Select(state.Solver.CheckLegal)
+            .OfType<WordCheckResult.Legal>()
+            .Select(x => x.Word);
+
+        state = state with { FoundWords = state.FoundWords.Union(newWords) };
+
+        return state;
+    }
+}
+
 
 }
