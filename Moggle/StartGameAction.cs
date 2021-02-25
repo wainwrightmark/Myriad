@@ -28,7 +28,7 @@ public record StartGameAction(
     {
         var animation = GameMode.GetAnimation(Settings, WordList);
 
-        var newState = state with { Animation = animation};
+        var newState = new AnimationState(animation, 0);
         return newState;
     }
 
@@ -49,23 +49,19 @@ public record StartGameAction(
         else
             possibleWords = ImmutableList<FoundWord>.Empty;
 
-        return  state with
-        {
-            Revealed = false,
-            PossibleWords = possibleWords
-        };
+        return new CheatState(state.AllowCheating, false, possibleWords);
     }
 
     /// <inheritdoc />
     public GameSettingsState Reduce(GameSettingsState settingsState)
     {
-        return settingsState with { LastGameMode = GameMode, LastSettings = Settings };
+        return new(GameMode, Settings);
     }
 
     /// <inheritdoc />
     public RecentWordsState Reduce(RecentWordsState state)
     {
-        return state with { Rotation = (state.Rotation + 1) % 4 };
+        return new(state.RecentWords, state.Rotation);
     }
 
     /// <inheritdoc />
@@ -73,13 +69,13 @@ public record StartGameAction(
     {
         var ts = GameMode.CreateTimeSituation(Settings);
 
-        return state with { TimeSituation = ts };
+        return new TimeState(ts);
     }
 
     /// <inheritdoc />
     public FoundWordsState Reduce(FoundWordsState state)
     {
-        return  state with { UncheckedWords = ImmutableHashSet<FoundWord>.Empty };
+        return new (ImmutableHashSet<FoundWord>.Empty);
     }
 }
 

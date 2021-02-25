@@ -76,7 +76,7 @@ public abstract record BagGameMode : IMoggleGameMode
     /// <inheritdoc />
     public TimeSituation CreateTimeSituation(ImmutableDictionary<string, string> settings)
     {
-        if(AnimateSetting.Get(settings))
+        if (AnimateSetting.Get(settings))
             return TimeSituation.Infinite.Instance;
 
         var ts = TimeSituation.Create(DurationSetting.Get(settings));
@@ -92,16 +92,27 @@ public abstract record BagGameMode : IMoggleGameMode
         {
             var (board, solver) = CreateGame(settings, wordList);
 
-            var paths = solver.GetPossiblePaths(board).Select(x => x.Value);
 
-            if (ReverseAnimationOrder)
-                paths = paths.Reverse();
+            var paths =
+                RemoveRedundant(
+                    solver.GetPossiblePaths(board),
+                    solver,
+                    board
+                );
+
+            var sortedPaths =
+                ReverseAnimationOrder?
+                paths.OrderByDescending(x=>x, ListComparer<Coordinate>.Instance) :
+                paths.OrderBy(x=>x, ListComparer<Coordinate>.Instance);
+
+
+
 
             var steps = new List<Step>();
 
             var previous = ImmutableList<Coordinate>.Empty;
 
-            foreach (var path in paths)
+            foreach (var path in sortedPaths)
             {
                 var stepsInCommon =
                     path.Zip(previous)
@@ -139,6 +150,74 @@ public abstract record BagGameMode : IMoggleGameMode
         }
 
         return null;
+    }
+
+    private static IEnumerable<ImmutableList<Coordinate>> RemoveRedundant(
+        IEnumerable<KeyValuePair<FoundWord, ImmutableList<Coordinate>>> initial,
+        Solver solver,
+        MoggleBoard board)
+    {
+        var everything = initial.Select(
+                x =>
+                    (finalValue: x.Key, coordinates: x.Value,
+                     subvalues: GetAllSubValues(x.Value).ToList())
+            )
+            .ToDictionary(x => x.finalValue);
+
+        var cont = true;
+
+        while (cont)
+        {
+            cont = false;
+
+            var singleSourceWords = everything.Values
+                .SelectMany(x =>  Enumerable.Append(x.subvalues,x.finalValue))
+                .GroupBy(x => x)
+                .Where(x => x.Count() == 1)
+                .Select(x => x.Key)
+                .ToList();
+
+            foreach (var singleSourceWord in singleSourceWords)
+            {
+                if (everything.Remove(singleSourceWord, out var av))
+                {
+                    cont = true; //we have successfully removed something
+                    yield return av.coordinates;
+                    foreach (var subWord in av.subvalues)
+                        everything.Remove(subWord);
+                }
+            }
+        }
+
+        while (everything.Any()) //Hopefully there will not be much left
+        {
+            var e = everything.First();
+
+            yield return e.Value.coordinates;
+
+            everything.Remove(e.Key);
+
+            foreach (var valueSubvalue in e.Value.subvalues)
+            {
+                everything.Remove(valueSubvalue);
+            }
+        }
+
+        IEnumerable<FoundWord> GetAllSubValues(ImmutableList<Coordinate> list)
+        {
+            for (var i = 1; i < list.Count; i++)
+            {
+                var text = string.Join(
+                    "",
+                    list.Take(i).Select(board.GetLetterAtCoordinate).Select(x => x.WordText)
+                );
+
+                var r = solver.CheckLegal(text);
+
+                if (r is WordCheckResult.Legal legal)
+                    yield return legal.Word;
+            }
+        }
     }
 
     public virtual bool ReverseAnimationOrder => false;

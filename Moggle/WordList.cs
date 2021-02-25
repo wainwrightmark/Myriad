@@ -53,9 +53,7 @@ public record WordList(IReadOnlySet<string> LegalWords, IReadOnlySet<string> Leg
         var newPrefixes = LegalPrefixes.ToHashSet();
 
         foreach (var word in words)
-            AddAllPrefixes(word, newPrefixes);
-
-        return new WordList(newWords.ToHashSet(), newPrefixes);
+            AddAllPrefixes(word, newPrefixes); return new WordList(newWords.ToHashSet(), newPrefixes);
     }
 
 }
