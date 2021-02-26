@@ -1,23 +1,33 @@
-﻿using System.Threading.Tasks;
-using Blazored.LocalStorage;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Fluxor;
+using TG.Blazor.IndexedDB;
 
 namespace Moggle.Blazor.Flux
 {
 
 public class SaveWordEffect : Effect<MoveAction>
 {
-    private readonly ILocalStorageService _iLocalStorageService;
+    private readonly IndexedDBManager   _database;
+    public SaveWordEffect(IndexedDBManager  database) {
+        _database = database;
 
-    public SaveWordEffect(ILocalStorageService lss) => _iLocalStorageService = lss;
+    }
 
     /// <inheritdoc />
     public override async Task HandleAsync(MoveAction action, IDispatcher dispatcher)
     {
+
+
         if (action.Result is MoveResult.WordComplete wc)
         {
-            var sessionInfo = SavedGame.Create(action.GameString, wc.MoggleState);
-            await _iLocalStorageService.SetItemAsync(sessionInfo.GameString, sessionInfo);
+            await _database.AddRecord(
+                new StoreRecord<SavedWord>()
+                {
+                    Storename = nameof(SavedWord),
+                    Data = new SavedWord() { boardId = action.BoardId, wordText = wc.FoundWord.Text }
+                }
+            );
         }
     }
 }

@@ -60,7 +60,8 @@
   {
     if (AnimationState.Value.Animation != null)
       Dispatcher.Dispatch(new AnimateAction(
-                            AnimationState.Value.Animation.GetStepWithResult(State.Value, AnimationState.Value.AnimationFrame), GameSettingsState.Value.GameString));
+                            State.Value.Board.UniqueKey,
+                            AnimationState.Value.Animation.GetStepWithResult(State.Value, AnimationState.Value.AnimationFrame)));
 
     await InvokeAsync(StateHasChanged);
   }

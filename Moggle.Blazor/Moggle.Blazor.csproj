@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazored.LocalStorage" Version="3.0.0" />
     <PackageReference Include="Fluxor" Version="4.0.0" />
     <PackageReference Include="Fluxor.Blazor.Web" Version="4.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.3" />
@@ -14,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="MudBlazor" Version="1.2.4" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
+    <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
   </ItemGroup>
 
   <ItemGroup>

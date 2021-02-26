@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Moggle.States;
 
@@ -6,7 +7,7 @@ namespace Moggle
 {
 
 //TODO less data in this action
-public record MoveAction(MoveResult Result, Coordinate Coordinate, string GameString) : IAction<MoggleState>,
+public record MoveAction(string BoardId, MoveResult Result, Coordinate Coordinate) : IAction<MoggleState>,
     IAction<RecentWordsState>
 {
     /// <inheritdoc />
@@ -42,18 +43,20 @@ public record MoveAction(MoveResult Result, Coordinate Coordinate, string GameSt
     }
 }
 
-public record LoadWordsAction(SavedGame Save) : IAction<MoggleState>
+public record LoadWordsAction(IReadOnlyList<SavedWord> Save) : IAction<MoggleState>
 {
     /// <inheritdoc />
     public MoggleState Reduce(MoggleState state)
     {
-        var newWords = Save.FoundWords.Select(state.Solver.CheckLegal)
+        var newWords =
+            state.FoundWords.Union(
+            Save.Select(x=> state.Solver.CheckLegal(x.wordText))
             .OfType<WordCheckResult.Legal>()
-            .Select(x => x.Word);
+            .Select(x => x.Word));
 
-        state = state with { FoundWords = state.FoundWords.Union(newWords) };
+        var newState  = state with { FoundWords = newWords };
 
-        return state;
+        return newState;
     }
 }
 

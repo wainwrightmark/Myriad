@@ -2,7 +2,6 @@
 @using Moggle.States
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
-@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 
 <svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
@@ -178,7 +177,7 @@
       if(IsGameInProgress)
       {
         var mr = State.Value.TryGetMoveResult(coordinate);
-      Dispatcher.Dispatch(new MoveAction(mr, coordinate, GameSettingsState.Value.GameString));
+      Dispatcher.Dispatch(new MoveAction(State.Value.Board.UniqueKey, mr, coordinate));
       }
     }
 

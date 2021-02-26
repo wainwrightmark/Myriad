@@ -6,7 +6,7 @@ using Moggle.States;
 namespace Moggle
 {
 
-public record AnimateAction(StepWithResult StepWithResult, string GameString) : IAction<AnimationState>
+public record AnimateAction(string GameId, StepWithResult StepWithResult) : IAction<AnimationState>
 {
     /// <inheritdoc />
     public AnimationState Reduce(AnimationState state)
@@ -25,7 +25,7 @@ public class AnimateEffect : Effect<AnimateAction>
         switch (action.StepWithResult.Step)
         {
             case Step.Move move:
-                dispatcher.Dispatch(new MoveAction(action.StepWithResult.MoveResult!, move.Coordinate, action.GameString));
+                dispatcher.Dispatch(new MoveAction(action.GameId, action.StepWithResult.MoveResult!, move.Coordinate));
                 break;
             case Step.Rotate rotate:
                 dispatcher.Dispatch(new RotateAction(rotate.Amount));
