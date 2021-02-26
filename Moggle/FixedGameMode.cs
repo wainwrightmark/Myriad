@@ -42,7 +42,7 @@ public record FixedGameMode : IMoggleGameMode
             minWordLength = null;
 
         var minimum = Minimum.Get(settings);
-        var maximum = Minimum.Get(settings);
+        var maximum = Maximum.Get(settings);
 
         (int, int)? range;
 

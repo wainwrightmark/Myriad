@@ -37,10 +37,12 @@ namespace Moggle.Tests
         [InlineData("12", 12)]
         [InlineData("1+2", 3)]
         [InlineData("11+12", 23)]
-        [InlineData("11*12", 134)]
+        [InlineData("11*12", 132)]
         [InlineData("11-12", -1)]
         [InlineData("1+*-12", null)]
         [InlineData("1+2=3", null)]
+        [InlineData("4/2", 2)]
+        [InlineData("4/3", null)]
         public void ShouldParseExpression(string text, int? expectedResult)
         {
             var r = Parser.GetExpressionValue(text);

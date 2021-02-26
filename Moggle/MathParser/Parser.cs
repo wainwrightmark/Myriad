@@ -44,7 +44,7 @@ public static class Parser
             if (!parseResult.HasValue)
                 return null;
 
-            int value;
+            decimal value;
 
             try
             {
@@ -55,7 +55,12 @@ public static class Parser
                 return null;
             }
 
-            return value;
+            var i = Convert.ToInt32(value);
+
+            if (value == i)
+                return i;
+
+            return null;//The number was not an integer - it may have been e.g. 0.5
         }
     }
 
@@ -89,7 +94,7 @@ public static class Parser
 
     static readonly TokenListParser<ArithmeticExpressionToken, Expression> Constant =
         Token.EqualTo(ArithmeticExpressionToken.Number)
-            .Apply(Numerics.IntegerInt32)
+            .Apply(Numerics.DecimalDecimal)
             .Select(n => (Expression)Expression.Constant(n));
 
     static readonly TokenListParser<ArithmeticExpressionToken, Expression> Factor =
@@ -112,9 +117,9 @@ public static class Parser
     static readonly TokenListParser<ArithmeticExpressionToken, Expression> Expr =
         Parse.Chain(Add.Or(Subtract), Term, Expression.MakeBinary);
 
-    public static readonly TokenListParser<ArithmeticExpressionToken, Expression<Func<int>>> Lambda
+    public static readonly TokenListParser<ArithmeticExpressionToken, Expression<Func<decimal>>> Lambda
         =
-        Expr.AtEnd().Select(body => Expression.Lambda<Func<int>>(body));
+        Expr.AtEnd().Select(body => Expression.Lambda<Func<decimal>>(body));
 
     public static readonly TokenListParser<ArithmeticExpressionToken, Equation> Equation =
         (from l in Expr

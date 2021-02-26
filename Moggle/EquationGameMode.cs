@@ -36,7 +36,7 @@ public record EquationGameMode : BagGameMode
                 ('+', 6),
                 ('*', 6),
                 ('-', 4),
-                //('/', 2) Can't do divide yet - remainders are bad
+                ('/', 4)// Can't do divide yet - remainders are bad
             };
 
             foreach (var (c, number) in terms)
