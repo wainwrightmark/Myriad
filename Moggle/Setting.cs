@@ -17,7 +17,7 @@ public abstract record Setting(string Name)
         /// <inheritdoc />
         public override bool TryGet(string s, out int value)
         {
-            if (int.TryParse(s, out value) && Min < value && value < Max)
+            if (int.TryParse(s, out value) && Min <= value && value <= Max)
                 return true;
 
             return false;
