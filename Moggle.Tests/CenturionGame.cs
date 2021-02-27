@@ -24,7 +24,8 @@ public class CenturionFinder
     }
 
     [Theory]
-    [InlineData(0, 1000)]
+    [InlineData(0, 200000)]
+    //[InlineData(0, 1000000)]
     public void Create(int startIndex, int numberToCreate)
     {
         var databasePath = Path.Combine(
@@ -37,7 +38,11 @@ public class CenturionFinder
 
         var existingIds = db.Table<CenturionGame>().Select(x => x.BoardId).ToHashSet();
 
-        for (var i = startIndex; i < numberToCreate; i++)
+        var source = Enumerable.Range(startIndex, numberToCreate).AsParallel();
+
+        source.ForAll(CalculateGame);
+
+        void CalculateGame(int i)
         {
             var dict = new Dictionary<string, string>()
             {
@@ -59,7 +64,7 @@ public class CenturionFinder
 
                 TestOutputHelper.WriteLine(cg.ToString());
 
-                db.Insert(cg);
+                db.InsertOrReplace(cg);
             }
         }
     }
@@ -89,6 +94,10 @@ public class CenturionGame
     public int MinSolution { get; set; }
     public int MaxContiguous { get; set; }
     public int MinContiguous { get; set; }
+
+    public int OneHundredSolutions { get; set; }
+
+    public int Operators { get; set; }
 
     public static CenturionGame Create(MoggleState state)
     {
@@ -123,13 +132,15 @@ public class CenturionGame
 
         var cg = new CenturionGame()
         {
-            BoardId           = state.Board.UniqueKey,
-            Width             = state.Board.Columns,
-            PossibleSolutions = solutions.Count,
-            MaxSolution       = solutions.Max(),
-            MinSolution       = solutions.Min(),
-            MaxContiguous     = maxContiguous,
-            MinContiguous     = minContiguous
+            BoardId             = state.Board.UniqueKey,
+            Width               = state.Board.Columns,
+            PossibleSolutions   = solutions.Count,
+            MaxSolution         = solutions.Max(),
+            MinSolution         = solutions.Min(),
+            MaxContiguous       = maxContiguous,
+            MinContiguous       = minContiguous,
+            OneHundredSolutions = Enumerable.Range(1, 100).Count(solutions.Contains),
+            Operators           = state.Board.Letters.Count(x => !int.TryParse(x.WordText, out _))
         };
 
         return cg;

@@ -5,13 +5,13 @@ using System.Text;
 namespace Moggle
 {
 
-public record CenturyGameMode : BagGameMode
+public record RomanGameMode : BagGameMode
 {
-    private CenturyGameMode() { }
-    public static CenturyGameMode Instance { get; } = new();
+    private RomanGameMode() { }
+    public static RomanGameMode Instance { get; } = new();
 
     /// <inheritdoc />
-    public override string Name => "Century";
+    public override string Name => "Roman";
 
     /// <inheritdoc />
     public override string Letters
@@ -22,16 +22,13 @@ public record CenturyGameMode : BagGameMode
 
             var terms = new List<(char c, int number)>() //TODO find best ratios
             {
-                ('1', 4),
-                ('2', 4),
-                ('3', 4),
-                ('4', 4),
-                ('5', 3),
-                ('6', 3),
-                ('7', 3),
-                ('8', 2),
-                ('9', 2),
-                ('0', 1),
+                ('i', 8),
+                ('v', 4),
+                ('x', 3),
+                ('d', 2),
+                ('c', 2),
+                ('l', 0),
+                ('m', 0),
                 ('+', 6),
                 ('*', 6),
                 ('-', 4),
@@ -39,7 +36,7 @@ public record CenturyGameMode : BagGameMode
             };
 
             foreach (var (c, number) in terms)
-                sb.Append(new string(c, 2)); //TODO find optimal numbers
+                sb.Append(new string(c, number)); //TODO find optimal numbers
 
             return sb.ToString();
         }
@@ -70,9 +67,9 @@ public record CenturyGameMode : BagGameMode
     public override string GetDefaultLetters(int width, int height)
     {
         if (width == 3 && height == 3)
-            return "1238+4765";
+            return "VII-*+IIX";
 
-        return "123+456*789";
+        return "VII-*+IIX";
     }
 
     /// <inheritdoc />

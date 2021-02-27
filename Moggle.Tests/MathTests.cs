@@ -50,6 +50,47 @@ namespace Moggle.Tests
             r.Should().Be(expectedResult);
         }
 
+        [Theory]
+        [InlineData("i", 1)]
+        [InlineData("xi", 11)]
+        [InlineData("xiiii", null)]
+        [InlineData("ix", 9)]
+        [InlineData("q", null)]
+        [InlineData("MCMXCVIII", 1998)]
+        [InlineData("mcmxcviii", 1998)]
+        [InlineData("MMXVIII", 2018)]
+        [InlineData("mcmc", null)]
+        public void ShouldParseRomanNumeral(string text, int? expectedResult)
+        {
+            var r = RomanNumeralParser.ConvertRomanToNumber(text);
+
+            r.Should().Be(expectedResult);
+
+            var r2 = Parser.GetExpressionValue(text);
+
+            r2.Should().Be(expectedResult);
+        }
+
+        [Theory]
+        [InlineData("i", 1)]
+        [InlineData("i + i", 2)]
+        [InlineData("i * i", 1)]
+        [InlineData("i - i", 0)]
+        [InlineData("vi / ii", 3)]
+        [InlineData("xi", 11)]
+        [InlineData("xiiii", null)]
+        [InlineData("ix", 9)]
+        [InlineData("q", null)]
+        [InlineData("MCMXCVIII", 1998)]
+        [InlineData("mcmxcviii", 1998)]
+        [InlineData("MMXVIII", 2018)]
+        [InlineData("mcmc", null)]
+        public void ShouldParseRomanNumeralExpression(string text, int? expectedResult)
+        {
+            var r2 = Parser.GetExpressionValue(text);
+
+            r2.Should().Be(expectedResult);
+        }
 
     }
 }

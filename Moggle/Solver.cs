@@ -84,6 +84,9 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         if (Operators.Contains(c))
             return true;
 
+        if (MathParser.RomanNumeralParser.RomanMap.ContainsKey(c))
+            return true;
+
         return false;
     }
 

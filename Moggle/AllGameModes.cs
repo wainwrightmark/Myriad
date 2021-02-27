@@ -16,7 +16,8 @@ public static class AllGameModes
             EquationGameMode.Instance,
 
             FixedGameMode.Instance,
-            SecretGameMode.Instance
+            SecretGameMode.Instance,
+            RomanGameMode.Instance
         }.ToDictionary(x=>x.Name, StringComparer.OrdinalIgnoreCase);
 
     public static IMoggleGameMode? CreateFromString(string s)

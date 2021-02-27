@@ -9,6 +9,8 @@ public enum ArithmeticExpressionToken
 
     Number,
 
+    RomanNumeral,
+
     [Token(Category = "operator", Example = "+")]
     Plus,
 

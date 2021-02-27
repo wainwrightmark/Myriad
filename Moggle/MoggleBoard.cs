@@ -49,7 +49,9 @@ public record MoggleBoard(ImmutableArray<Letter> Letters, int Columns)
         return sb.ToString().Trim();
     }
 
-        public string UniqueKey => $"{Columns}_{string.Join("", Letters.Select(x => x.WordText)) }";
+        public string UniqueKey =>
+            Columns ==Rows?string.Join("", Letters.Select(x => x.WordText)) :
+                $"{Columns}_{string.Join("", Letters.Select(x => x.WordText)) }";
 
 
     /// <inheritdoc />
