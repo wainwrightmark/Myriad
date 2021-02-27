@@ -56,7 +56,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         {
             var first = prefix[0];
 
-            if (!char.IsNumber(first) && first != '-')
+            if (!char.IsLetterOrDigit(first) && first != '-')
                 return false;
 
             for (var i = 1;
@@ -101,7 +101,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
 
     private static bool MathCanFollow(char a, char b)
     {
-        if (char.IsDigit(a) || char.IsDigit(b))
+        if (char.IsLetterOrDigit(a) || char.IsLetterOrDigit(b)) //letter or digit for roman numerals
             return true;
 
         //A and b are both operators
@@ -120,17 +120,17 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         return finder.WordsSoFar.Keys.OrderBy(x => x);
     }
 
-        public IEnumerable<KeyValuePair<FoundWord, ImmutableList<Coordinate>>> GetPossiblePaths(MoggleBoard board)
-        {
-            var finder = new WordFinder(board, this);
+    public IEnumerable<KeyValuePair<FoundWord, ImmutableList<Coordinate>>> GetPossiblePaths(
+        MoggleBoard board)
+    {
+        var finder = new WordFinder(board, this);
 
-            finder.Run();
+        finder.Run();
 
-            return finder.WordsSoFar.OrderBy(x => x.Key);
-        }
+        return finder.WordsSoFar.OrderBy(x => x.Key);
+    }
 
-
-        private class WordFinder
+    private class WordFinder
     {
         public WordFinder(MoggleBoard board, Solver solver)
         {

@@ -39,7 +39,7 @@ public record CenturyGameMode : BagGameMode
             };
 
             foreach (var (c, number) in terms)
-                sb.Append(new string(c, 2)); //TODO find optimal numbers
+                sb.Append(new string(c, number)); //TODO find optimal numbers
 
             return sb.ToString();
         }

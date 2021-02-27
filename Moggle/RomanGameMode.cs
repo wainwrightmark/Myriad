@@ -22,17 +22,17 @@ public record RomanGameMode : BagGameMode
 
             var terms = new List<(char c, int number)>() //TODO find best ratios
             {
-                ('i', 8),
+                ('i', 16),
                 ('v', 4),
-                ('x', 3),
-                ('d', 2),
-                ('c', 2),
-                ('l', 0),
+                ('x', 2),
+                ('l', 1),
+                ('c', 1),
+                ('d', 0),
                 ('m', 0),
-                ('+', 6),
-                ('*', 6),
-                ('-', 4),
-                ('/', 4) // Can't do divide yet - remainders are bad
+                ('+', 3),
+                ('*', 3),
+                ('-', 2),
+                ('/', 1) // Can't do divide yet - remainders are bad
             };
 
             foreach (var (c, number) in terms)

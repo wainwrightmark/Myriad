@@ -1,9 +1,13 @@
-- [ ] Come up with a better name
-- [ ] Database of Century Games
+- [ ] Come up with a better name? Myriad? Centenary
+- [x] Database of Century Games
 - [ ] Create a good loading animation
 - [x] Create animator
-- [ ] Allow division
-- [ ] Allow roman numerals
+- [x] Allow division
+- [x] Allow roman numerals
 - [ ] More english words
-- [ ] Change saved game settings (remove seed from key)
+- [x] Change saved game settings (remove seed from key)
 - [x] Animations for all found words
+- [ ] Separate all state objects
+- [ ] Reflection
+- [ ] Game keys should be rotation / reflection independent
+- [ ] Multiplayer
