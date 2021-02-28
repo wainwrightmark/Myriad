@@ -23,6 +23,9 @@ public enum ArithmeticExpressionToken
     [Token(Category = "operator", Example = "/")]
     Divide,
 
+    [Token(Category = "operator", Example = "^")]
+    Power,
+
     [Token(Category = "operator", Example = "=")]
     Equals,
 

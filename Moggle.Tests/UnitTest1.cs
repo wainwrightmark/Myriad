@@ -203,40 +203,6 @@ namespace Moggle.Tests
             }
         }
 
-        [Theory]
-        [InlineData(1000, 1000, 3, 3)]
-        public void FindBestCenturySeeds(int numberToGet, int numberToTake, int width, int height)
-        {
-            var seeds = new List<(string text, int wordCount)>();
-            var sw = Stopwatch.StartNew();
-            var target = CenturyGameMode.Maximum.Default - CenturyGameMode.Minimum.Default + 1;
-
-            foreach (var seed in _wordList.Value.LegalWords.Shuffle(new Random(0)).Take(numberToTake))
-            {
-                var state = CreateMathStateFromSeed(seed, false, width, height);
-
-                var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
-
-                seeds.Add((seed, words.Count));
-
-                if (words.Count >= target)
-                    TestOutputHelper.WriteLine(seed);
-
-            }
-            sw.Stop();
-
-            TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
-            TestOutputHelper.WriteLine($"Min words: {seeds.Min(x => x.wordCount)}");
-
-            var bestSeeds = seeds.OrderByDescending(x => x.wordCount).Take(numberToGet).ToList();
-
-            TestOutputHelper.WriteLine($"{bestSeeds.Min(x => x.wordCount)} Words to {bestSeeds.Max(x => x.wordCount)}");
-
-            foreach (var (text, _) in bestSeeds)
-            {
-                TestOutputHelper.WriteLine(text);
-            }
-        }
 
         [Fact]
         public void TestGoodSeeds() => GoodSeedHelper.GoodSeeds.Value.Count.Should().Be(1000);

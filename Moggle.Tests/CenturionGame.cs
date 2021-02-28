@@ -2,12 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Configuration;
-using System.Data.Common;
 using System.IO;
 using System.Linq;
-using Moggle.States;
 using SQLite;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,11 +21,10 @@ public class GameFinder
     }
 
     private static void CreateGames(
-        string gameMode,
         int startIndex,
         int numberToCreate,
         ITestOutputHelper testOutputHelper,
-        Func<string, (IMoggleGameMode, IReadOnlyDictionary<string, string>)> createGame)
+        WhitelistGameMode wgm)
     {
         var databasePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -51,20 +46,19 @@ public class GameFinder
 
         void CalculateGame(int i)
         {
-            var (moggleGameMode, readOnlyDictionary) = createGame(i.ToString());
+            var board = wgm.GenerateCuratedRandomBoard(new Random(i));
 
-            var game =
-                MoggleState.StartNewGame(
-                    WordList.Empty,
-                    moggleGameMode,
-                    readOnlyDictionary.ToImmutableDictionary(x => x.Key, x => x.Value)
-                );
+            var solver = new Solver(
+                WordList.LazyInstance,
+                wgm.GetSolveSettings(ImmutableDictionary<string, string>.Empty)
+            );
 
-            if (existingIds.TryAdd(game.Board.UniqueKey, game.Board.UniqueKey))
+            if (existingIds.TryAdd(board.UniqueKey, board.UniqueKey))
             {
-                var cg = CenturionGame.Create(game, gameMode);
+                var cg = CenturionGame.Create(board, solver, wgm.Name);
 
-                //testOutputHelper.WriteLine(cg.ToString());
+                if(i < 100 || i % 100 == 0)
+                    testOutputHelper.WriteLine($"{i}: {cg}");
 
                 db.InsertOrReplace(cg);
             }
@@ -72,87 +66,27 @@ public class GameFinder
     }
 
     [Theory]
-    [InlineData(0, 200000)]
-    //[InlineData(0, 1000000)]
+    [InlineData(0, 100)]
+    [InlineData(1000, 1000000)]
     public void CreateCentury(int startIndex, int numberToCreate)
     {
         CreateGames(
-            CenturyGameMode.Instance.Name,
             startIndex,
             numberToCreate,
-            TestOutputHelper,
-            s => (CenturyGameMode.Instance,
-                  new Dictionary<string, string>()
-                  {
-                      { CenturyGameMode.Instance.Seed.Name, s },
-                      { CenturyGameMode.Minimum.Name, 0.ToString() },
-                      { CenturyGameMode.Maximum.Name, int.MaxValue.ToString() },
-                  }
-                )
+            TestOutputHelper, CenturyGameMode.Instance
         );
     }
 
     [Theory]
-    [InlineData(0, 1000000)]
+    [InlineData(0, 100)]
     //[InlineData(0, 1000000)]
     public void CreateRoman(int startIndex, int numberToCreate)
     {
         CreateGames(
-            RomanGameMode.Instance.Name,
             startIndex,
             numberToCreate,
             TestOutputHelper,
-            s => (RomanGameMode.Instance,
-                  new Dictionary<string, string>()
-                  {
-                      { RomanGameMode.Instance.Seed.Name, s },
-                      { RomanGameMode.Minimum.Name, 0.ToString() },
-                      { RomanGameMode.Maximum.Name, int.MaxValue.ToString() },
-                  }
-                )
-        );
-    }
-
-
-        [Theory]
-        [InlineData("2-98366+5")]
-        public void CreateCenturyWithString(string gameString)
-        {
-            CreateGames(
-                CenturyGameMode.Instance.Name,
-                0,
-                1,
-                TestOutputHelper,
-                _ => (FixedGameMode.Instance,
-                      new Dictionary<string, string>()
-                      {
-                      { FixedGameMode.Letters.Name, gameString },
-                      { FixedGameMode.Minimum.Name, 0.ToString() },
-                      { FixedGameMode.Maximum.Name, int.MaxValue.ToString() },
-                      { FixedGameMode.MinWordLength.Name, (-1).ToString() }
-                      }
-                    )
-            );
-        }
-
-        [Theory]
-    [InlineData("VII-*+IIX")]
-    public void CreateRomanWithString(string gameString)
-    {
-        CreateGames(
-            RomanGameMode.Instance.Name,
-            0,
-            1,
-            TestOutputHelper,
-            _ => (FixedGameMode.Instance,
-                  new Dictionary<string, string>()
-                  {
-                      { FixedGameMode.Letters.Name, gameString },
-                      { FixedGameMode.Minimum.Name, 0.ToString() },
-                      { FixedGameMode.Maximum.Name, int.MaxValue.ToString() },
-                      { FixedGameMode.MinWordLength.Name, (-1).ToString() }
-                  }
-                )
+            RomanGameMode.Instance
         );
     }
 }
@@ -195,9 +129,9 @@ public class CenturionGame
 
     public string GameMode { get; set; }
 
-    public static CenturionGame Create(MoggleState state, string gameMode)
+    public static CenturionGame Create(MoggleBoard board, Solver solver, string gameMode)
     {
-        var solutions = state.Solver.GetPossibleSolutions(state.Board)
+        var solutions = solver.GetPossibleSolutions(board)
             .OfType<ExpressionWord>()
             .Select(x => x.Result)
             .DefaultIfEmpty(0)
@@ -228,17 +162,17 @@ public class CenturionGame
 
         var cg = new CenturionGame()
         {
-            BoardId = state.Board.UniqueKey,
-            Width = state.Board.Columns,
+            BoardId = board.UniqueKey,
+            Width = board.Columns,
             PossibleSolutions = solutions.Count,
             MaxSolution = solutions.Max(),
             MinSolution = solutions.Min(),
             MaxContiguous = maxContiguous,
             MinContiguous = minContiguous,
             OneHundredSolutions = Enumerable.Range(1, 100).Count(solutions.Contains),
-            Operators = state.Board.Letters.Count(x => OperatorCharacters.Contains(x.WordText)),
-            Letters = state.Board.Letters.Count(x => x.WordText.All(char.IsLetter)),
-            Numbers = state.Board.Letters.Count(x => x.WordText.All(char.IsDigit)),
+            Operators = board.Letters.Count(x => OperatorCharacters.Contains(x.WordText)),
+            Letters = board.Letters.Count(x => x.WordText.All(char.IsLetter)),
+            Numbers = board.Letters.Count(x => x.WordText.All(char.IsDigit)),
             GameMode = gameMode
         };
 

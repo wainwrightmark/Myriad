@@ -43,6 +43,11 @@ namespace Moggle.Tests
         [InlineData("1+2=3", null)]
         [InlineData("4/2", 2)]
         [InlineData("4/3", null)]
+        [InlineData("4+-3", 1)]
+        [InlineData("4-+3", null)]
+        [InlineData("3*-4", -12)]
+        [InlineData("2^5", 32)]
+        [InlineData("3^3", 27)]
         public void ShouldParseExpression(string text, int? expectedResult)
         {
             var r = Parser.GetExpressionValue(text);

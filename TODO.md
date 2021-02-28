@@ -1,4 +1,5 @@
-- [ ] Come up with a better name? Myriad? Centenary
+- [x] Come up with a better name? Myriad? Centenary
+- [ ] Create separate page for Myriad
 - [x] Database of Century Games
 - [ ] Create a good loading animation
 - [x] Create animator

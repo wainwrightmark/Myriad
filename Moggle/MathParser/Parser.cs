@@ -13,25 +13,7 @@ namespace Moggle.MathParser
 
 public static class RomanNumeralParser
 {
-        public static readonly Dictionary<char, int> RomanMap = new()
-        {
-            { 'I', 1 },
-            { 'i', 1 },
-            { 'V', 5 },
-            { 'v', 5 },
-            { 'X', 10 },
-            { 'x', 10 },
-            { 'L', 50 },
-            { 'l', 50 },
-            { 'C', 100 },
-            { 'c', 100 },
-            { 'D', 500 },
-            { 'd', 500 },
-            { 'M', 1000 },
-            { 'm', 1000 }
-        };
-
-        private static readonly Lazy<Dictionary<string, int>> RomanDictionary =
+    private static readonly Lazy<Dictionary<string, int>> RomanDictionary =
         new(
             () => Enumerable.Range(1, 3999)
                 .ToDictionary(x => ToRoman(x)!, x => x, StringComparer.OrdinalIgnoreCase)
@@ -66,30 +48,6 @@ public static class RomanNumeralParser
             return v;
 
         return null;
-        //int totalValue = 0, prevValue = 0;
-
-        //foreach (var c in text)
-        //{
-        //    if (!RomanMap.TryGetValue(c, out var crtValue))
-        //        return null;
-
-        //    totalValue += crtValue;
-
-        //    if (prevValue != 0 && prevValue < crtValue)
-        //    {
-        //        switch (prevValue)
-        //        {
-        //            case 1 when crtValue == 5 || crtValue == 10:
-        //            case 10 when crtValue == 50 || crtValue == 100:
-        //            case 100 when crtValue == 500 || crtValue == 1000:
-        //                totalValue -= 2 * prevValue;
-        //                break;
-        //            default: return null;
-        //        }
-        //    }
-
-        //    prevValue = crtValue;
-        //}
     }
 
     /// <summary>
@@ -108,6 +66,7 @@ public static class RomanNumeralParser
 
 public static class Parser
 {
+
     public static bool IsValidEquation(string pattern)
     {
         var tokenListResult = Tokenizer.TryTokenize(pattern);
@@ -127,7 +86,7 @@ public static class Parser
 
     public static int? GetExpressionValue(string pattern)
     {
-        var r = _expressionValuesCache.GetOrAdd(pattern, Calculate);
+        var r = ExpressionValuesCache.GetOrAdd(pattern, Calculate);
         return r;
 
         static int? Calculate(string pattern)
@@ -142,30 +101,30 @@ public static class Parser
             if (!parseResult.HasValue)
                 return null;
 
-            decimal value;
+            double value;
+            int    i;
 
             try
             {
                 value = parseResult.Value.Compile().Invoke();
+                i     = Convert.ToInt32(Math.Round(value));
             }
             catch (Exception)
             {
                 return null;
             }
 
-            var i = Convert.ToInt32(value);
-
-            if (value == i)
+            if (Math.Abs(value - i) < 0.0001)
                 return i;
 
             return null; //The number was not an integer - it may have been e.g. 0.5
         }
     }
 
-    private static readonly ConcurrentDictionary<string, int?> _expressionValuesCache =
+    private static readonly ConcurrentDictionary<string, int?> ExpressionValuesCache =
         new();
 
-    private static readonly HashSet<char> RomanNumerals = new()
+    public static readonly HashSet<char> RomanNumerals = new()
     {
         'i',
         'I',
@@ -190,6 +149,7 @@ public static class Parser
             .Match(Character.EqualTo('-'),               ArithmeticExpressionToken.Minus)
             .Match(Character.EqualTo('*'),               ArithmeticExpressionToken.Times)
             .Match(Character.EqualTo('/'),               ArithmeticExpressionToken.Divide)
+            .Match(Character.EqualTo('^'),               ArithmeticExpressionToken.Power)
             .Match(Character.EqualTo('='),               ArithmeticExpressionToken.Equals)
             .Match(Character.EqualTo('('),               ArithmeticExpressionToken.LParen)
             .Match(Character.EqualTo(')'),               ArithmeticExpressionToken.RParen)
@@ -209,15 +169,18 @@ public static class Parser
     static readonly TokenListParser<ArithmeticExpressionToken, ExpressionType> Divide =
         Token.EqualTo(ArithmeticExpressionToken.Divide).Value(ExpressionType.Divide);
 
+    static readonly TokenListParser<ArithmeticExpressionToken, ExpressionType> Power =
+        Token.EqualTo(ArithmeticExpressionToken.Power).Value(ExpressionType.Power);
+
     static readonly TokenListParser<ArithmeticExpressionToken, Expression> Constant =
         Token.EqualTo(ArithmeticExpressionToken.Number)
-            .Apply(Numerics.DecimalDecimal)
+            .Apply(Numerics.DecimalDouble)
             .Select(n => (Expression)Expression.Constant(n));
 
     private static readonly TokenListParser<ArithmeticExpressionToken, Expression> RomanNumeral =
         Token.EqualTo(ArithmeticExpressionToken.RomanNumeral)
             .Apply(RomanNumeralParser.TextParser)
-            .Select(i =>  (Expression)Expression.Constant(Convert.ToDecimal(i)));
+            .Select(i => (Expression)Expression.Constant(Convert.ToDouble(i)));
 
     static readonly TokenListParser<ArithmeticExpressionToken, Expression> Factor =
         (from lparen in Token.EqualTo(ArithmeticExpressionToken.LParen)
@@ -235,15 +198,15 @@ public static class Parser
         .Named("expression");
 
     static readonly TokenListParser<ArithmeticExpressionToken, Expression> Term =
-        Parse.Chain(Multiply.Or(Divide), Operand, Expression.MakeBinary);
+        Parse.Chain(Multiply.Or(Divide).Or(Power), Operand, Expression.MakeBinary);
 
     static readonly TokenListParser<ArithmeticExpressionToken, Expression> Expr =
         Parse.Chain(Add.Or(Subtract), Term, Expression.MakeBinary);
 
-    public static readonly TokenListParser<ArithmeticExpressionToken, Expression<Func<decimal>>>
+    public static readonly TokenListParser<ArithmeticExpressionToken, Expression<Func<double>>>
         Lambda
             =
-            Expr.AtEnd().Select(body => Expression.Lambda<Func<decimal>>(body));
+            Expr.AtEnd().Select(body => Expression.Lambda<Func<double>>(body));
 
     public static readonly TokenListParser<ArithmeticExpressionToken, Equation> Equation =
         (from l in Expr

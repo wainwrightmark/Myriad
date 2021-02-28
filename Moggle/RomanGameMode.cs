@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
+using MoreLinq;
 
 namespace Moggle
 {
 
-public record RomanGameMode : BagGameMode
+public record RomanGameMode : WhitelistGameMode
 {
     private RomanGameMode() { }
     public static RomanGameMode Instance { get; } = new();
@@ -14,80 +15,42 @@ public record RomanGameMode : BagGameMode
     /// <inheritdoc />
     public override string Name => "Roman";
 
-    /// <inheritdoc />
-    public override string Letters
+    public override MoggleBoard GenerateRandomBoard(Random random)
     {
-        get
-        {
-            var sb = new StringBuilder();
+        var possibleLetters = "IVXLCDM+-*/^";
 
-            var terms = new List<(char c, int number)>() //TODO find best ratios
-            {
-                ('i', 16),
-                ('v', 4),
-                ('x', 2),
-                ('l', 1),
-                ('c', 1),
-                ('d', 0),
-                ('m', 0),
-                ('+', 3),
-                ('*', 3),
-                ('-', 2),
-                ('/', 1) // Can't do divide yet - remainders are bad
-            };
+        var a = MoreEnumerable.Random(random, 0, possibleLetters.Length)
+            .Select(x => possibleLetters[x])
+            .Select(Letter.Create)
+            .Take(9)
+            .ToImmutableArray();
 
-            foreach (var (c, number) in terms)
-                sb.Append(new string(c, number)); //TODO find optimal numbers
+        return new MoggleBoard(a, 3);
+    }
 
-            return sb.ToString();
-        }
+    /// <inheritdoc />
+    public override MoggleBoard GenerateCuratedRandomBoard(Random random)
+    {
+        var chars = "+-*".RandomSubset(2, random)
+                .Concat("IIIIIIVVVXXX".RandomSubset(7, random));
+
+        var letters = chars.Select(Letter.Create).ToImmutableArray();
+
+        return new MoggleBoard(letters, 3);
     }
 
     /// <inheritdoc />
     public override SolveSettings GetSolveSettings(ImmutableDictionary<string, string> settings)
     {
-        var min = Minimum.Get(settings);
-        var max = Maximum.Get(settings);
-
-        return new SolveSettings(null, false, (min, max));
+        return new(null, false, (1, 100));
     }
 
     /// <inheritdoc />
     public override bool ReverseAnimationOrder => true;
 
-    public static readonly Setting.Integer Minimum = new(
-        nameof(Minimum),
-        int.MinValue,
-        int.MaxValue,
-        1
-    );
-
-    public static readonly Setting.Integer Maximum = new(nameof(Maximum), 0, int.MaxValue, 100);
-
     /// <inheritdoc />
-    public override string GetDefaultLetters(int width, int height)
+    public override ImmutableArray<Letter> GetLetters(Random random)
     {
-        if (width == 3 && height == 3)
-            return "VII-*+IIX";
-
-        return "VII-*+IIX";
-    }
-
-    /// <inheritdoc />
-    public override Setting.Integer DurationSetting => TimeSituation.Duration with { Default = -1 };
-
-    /// <inheritdoc />
-    public override Setting.Integer Width => base.Width with { Default = 3 };
-
-    public override Setting.Integer Height => base.Height with { Default = 3 };
-
-    /// <inheritdoc />
-    public override ImmutableArray<Letter> GetLettersFromSeed(string seed, int size)
-    {
-        if (size != 9)
-            return base.GetLettersFromSeed(seed, size);
-
-        var random        = RandomHelper.GetRandom(seed);
         var lettersString = GoodSeedHelper.GetGoodRomanGame(random);
         var array         = lettersString.EnumerateRunes().Select(Letter.Create).ToImmutableArray();
 
@@ -95,16 +58,14 @@ public record RomanGameMode : BagGameMode
     }
 
     /// <inheritdoc />
+    public override int Columns => 3;
+
+    /// <inheritdoc />
     public override IEnumerable<Setting> Settings
     {
         get
         {
             yield return Seed;
-            yield return Width;
-            yield return Height;
-            yield return Minimum;
-            yield return Maximum;
-            yield return DurationSetting;
             yield return AnimateSetting;
         }
     }

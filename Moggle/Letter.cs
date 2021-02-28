@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Moggle
 {
@@ -12,6 +14,13 @@ public record Letter(string ButtonText, string WordText)
 
         return new Letter(rune.ToString().ToUpper(), rune.ToString().ToUpper());
     }
+
+    public static Letter Create(char c)
+    {
+        return Create(new Rune(c));
+    }
+
+    public static IEnumerable<Letter> CreateFromString(string s) => s.EnumerateRunes().Select(Create);
 }
 
 }

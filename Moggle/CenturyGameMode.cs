@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
+using MoreLinq.Extensions;
 
 namespace Moggle
 {
 
-public record CenturyGameMode : BagGameMode
+public record CenturyGameMode : WhitelistGameMode
 {
     private CenturyGameMode() { }
     public static CenturyGameMode Instance { get; } = new();
@@ -14,45 +15,46 @@ public record CenturyGameMode : BagGameMode
     /// <inheritdoc />
     public override string Name => "Century";
 
-    /// <inheritdoc />
-    public override string Letters
+    public override MoggleBoard GenerateRandomBoard(Random random)
     {
-        get
-        {
-            var sb = new StringBuilder();
+        var possibleLetters = "1234567890+-*/^";
 
-            var terms = new List<(char c, int number)>() //TODO find best ratios
-            {
-                ('1', 4),
-                ('2', 4),
-                ('3', 4),
-                ('4', 4),
-                ('5', 3),
-                ('6', 3),
-                ('7', 3),
-                ('8', 2),
-                ('9', 2),
-                ('0', 1),
-                ('+', 6),
-                ('*', 6),
-                ('-', 4),
-                ('/', 4) // Can't do divide yet - remainders are bad
-            };
+        var a = MoreLinq.MoreEnumerable
+            .Random(random, 0, possibleLetters.Length)
+            .Select(x => possibleLetters[x])
+            .Select(Letter.Create)
+            .Take(9)
+            .ToImmutableArray();
 
-            foreach (var (c, number) in terms)
-                sb.Append(new string(c, number)); //TODO find optimal numbers
-
-            return sb.ToString();
-        }
+        return new MoggleBoard(a, 3);
     }
 
     /// <inheritdoc />
-    public override ImmutableArray<Letter> GetLettersFromSeed(string seed, int size)
-    {
-        if (size != 9)
-            return base.GetLettersFromSeed(seed, size);
+    public override int Columns => 3;
 
-        var random        = RandomHelper.GetRandom(seed);
+        /// <inheritdoc />
+        public override MoggleBoard GenerateCuratedRandomBoard(Random random)
+        {
+            var operators = "+++---**/^";
+            var numbers   = "1122334455667788990";
+
+            var opCount = 2;
+
+            opCount = new[] { 1, 2, 2, 3, 3, 4 }.RandomSubset(1, random).Single();
+
+            var numCount = 9 - opCount;
+            var chars = operators.RandomSubset(opCount, random)
+                    .Concat(numbers.RandomSubset(numCount, random));
+
+            var letters = chars.Select(Letter.Create).ToImmutableArray();
+
+            return new MoggleBoard(letters, 3);
+        }
+
+
+        /// <inheritdoc />
+        public override ImmutableArray<Letter> GetLetters(Random random)
+    {
         var lettersString = GoodSeedHelper.GetGoodCenturyGame(random);
         var array         = lettersString.EnumerateRunes().Select(Letter.Create).ToImmutableArray();
 
@@ -62,40 +64,12 @@ public record CenturyGameMode : BagGameMode
     /// <inheritdoc />
     public override SolveSettings GetSolveSettings(ImmutableDictionary<string, string> settings)
     {
-        var min = Minimum.Get(settings);
-        var max = Maximum.Get(settings);
 
-        return new SolveSettings(null, false, (min, max));
+        return new(null, false, (1, 100));
     }
 
     /// <inheritdoc />
     public override bool ReverseAnimationOrder => true;
-
-    public static readonly Setting.Integer Minimum = new(
-        nameof(Minimum),
-        int.MinValue,
-        int.MaxValue,
-        1
-    );
-
-    public static readonly Setting.Integer Maximum = new(nameof(Maximum), 0, int.MaxValue, 100);
-
-    /// <inheritdoc />
-    public override string GetDefaultLetters(int width, int height)
-    {
-        if (width == 3 && height == 3)
-            return "1238+4765";
-
-        return "123+456*789";
-    }
-
-    /// <inheritdoc />
-    public override Setting.Integer DurationSetting => TimeSituation.Duration with { Default = -1 };
-
-    /// <inheritdoc />
-    public override Setting.Integer Width => base.Width with { Default = 3 };
-
-    public override Setting.Integer Height => base.Height with { Default = 3 };
 
     /// <inheritdoc />
     public override IEnumerable<Setting> Settings
@@ -103,11 +77,6 @@ public record CenturyGameMode : BagGameMode
         get
         {
             yield return Seed;
-            yield return Width;
-            yield return Height;
-            yield return Minimum;
-            yield return Maximum;
-            yield return DurationSetting;
             yield return AnimateSetting;
         }
     }

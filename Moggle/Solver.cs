@@ -84,7 +84,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         if (Operators.Contains(c))
             return true;
 
-        if (MathParser.RomanNumeralParser.RomanMap.ContainsKey(c))
+        if (Parser.RomanNumerals.Contains(c))
             return true;
 
         return false;
@@ -96,7 +96,8 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         '=',
         '-',
         '*',
-        '/'
+        '/',
+        '^'
     };
 
     private static bool MathCanFollow(char a, char b)
