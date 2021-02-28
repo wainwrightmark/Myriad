@@ -2,23 +2,57 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using MoreLinq;
 
 namespace Moggle
 {
 
-public record MoggleBoard(ImmutableArray<Letter> Letters, int Columns)
+public record MoggleBoard
 {
-    public Letter GetLetterAtCoordinate(Coordinate coordinate)
+    public MoggleBoard(ImmutableArray<Letter> letters, int columns)
+    {
+        Letters   = letters;
+        Columns   = columns;
+        UniqueKey = GetUniqueKey();
+    }
+
+    public ImmutableArray<Letter> Letters { get; }
+    public int Columns { get; }
+    public string UniqueKey { get; }
+
+
+        private string GetUniqueKey()
+        {
+            if (Columns != Rows)
+                return $"{Columns}_{string.Join("", Letters.Select(x => x.WordText))}";
+
+            var options = new List<string>();
+
+            for (var rotation = 0; rotation < 4; rotation++)
+            {
+                for (var reflection = 0; reflection < 2; reflection++)
+                {
+                    var s = GetAllCoordinates()
+                        .Select(x => x.Rotate(MaxCoordinate, rotation))
+                        .Select(x => reflection == 0 ? x : x.ReflectColumn(Columns - 1))
+                        .Select(GetLetterAtCoordinate)
+                        .Select(x => x.WordText)
+                        .ToDelimitedString("");
+                    options.Add(s);
+                }
+            }
+
+            return options.OrderBy(x => x).First();
+        }
+
+        public Letter GetLetterAtCoordinate(Coordinate coordinate)
     {
         var index = (coordinate.Row * Columns) + coordinate.Column;
 
         return GetLetterAtIndex(index);
     }
 
-    public Letter GetLetterAtIndex(int i)
-    {
-        return Letters[i % Letters.Length];
-    }
+    public Letter GetLetterAtIndex(int i) => Letters[i % Letters.Length];
 
     public int Rows => Letters.Length / Columns;
 
@@ -49,12 +83,11 @@ public record MoggleBoard(ImmutableArray<Letter> Letters, int Columns)
         return sb.ToString().Trim();
     }
 
-        public string UniqueKey =>
-            Columns ==Rows?string.Join("", Letters.Select(x => x.WordText)) :
-                $"{Columns}_{string.Join("", Letters.Select(x => x.WordText)) }";
 
 
-    /// <inheritdoc />
+
+
+        /// <inheritdoc />
     public override string ToString()
     {
         return ToMultiLineString()

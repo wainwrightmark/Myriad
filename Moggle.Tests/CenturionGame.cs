@@ -57,7 +57,7 @@ public class GameFinder
             {
                 var cg = CenturionGame.Create(board, solver, wgm.Name);
 
-                if(i < 100 || i % 100 == 0)
+                if(i < 100 || i % 100 == 0 || cg.PossibleSolutions >= 100)
                     testOutputHelper.WriteLine($"{i}: {cg}");
 
                 db.InsertOrReplace(cg);
@@ -67,7 +67,7 @@ public class GameFinder
 
     [Theory]
     [InlineData(0, 100)]
-    [InlineData(1000, 1000000)]
+    [InlineData(0, 1000000)]
     public void CreateCentury(int startIndex, int numberToCreate)
     {
         CreateGames(
