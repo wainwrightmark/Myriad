@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 
 namespace Moggle
@@ -46,6 +47,19 @@ public record CenturyGameMode : BagGameMode
     }
 
     /// <inheritdoc />
+    public override ImmutableArray<Letter> GetLettersFromSeed(string seed, int size)
+    {
+        if (size != 9)
+            return base.GetLettersFromSeed(seed, size);
+
+        var random        = RandomHelper.GetRandom(seed);
+        var lettersString = GoodSeedHelper.GetGoodCenturyGame(random);
+        var array         = lettersString.EnumerateRunes().Select(Letter.Create).ToImmutableArray();
+
+        return array;
+    }
+
+    /// <inheritdoc />
     public override SolveSettings GetSolveSettings(ImmutableDictionary<string, string> settings)
     {
         var min = Minimum.Get(settings);
@@ -82,12 +96,6 @@ public record CenturyGameMode : BagGameMode
     public override Setting.Integer Width => base.Width with { Default = 3 };
 
     public override Setting.Integer Height => base.Height with { Default = 3 };
-
-    /// <inheritdoc />
-    public override Setting.String Seed => base.Seed with
-    {
-        GetRandomValue = GoodSeedHelper.GetGoodExpressionSeed
-    };
 
     /// <inheritdoc />
     public override IEnumerable<Setting> Settings

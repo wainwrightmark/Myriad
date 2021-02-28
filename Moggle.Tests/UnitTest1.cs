@@ -204,11 +204,11 @@ namespace Moggle.Tests
         }
 
         [Theory]
-        [InlineData(1000,1000000, 3, 3)]
-        public void FindBestExpressionSeeds(int numberToGet, int numberToTake, int width, int height)
+        [InlineData(1000, 1000, 3, 3)]
+        public void FindBestCenturySeeds(int numberToGet, int numberToTake, int width, int height)
         {
-            var seeds  = new List<(string text, int wordCount)>();
-            var sw     = Stopwatch.StartNew();
+            var seeds = new List<(string text, int wordCount)>();
+            var sw = Stopwatch.StartNew();
             var target = CenturyGameMode.Maximum.Default - CenturyGameMode.Minimum.Default + 1;
 
             foreach (var seed in _wordList.Value.LegalWords.Shuffle(new Random(0)).Take(numberToTake))
@@ -219,18 +219,18 @@ namespace Moggle.Tests
 
                 seeds.Add((seed, words.Count));
 
-                if(words.Count >= target)
+                if (words.Count >= target)
                     TestOutputHelper.WriteLine(seed);
 
             }
             sw.Stop();
 
             TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
-            TestOutputHelper.WriteLine( $"Min words: {seeds.Min(x=>x.wordCount)}");
+            TestOutputHelper.WriteLine($"Min words: {seeds.Min(x => x.wordCount)}");
 
             var bestSeeds = seeds.OrderByDescending(x => x.wordCount).Take(numberToGet).ToList();
 
-            TestOutputHelper.WriteLine( $"{bestSeeds.Min(x => x.wordCount)} Words to {bestSeeds.Max(x => x.wordCount)}");
+            TestOutputHelper.WriteLine($"{bestSeeds.Min(x => x.wordCount)} Words to {bestSeeds.Max(x => x.wordCount)}");
 
             foreach (var (text, _) in bestSeeds)
             {
@@ -301,10 +301,10 @@ namespace Moggle.Tests
         }
 
         [Theory]
-        [InlineData(10000, false, 3,3)]
-        [InlineData(10000, true, 3,3)]
-        [InlineData(10000, false, 4,4)]
-        [InlineData(10000, true, 4,4)]
+        [InlineData(1000, false, 3,3)]
+        [InlineData(1000, true, 3,3)]
+        [InlineData(1000, false, 4,4)]
+        [InlineData(1000, true, 4,4)]
         public void FindBestGrids(int trials, bool classic, int height, int width)
         {
             var bestSeed  = 0;

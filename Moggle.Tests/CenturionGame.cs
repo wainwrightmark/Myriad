@@ -64,7 +64,7 @@ public class GameFinder
             {
                 var cg = CenturionGame.Create(game, gameMode);
 
-                testOutputHelper.WriteLine(cg.ToString());
+                //testOutputHelper.WriteLine(cg.ToString());
 
                 db.InsertOrReplace(cg);
             }
@@ -93,7 +93,7 @@ public class GameFinder
     }
 
     [Theory]
-    [InlineData(0, 10000)]
+    [InlineData(0, 1000000)]
     //[InlineData(0, 1000000)]
     public void CreateRoman(int startIndex, int numberToCreate)
     {
@@ -113,7 +113,29 @@ public class GameFinder
         );
     }
 
-    [Theory]
+
+        [Theory]
+        [InlineData("2-98366+5")]
+        public void CreateCenturyWithString(string gameString)
+        {
+            CreateGames(
+                CenturyGameMode.Instance.Name,
+                0,
+                1,
+                TestOutputHelper,
+                _ => (FixedGameMode.Instance,
+                      new Dictionary<string, string>()
+                      {
+                      { FixedGameMode.Letters.Name, gameString },
+                      { FixedGameMode.Minimum.Name, 0.ToString() },
+                      { FixedGameMode.Maximum.Name, int.MaxValue.ToString() },
+                      { FixedGameMode.MinWordLength.Name, (-1).ToString() }
+                      }
+                    )
+            );
+        }
+
+        [Theory]
     [InlineData("VII-*+IIX")]
     public void CreateRomanWithString(string gameString)
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using MoreLinq.Extensions;
@@ -47,21 +48,7 @@ public abstract record BagGameMode : IMoggleGameMode
         }
         else
         {
-            var allLetters = new List<Letter>();
-            var random     = RandomHelper.GetRandom(seed);
-
-            while (allLetters.Count < size)
-            {
-                allLetters.AddRange(
-                    Letters.EnumerateRunes()
-                        .Shuffle(random)
-                        .Take(size - allLetters.Count)
-                        .Select(Letter.Create)
-                );
-            }
-
-            array = allLetters.Shuffle(random)
-                .ToImmutableArray(); //shuffle again for to prevent patterns in very large grids
+            array = GetLettersFromSeed(seed, size);
         }
 
         var board = new MoggleBoard(array, width);
@@ -71,6 +58,27 @@ public abstract record BagGameMode : IMoggleGameMode
         var solver = new Solver(wordList, solveSettings);
 
         return (board, solver);
+    }
+
+    public virtual ImmutableArray<Letter> GetLettersFromSeed(string seed, int size)
+    {
+        var allLetters = new List<Letter>();
+        var random     = RandomHelper.GetRandom(seed);
+
+        while (allLetters.Count < size)
+        {
+            allLetters.AddRange(
+                Letters.EnumerateRunes()
+                    .Shuffle(random)
+                    .Take(size - allLetters.Count)
+                    .Select(Letter.Create)
+            );
+        }
+
+        var array = allLetters.Shuffle(random)
+            .ToImmutableArray(); //shuffle again for to prevent patterns in very large grids
+
+        return array;
     }
 
     /// <inheritdoc />
@@ -92,7 +100,6 @@ public abstract record BagGameMode : IMoggleGameMode
         {
             var (board, solver) = CreateGame(settings, wordList);
 
-
             var paths =
                 RemoveRedundant(
                     solver.GetPossiblePaths(board),
@@ -101,12 +108,9 @@ public abstract record BagGameMode : IMoggleGameMode
                 );
 
             var sortedPaths =
-                ReverseAnimationOrder?
-                paths.OrderByDescending(x=>x, ListComparer<Coordinate>.Instance) :
-                paths.OrderBy(x=>x, ListComparer<Coordinate>.Instance);
-
-
-
+                ReverseAnimationOrder
+                    ? paths.OrderByDescending(x => x, ListComparer<Coordinate>.Instance)
+                    : paths.OrderBy(x => x, ListComparer<Coordinate>.Instance);
 
             var steps = new List<Step>();
 
@@ -171,7 +175,7 @@ public abstract record BagGameMode : IMoggleGameMode
             cont = false;
 
             var singleSourceWords = everything.Values
-                .SelectMany(x =>  Enumerable.Append(x.subvalues,x.finalValue))
+                .SelectMany(x => Enumerable.Append(x.subvalues, x.finalValue))
                 .GroupBy(x => x)
                 .Where(x => x.Count() == 1)
                 .Select(x => x.Key)
@@ -183,6 +187,7 @@ public abstract record BagGameMode : IMoggleGameMode
                 {
                     cont = true; //we have successfully removed something
                     yield return av.coordinates;
+
                     foreach (var subWord in av.subvalues)
                         everything.Remove(subWord);
                 }

@@ -12,7 +12,7 @@ public record WordList(IReadOnlySet<string> LegalWords, IReadOnlySet<string> Leg
     {
         var sw = Stopwatch.StartNew();
         Console.WriteLine("Loading words from word list");
-        var legalWords = Enumerable.ToHashSet(words, StringComparer.OrdinalIgnoreCase);
+        var legalWords = words.ToHashSet(StringComparer.OrdinalIgnoreCase);
         Console.WriteLine($"{legalWords.Count} words found {sw.ElapsedMilliseconds}ms");
 
         var legalPrefixes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 
 namespace Moggle
@@ -81,10 +82,17 @@ public record RomanGameMode : BagGameMode
     public override Setting.Integer Height => base.Height with { Default = 3 };
 
     /// <inheritdoc />
-    public override Setting.String Seed => base.Seed with
+    public override ImmutableArray<Letter> GetLettersFromSeed(string seed, int size)
     {
-        GetRandomValue = GoodSeedHelper.GetGoodExpressionSeed
-    };
+        if (size != 9)
+            return base.GetLettersFromSeed(seed, size);
+
+        var random        = RandomHelper.GetRandom(seed);
+        var lettersString = GoodSeedHelper.GetGoodRomanGame(random);
+        var array         = lettersString.EnumerateRunes().Select(Letter.Create).ToImmutableArray();
+
+        return array;
+    }
 
     /// <inheritdoc />
     public override IEnumerable<Setting> Settings

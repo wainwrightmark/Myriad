@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="GoodGames.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Fluxor" Version="4.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="morelinq.temp" Version="3.3.2" />
@@ -14,17 +18,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Words.Designer.cs">
+    <Page Include="GoodGames.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="GoodGames.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Words.resx</DependentUpon>
+      <DependentUpon>GoodGames.resx</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Words.resx">
+    <EmbeddedResource Update="GoodGames.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Words.Designer.cs</LastGenOutput>
+      <LastGenOutput>GoodGames.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 
