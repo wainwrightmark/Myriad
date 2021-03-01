@@ -1,6 +1,6 @@
 ﻿using Moggle.States;
 
-namespace Moggle
+namespace Moggle.Actions
 {
 
 public record RotateAction(int Amount) : IAction<RecentWordsState>

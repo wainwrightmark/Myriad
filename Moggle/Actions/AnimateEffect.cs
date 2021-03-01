@@ -1,20 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Fluxor;
-using Moggle.States;
 
-namespace Moggle
+namespace Moggle.Actions
 {
-
-public record AnimateAction(string GameId, StepWithResult StepWithResult) : IAction<AnimationState>
-{
-    /// <inheritdoc />
-    public AnimationState Reduce(AnimationState state)
-    {
-
-        return state with { AnimationFrame = StepWithResult.NewIndex};
-    }
-}
 
 public class AnimateEffect : Effect<AnimateAction>
 {
@@ -36,7 +25,5 @@ public class AnimateEffect : Effect<AnimateAction>
         return Task.CompletedTask;
     }
 }
-
-
 
 }

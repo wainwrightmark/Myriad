@@ -8,7 +8,8 @@
 - [ ] More english words
 - [x] Change saved game settings (remove seed from key)
 - [x] Animations for all found words
-- [ ] Separate all state objects
+- [x] Separate all state objects
 - [ ] Reflection
-- [ ] Game keys should be rotation / reflection independent
+- [x] Game keys should be rotation / reflection independent
 - [ ] Multiplayer
+- [x] Power Operator

@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-
-namespace Moggle
+﻿namespace Moggle.Actions
 {
 
 //public record SolveAction(Solver Solver) : IAction<MoggleState>

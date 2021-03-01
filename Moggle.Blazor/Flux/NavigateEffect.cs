@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Fluxor;
 using Microsoft.AspNetCore.Components;
+using Moggle.Actions;
 using Moggle.States;
 
 namespace Moggle.Blazor.Flux

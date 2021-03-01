@@ -1,4 +1,4 @@
-﻿namespace Moggle
+﻿namespace Moggle.Actions
 {
 
 public interface IAction<TState>

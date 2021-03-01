@@ -1,6 +1,6 @@
 ﻿using Moggle.States;
 
-namespace Moggle
+namespace Moggle.Actions
 {
 
 public record CheatAction : IAction<CheatState>
@@ -12,15 +12,6 @@ public record CheatAction : IAction<CheatState>
             return state;
 
         return state with { Revealed = true };
-    }
-}
-
-public record EnableCheatingAction : IAction<CheatState>
-{
-    /// <inheritdoc />
-    public CheatState Reduce(CheatState state)
-    {
-        return state with { AllowCheating = true };
     }
 }
 

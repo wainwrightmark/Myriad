@@ -1,4 +1,5 @@
 ﻿@using Fluxor
+@using Moggle.Actions
 @using Moggle.States
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
@@ -36,31 +37,17 @@
   <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
 
 
-   @if (ChosenPositions.Value.ChosenPositions.Any())
-  {
-    <g filter="url(#MyFilter)">
-      @for (var i = 0; i < ChosenPositions.Value.ChosenPositions.Count; i++)
-      {
-        var (x1, y1) = GetLocation(ChosenPositions.Value.ChosenPositions[i], true);
-        string d;
-        if (i + 1 < ChosenPositions.Value.ChosenPositions.Count)
-        {
-          var (x2, y2) = GetLocation(ChosenPositions.Value.ChosenPositions[i + 1], true);
-          d = $"M {x1},{y1} L {x2},{y2}";
-        }
-        else
-        {
-          d = $"M {x1},{y1} L {x1},{y1}";
-        }
-
-        <path id="@($"line-{i}")"
-              class="line"
-              stroke-dasharray="7 10"
-              stroke-linecap="round"
-              d="@d"/>
-      }
-    </g>
+  @{
+    var d = ChosenPositions.Value.GetPathD(Board.Value, 
+                                           RecentWordsState.Value.Rotation, FullWidth, FullHeight);
   }
+  <path
+    id="rope"
+    filter="url(#MyFilter)"
+    style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default; transition: 1s @animationTiming; fill: none;"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+    d="@d"/>
 
 
   @foreach (var coordinate in Board.Value.GetAllCoordinates())
@@ -99,15 +86,15 @@
     var id = $"{word.Text}{coordinate}";
     <text>
       <text filter="url(#MyFilter)"
-        fill="@GetColor(word)"
-        class="foundWord"
-        style="animation-duration: @(word.LingerDuration)ms"
-        pointer-events="none"
-        id="@id"
-        x="@cx"
-        y="@cy"
-        dominant-baseline="middle"
-        text-anchor="middle">
+            fill="@GetColor(word)"
+            class="foundWord"
+            style="animation-duration: @(word.LingerDuration)ms"
+            pointer-events="none"
+            id="@id"
+            x="@cx"
+            y="@cy"
+            dominant-baseline="middle"
+            text-anchor="middle">
         @word.Text
 
       </text>
@@ -253,7 +240,7 @@
     if (!IsGameInProgress || !ChosenPositions.Value.ChosenPositions.Any())
       return Colors.Grey.Default;
 
-    var result =  MoveResult.TryGetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
+    var result = MoveResult.TryGetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
 
     var color = result switch
     {
@@ -268,7 +255,6 @@
     return color;
   }
 
-  //const string animationTiming = "cubic-bezier(0, 1.06, 0.16, 0.461)";
     const string animationTiming = "ease-out";
 }
 
@@ -296,11 +282,6 @@
 
   .circle:hover { transform: scale(1.2) }
 
-  .line {
-    stroke-width: @LineWidth;
-    stroke: @Colors.LightBlue.Default;
-    transition: 1s @animationTiming;
-  }
 
   .foundWord {
     animation-name: disappearAnimation;
