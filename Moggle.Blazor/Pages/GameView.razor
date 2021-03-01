@@ -8,32 +8,6 @@
 <svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
 
 
-  <!--<defs>
-    <filter id="MyFilter" filterUnits="userSpaceOnUse">-->
-
-      <!-- offsetBlur -->
-      <!--<feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
-      <feOffset in="blur" dx="4" dy="4" result="offsetBlur"/>-->
-
-      <!-- litPaint -->
-      <!--<feSpecularLighting in="blur" surfaceScale="5" specularConstant=".75"
-                          specularExponent="20" lighting-color="#bbbbbb"
-                          result="specOut">
-        <fePointLight x="-5000" y="-10000" z="20000"/>
-      </feSpecularLighting>
-      <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut"/>
-      <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic"
-                   k1="0" k2="1" k3="1" k4="0" result="litPaint"/>-->
-
-      <!-- merge offsetBlur + litPaint -->
-      <!--<feMerge>
-        <feMergeNode in="offsetBlur"/>
-        <feMergeNode in="litPaint"/>
-      </feMerge>
-    </filter>
-
-  </defs>-->
-
   <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
 
 
@@ -44,10 +18,7 @@
   <path
     id="rope"
 
-    style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default;
-                                    -webkit-transition:  1s @AnimationTiming;
-                                    transition: 1s @AnimationTiming;
-                                    fill: none;"
+    style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default; -webkit-transition: 1s @AnimationTiming; transition: 1s @AnimationTiming; fill: none;"
     stroke-linejoin="round"
     stroke-linecap="round"
     d="@d"/>
@@ -89,15 +60,15 @@
     var id = $"{word.Text}{coordinate}";
     <text>
       <text
-            fill="@GetColor(word)"
-            class="foundWord"
-            style="animation-duration: @(word.LingerDuration)ms"
-            pointer-events="none"
-            id="@id"
-            x="@cx"
-            y="@cy"
-            dominant-baseline="middle"
-            text-anchor="middle">
+        fill="@GetColor(word)"
+        class="foundWord"
+        style="animation-duration: @(word.LingerDuration)ms"
+        pointer-events="none"
+        id="@id"
+        x="@cx"
+        y="@cy"
+        dominant-baseline="middle"
+        text-anchor="middle">
         @word.Text
 
       </text>
@@ -145,36 +116,36 @@
 }
 else
 {
-<MudChip Icon="@Filled.MilitaryTech">@FoundWordsState.Value.GetScore()</MudChip>
-<MudChip Icon="@Filled.Notes">@FoundWordsState.Value.GetNumberOfWords()</MudChip>
+  <MudChip Icon="@Filled.MilitaryTech">@FoundWordsState.Value.GetScore()</MudChip>
+  <MudChip Icon="@Filled.Notes">@FoundWordsState.Value.GetNumberOfWords()</MudChip>
 
-<MudList>
+  <MudList>
 
-  @if (CheatState.Value.Revealed)
-  {
-    @foreach (var w in CheatState.Value.PossibleWords)
+    @if (CheatState.Value.Revealed)
     {
-      <MudChip Label="true">@w.Display</MudChip>
+      @foreach (var w in CheatState.Value.PossibleWords)
+      {
+        <MudChip Label="true">@w.Display</MudChip>
+      }
     }
-  }
-  else
-  {
-    @foreach (var w in FoundWordsState.Value.FoundWords)
+    else
     {
-      var word = w;
-      <MudCheckBox
-        Disabled="@(IsGameInProgress)"
-        CheckedChanged="(bool b) => { Dispatcher.Dispatch(new UnCheckWord(word, b)); }"
-        Label=@word.Display
-        Checked="@(!FoundWordsState.Value.UncheckedWords.Contains(word))"/>
+      @foreach (var w in FoundWordsState.Value.FoundWords)
+      {
+        var word = w;
+        <MudCheckBox
+          Disabled="@(IsGameInProgress)"
+          CheckedChanged="(bool b) => { Dispatcher.Dispatch(new UnCheckWord(word, b)); }"
+          Label=@word.Display
+          Checked="@(!FoundWordsState.Value.UncheckedWords.Contains(word))"/>
+      }
     }
-  }
-</MudList>
+  </MudList>
 
-@if (CheatState.Value.AllowCheating && !CheatState.Value.Revealed)
-{
-  <MudButton OnClick="() => Dispatcher.Dispatch(new CheatAction())">Cheat</MudButton>
-}
+  @if (CheatState.Value.AllowCheating && !CheatState.Value.Revealed)
+  {
+    <MudButton OnClick="() => Dispatcher.Dispatch(new CheatAction())">Cheat</MudButton>
+  }
 }
 
 
@@ -315,7 +286,7 @@ else
 
   .square {
     -webkit-transition: 1s @AnimationTiming;
-     transition: 1s @AnimationTiming;
+    transition: 1s @AnimationTiming;
   }
 
   .circle {
@@ -332,8 +303,8 @@ else
     animation-fill-mode: forwards;
     animation-timing-function: ease-out;
 
-    -webkit-transform-origin: 40% 40%;
-    transform-origin: 40% 40%;
+    /*-webkit-transform-origin: 40% 40%;
+    transform-origin: 40% 40%;*/
   }
 
 
@@ -342,13 +313,14 @@ else
 
     50% {
       opacity: 0.2;
-      transform: scale(2, 2);
+      -webkit-transform: translateY(50%);
+      transform: translateY(50%);
     }
 
     100% {
       opacity: 0;
-      -webkit-transform: scale(4, 4) rotate(120deg);
-      transform: scale(4, 4) rotate(120deg);
+      -webkit-transform: translateY(100%);
+      transform: translateY(100%);
     }
   }
 
