@@ -36,16 +36,16 @@
   <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
 
 
-   @if (State.Value.ChosenPositions.Any())
+   @if (ChosenPositions.Value.ChosenPositions.Any())
   {
     <g filter="url(#MyFilter)">
-      @for (var i = 0; i < State.Value.ChosenPositions.Count; i++)
+      @for (var i = 0; i < ChosenPositions.Value.ChosenPositions.Count; i++)
       {
-        var (x1, y1) = GetLocation(State.Value.ChosenPositions[i], true);
+        var (x1, y1) = GetLocation(ChosenPositions.Value.ChosenPositions[i], true);
         string d;
-        if (i + 1 < State.Value.ChosenPositions.Count)
+        if (i + 1 < ChosenPositions.Value.ChosenPositions.Count)
         {
-          var (x2, y2) = GetLocation(State.Value.ChosenPositions[i + 1], true);
+          var (x2, y2) = GetLocation(ChosenPositions.Value.ChosenPositions[i + 1], true);
           d = $"M {x1},{y1} L {x2},{y2}";
         }
         else
@@ -63,7 +63,7 @@
   }
 
 
-  @foreach (var coordinate in State.Value.Board.GetAllCoordinates())
+  @foreach (var coordinate in Board.Value.GetAllCoordinates())
   {
     var color = GetColor(coordinate);
     var (cx, cy) = GetLocation(coordinate, true);
@@ -87,7 +87,7 @@
         text-anchor="middle"
         stroke="@Colors.Shades.White"
         fill="@Colors.Shades.Black">
-        @State.Value.Board.GetLetterAtCoordinate(coordinate).ButtonText
+        @Board.Value.GetLetterAtCoordinate(coordinate).ButtonText
 
       </text>
     </g>
@@ -95,7 +95,7 @@
 
   @foreach (var (word, coordinate, rotate,_ ) in RecentWordsState.Value.RecentWords)
   {
-    var (cx, cy) = GetLocation(coordinate.Rotate(State.Value.Board.MaxCoordinate, -rotate), false);
+    var (cx, cy) = GetLocation(coordinate.Rotate(Board.Value.MaxCoordinate, -rotate), false);
     var id = $"{word.Text}{coordinate}";
     <text>
       <text filter="url(#MyFilter)"
@@ -120,8 +120,8 @@
 </svg>
 
 
-<MudChip Icon="@Filled.MilitaryTech">@UncheckedWordState.Value.GetScore(State.Value.FoundWords)</MudChip>
-<MudChip Icon="@Filled.Notes">@UncheckedWordState.Value.GetNumberOfWords(State.Value.FoundWords)</MudChip>
+<MudChip Icon="@Filled.MilitaryTech">@FoundWordsState.Value.GetScore()</MudChip>
+<MudChip Icon="@Filled.Notes">@FoundWordsState.Value.GetNumberOfWords()</MudChip>
 
 
 <MudList>
@@ -135,14 +135,14 @@
   }
   else
   {
-    @foreach (var w in State.Value.FoundWords)
+    @foreach (var w in FoundWordsState.Value.FoundWords)
     {
       var word = w;
       <MudCheckBox
         Disabled="@(IsGameInProgress)"
         CheckedChanged="(bool b) => { Dispatcher.Dispatch(new UnCheckWord(word, b)); }"
         Label=@word.Display
-        Checked="@(!UncheckedWordState.Value.UncheckedWords.Contains(word))"/>
+        Checked="@(!FoundWordsState.Value.UncheckedWords.Contains(word))"/>
     }
   }
 </MudList>
@@ -156,13 +156,19 @@
 @code {
 
   [Inject]
-  private IState<MoggleState> State { get; set; }
+  private IState<MoggleBoard> Board { get; set; }
+
+  [Inject]
+  private IState<ChosenPositionsState> ChosenPositions { get; set; }
+
+  [Inject]
+  private IState<Solver> Solver { get; set; }
 
   [Inject]
   private IState<TimeState> TimeState { get; set; }
 
   [Inject]
-  private IState<FoundWordsState> UncheckedWordState { get; set; }
+  private IState<FoundWordsState> FoundWordsState { get; set; }
 
   [Inject]
   private IState<CheatState> CheatState { get; set; }
@@ -202,15 +208,15 @@
   public double LineWidth => FullWidth * 0.05;
   public double CircleStrokeWidth => FullWidth * 0.02;
 
-  public int Columns => State.Value.Board.Columns;
-  public int Rows => State.Value.Board.Rows;
+  public int Columns => Board.Value.Columns;
+  public int Rows => Board.Value.Rows;
 
   public void CellClicked(Coordinate coordinate)
   {
     if (IsGameInProgress)
     {
-      var mr = State.Value.TryGetMoveResult(coordinate);
-      Dispatcher.Dispatch(new MoveAction(State.Value.Board.UniqueKey, mr, coordinate));
+      var mr = MoveResult.TryGetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
+      Dispatcher.Dispatch(new MoveAction(Board.Value.UniqueKey, mr, coordinate));
     }
   }
 
@@ -227,7 +233,7 @@
   }
 
   public Coordinate GetRotated(Coordinate coordinate) => coordinate.Rotate(
-    State.Value.Board.MaxCoordinate,
+    Board.Value.MaxCoordinate,
     RecentWordsState.Value.Rotation * -1);
 
   public (double x, double y) GetLocation(Coordinate coordinate, bool rotate)
@@ -244,15 +250,14 @@
 
   public string GetColor(Coordinate coordinate)
   {
-    if (!IsGameInProgress || !State.Value.ChosenPositions.Any())
+    if (!IsGameInProgress || !ChosenPositions.Value.ChosenPositions.Any())
       return Colors.Grey.Default;
 
-    var result = State.Value.TryGetMoveResult(coordinate);
+    var result =  MoveResult.TryGetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
 
     var color = result switch
     {
       MoveResult.IllegalMove   => Colors.Grey.Default,
-      MoveResult.InvalidWord   => Colors.Grey.Darken1,
       MoveResult.MoveRetraced  => Colors.Green.Lighten3,
       MoveResult.WordAbandoned => Colors.Orange.Default,
       MoveResult.WordComplete  => Colors.Green.Darken2,

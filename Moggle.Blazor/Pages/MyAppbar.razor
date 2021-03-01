@@ -36,8 +36,10 @@
 
 @code {
 
-    [Inject]
-    private IState<MoggleState> State { get; set; }
+    [Inject]private IState<MoggleBoard> Board { get; set; }
+    [Inject]private IState<ChosenPositionsState> ChosenPositions { get; set; }
+    [Inject]private IState<Solver> Solver { get; set; }
+    [Inject]private IState<FoundWordsState> FoundWords { get; set; }
 
     [Inject]
     private IState<GameSettingsState> GameSettingsState { get; set; }
@@ -67,8 +69,8 @@
     {
       if (AnimationState.Value.Animation != null)
         Dispatcher.Dispatch(new AnimateAction(
-                              State.Value.Board.UniqueKey,
-                              AnimationState.Value.Animation.GetStepWithResult(State.Value, AnimationState.Value.AnimationFrame)));
+                              Board.Value.UniqueKey,
+                              AnimationState.Value.Animation.GetStepWithResult(ChosenPositions.Value, Board.Value, Solver.Value, FoundWords.Value, AnimationState.Value.AnimationFrame)));
 
       await InvokeAsync(StateHasChanged);
     }

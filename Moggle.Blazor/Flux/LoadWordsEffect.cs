@@ -9,21 +9,23 @@ namespace Moggle.Blazor.Flux
 
 public class LoadWordsEffect : Effect<StartGameAction>
 {
-    private readonly IndexedDBManager   _database;
+    private readonly IndexedDBManager _database;
 
     /// <inheritdoc />
-    public LoadWordsEffect(IndexedDBManager   database) {
+    public LoadWordsEffect(IndexedDBManager database)
+    {
         _database = database;
     }
-
 
     /// <inheritdoc />
     public override async Task HandleAsync(StartGameAction action, IDispatcher dispatcher)
     {
-        //await _database.OpenIndexedDb();
+        var (board, solver) = action.GameMode.CreateGame(
+            action.Settings,
+            new Lazy<WordList>(() => WordList.Empty)
+        );
 
-        var board = action.GameMode.CreateGame(action.Settings, new Lazy<WordList>(()=>WordList.Empty)).board;
-        var uk =board.UniqueKey;
+        var uk = board.UniqueKey;
 
         var savedWords = await _database.GetAllRecordsByIndex<string, SavedWord>(
             new StoreIndexQuery<string>()
@@ -35,9 +37,14 @@ public class LoadWordsEffect : Effect<StartGameAction>
             }
         );
 
-
         if (savedWords != null && savedWords.Any())
-            dispatcher.Dispatch(new LoadWordsAction(savedWords.ToList()));
+        {
+            var legalSavedWords = savedWords.Select(x => solver.CheckLegal(x.wordText))
+                .OfType<WordCheckResult.Legal>()
+                .ToList();
+
+            dispatcher.Dispatch(new LoadWordsAction(legalSavedWords));
+        }
     }
 }
 

@@ -17,7 +17,7 @@ public record StepWithResult(Step Step, MoveResult? MoveResult, int NewIndex) { 
 
 public record Animation(ImmutableList<Step> Steps)
 {
-    public StepWithResult GetStepWithResult(MoggleState state, int index)
+    public StepWithResult GetStepWithResult(ChosenPositionsState cps, MoggleBoard mb, Solver solver, FoundWordsState fws, int index)
     {
         var c = Steps[index % Steps.Count];
 
@@ -25,7 +25,7 @@ public record Animation(ImmutableList<Step> Steps)
         {
             case Step.Move move:
             {
-                var mr = state.TryGetMoveResult(move.Coordinate);
+                var mr = MoveResult.TryGetMoveResult(move.Coordinate, cps, mb, solver, fws);
                 return new StepWithResult(c, mr, index + 1);
             }
             case Step.Rotate: return new StepWithResult(c, null, index + 1);

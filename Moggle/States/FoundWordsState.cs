@@ -4,16 +4,18 @@ using System.Linq;
 namespace Moggle.States
 {
 
-public record FoundWordsState(ImmutableHashSet<FoundWord> UncheckedWords)
+public record FoundWordsState(
+    ImmutableSortedSet<FoundWord> FoundWords,
+    ImmutableHashSet<FoundWord> UncheckedWords)
 {
-    public int GetNumberOfWords(ImmutableSortedSet<FoundWord> foundWords)
+    public int GetNumberOfWords()
     {
-        return foundWords.Except(UncheckedWords).Count;
+        return FoundWords.Except(UncheckedWords).Count;
     }
 
-    public int GetScore(ImmutableSortedSet<FoundWord> foundWords)
+    public int GetScore()
     {
-        return foundWords.Except(UncheckedWords).Sum(x => x.Points);
+        return FoundWords.Except(UncheckedWords).Sum(x => x.Points);
     }
 }
 

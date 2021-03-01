@@ -2,12 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Moggle.States;
-using MoreLinq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,7 +25,7 @@ public class UnitTest1
 
     private readonly Lazy<WordList> _wordList;
 
-    private MoggleState CreateFromSeed(
+    private (MoggleBoard board, Solver solver) CreateFromSeed(
         string seed,
         bool classic = false,
         int width = 4,
@@ -34,30 +33,29 @@ public class UnitTest1
     {
         IMoggleGameMode mode = classic ? ClassicGameMode.Instance : ModernGameMode.Instance;
 
-        return MoggleState.StartNewGame(
-            _wordList.Value,
-            mode,
-            ImmutableDictionary.CreateRange(
-                new[]
-                {
-                    new KeyValuePair<string, string>(
-                        ModernGameMode.Instance.Seed.Name,
-                        seed
-                    ),
-                    new KeyValuePair<string, string>(
-                        ModernGameMode.Instance.Width.Name,
-                        width.ToString()
-                    ),
-                    new KeyValuePair<string, string>(
-                        ModernGameMode.Instance.Height.Name,
-                        height.ToString()
-                    ),
-                }
-            )
+
+        var settings = ImmutableDictionary.CreateRange(
+            new[]
+            {
+                new KeyValuePair<string, string>(
+                    ModernGameMode.Instance.Seed.Name,
+                    seed
+                ),
+                new KeyValuePair<string, string>(
+                    ModernGameMode.Instance.Width.Name,
+                    width.ToString()
+                ),
+                new KeyValuePair<string, string>(
+                    ModernGameMode.Instance.Height.Name,
+                    height.ToString()
+                ),
+            }
         );
+
+        return mode.CreateGame(settings, _wordList);
     }
 
-    private MoggleState CreateMathStateFromSeed(
+    private (MoggleBoard board, Solver solver) CreateMathStateFromSeed(
         string seed,
         bool equation = false,
         int width = 4,
@@ -65,31 +63,30 @@ public class UnitTest1
     {
         IMoggleGameMode mode = equation ? EquationGameMode.Instance : CenturyGameMode.Instance;
 
-        return MoggleState.StartNewGame(
-            _wordList.Value,
-            mode,
-            ImmutableDictionary.CreateRange(
-                new[]
-                {
-                    new KeyValuePair<string, string>(
-                        EquationGameMode.Instance.Seed.Name,
-                        seed
-                    ),
-                    new KeyValuePair<string, string>(
-                        EquationGameMode.Instance.Width.Name,
-                        width.ToString()
-                    ),
-                    new KeyValuePair<string, string>(
-                        EquationGameMode.Instance.Height.Name,
-                        height.ToString()
-                    ),
-                    new KeyValuePair<string, string>(
-                        EquationGameMode.Instance.Height.Name,
-                        height.ToString()
-                    )
-                }
-            )
+        var settings = ImmutableDictionary.CreateRange(
+            new[]
+            {
+                new KeyValuePair<string, string>(
+                    EquationGameMode.Instance.Seed.Name,
+                    seed
+                ),
+                new KeyValuePair<string, string>(
+                    EquationGameMode.Instance.Width.Name,
+                    width.ToString()
+                ),
+                new KeyValuePair<string, string>(
+                    EquationGameMode.Instance.Height.Name,
+                    height.ToString()
+                ),
+                new KeyValuePair<string, string>(
+                    EquationGameMode.Instance.Height.Name,
+                    height.ToString()
+                )
+            }
         );
+
+
+        return mode.CreateGame(settings, _wordList);
     }
 
     [Theory]
@@ -98,11 +95,11 @@ public class UnitTest1
     [InlineData("World")]
     public async Task SameSeedShouldProduceSameGame(string seed)
     {
-        var board1 = CreateFromSeed(seed).Board;
+        var board1 = CreateFromSeed(seed).board;
 
         await Task.Delay(100);
 
-        var board2 = CreateFromSeed(seed).Board;
+        var board2 = CreateFromSeed(seed).board;
 
         TestOutputHelper.WriteLine(board1.ToString());
         TestOutputHelper.WriteLine(board2.ToString());
@@ -116,7 +113,7 @@ public class UnitTest1
     [InlineData("ruth")]
     public void Test1(string key)
     {
-        var s = CreateFromSeed(key).Board;
+        var s = CreateFromSeed(key).board;
 
         s.Rows.Should().Be(4);
         s.Columns.Should().Be(4);
@@ -139,7 +136,7 @@ public class UnitTest1
 
             for (var j = 0; j < 16; j++)
             {
-                var l = s.Board.GetLetterAtIndex(j);
+                var l = s.board.GetLetterAtIndex(j);
                 dict.AddOrUpdate(l, 1, (_, q) => q + 1);
             }
         }
@@ -177,6 +174,7 @@ public class UnitTest1
     }
 
     [Theory]
+    [Category("Integration")]
     [InlineData(1000, false, 4, 4)]
     public void FindBestSeeds(int numberToGet, bool classic, int width, int height)
     {
@@ -187,7 +185,7 @@ public class UnitTest1
         {
             var state = CreateFromSeed(seed, classic, width, height);
 
-            var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
+            var words = state.solver.GetPossibleSolutions(state.board).ToList();
 
             seeds.Add((seed, words.Count));
         }
@@ -220,7 +218,7 @@ public class UnitTest1
         var state = CreateFromSeed(seed, classic, width, height);
 
         var sw    = Stopwatch.StartNew();
-        var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
+        var words = state.solver.GetPossibleSolutions(state.board).ToList();
         sw.Stop();
 
         TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
@@ -246,10 +244,10 @@ public class UnitTest1
     {
         var state = CreateMathStateFromSeed(seed, equation, width, height);
 
-        TestOutputHelper.WriteLine(state.Board.ToMultiLineString());
+        TestOutputHelper.WriteLine(state.board.ToMultiLineString());
 
         var sw    = Stopwatch.StartNew();
-        var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
+        var words = state.solver.GetPossibleSolutions(state.board).ToList();
         sw.Stop();
 
         TestOutputHelper.WriteLine(sw.ElapsedMilliseconds + "ms");
@@ -279,7 +277,7 @@ public class UnitTest1
         for (var i = 0; i < trials; i++)
         {
             var state = CreateFromSeed(i.ToString(), classic, width, height);
-            var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
+            var words = state.solver.GetPossibleSolutions(state.board).ToList();
             var score = words.Sum(x => x.Points);
 
             if (score > bestScore)
@@ -316,7 +314,7 @@ public class UnitTest1
         for (var i = 0; i < numberOfTests; i++)
         {
             var state = CreateFromSeed(i.ToString(), classic, width, height);
-            var words = state.Solver.GetPossibleSolutions(state.Board).ToList();
+            var words = state.solver.GetPossibleSolutions(state.board).ToList();
             totalWords += words.Count;
             totalScore += words.Sum(x => x.Points);
         }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Immutable;
+using System.Linq;
 using Moggle.States;
 
 namespace Moggle
@@ -6,13 +8,14 @@ namespace Moggle
 
 public abstract record MoveResult
 {
-    public abstract record SuccessResult(MoggleState MoggleState) : MoveResult { }
+    public abstract record SuccessResult(ImmutableList<Coordinate> NewCoordinates) : MoveResult { }
 
     public abstract record FailResult : MoveResult;
 
-    public record WordComplete(MoggleState MoggleState, FoundWord FoundWord) : SuccessResult(
-        MoggleState
-    )
+    public record WordComplete
+        (FoundWord FoundWord, ImmutableList<Coordinate> NewCoordinates) : SuccessResult(
+            NewCoordinates
+        )
     {
         /// <inheritdoc />
         public override AnimationWord AnimationWord => new(
@@ -22,32 +25,24 @@ public abstract record MoveResult
     }
 
     public record WordContinued
-        (MoggleState MoggleState, AnimationWord AnimationWord1) : SuccessResult(MoggleState)
+        (AnimationWord AnimationWord1, ImmutableList<Coordinate> NewCoordinates) : SuccessResult(
+            NewCoordinates
+        )
     {
         /// <inheritdoc />
         public override AnimationWord AnimationWord => AnimationWord1;
     }
 
-    public record WordAbandoned(MoggleState MoggleState) : SuccessResult(MoggleState)
+    public record WordAbandoned() : SuccessResult(ImmutableList<Coordinate>.Empty)
     {
         /// <inheritdoc />
         public override AnimationWord? AnimationWord => null;
     }
 
     public record MoveRetraced
-        (MoggleState MoggleState, AnimationWord AnimationWord1) : SuccessResult(MoggleState)
-    {
-        /// <inheritdoc />
-        public override AnimationWord AnimationWord => AnimationWord1;
-    }
-
-    //public record TimeElapsed(MoggleState MoggleState) : SuccessResult(MoggleState)
-    //{
-    //    /// <inheritdoc />
-    //    public override AnimationWord? AnimationWord => null;
-    //}
-
-    public record InvalidWord(AnimationWord AnimationWord1) : FailResult
+        (ImmutableList<Coordinate> NewCoordinates, AnimationWord AnimationWord1) : SuccessResult(
+            NewCoordinates
+        )
     {
         /// <inheritdoc />
         public override AnimationWord AnimationWord => AnimationWord1;
@@ -63,26 +58,95 @@ public abstract record MoveResult
     }
 
     public abstract AnimationWord? AnimationWord { get; }
+
+    public static MoveResult TryGetMoveResult(
+        Coordinate coordinate,
+        ChosenPositionsState chosenPositionsState,
+        MoggleBoard moggleBoard,
+        Solver solver,
+        FoundWordsState foundWordsState)
+    {
+        var chosenPositions = chosenPositionsState.ChosenPositions;
+
+        if (chosenPositions.Any() && chosenPositions.Last().Equals(coordinate))
+        {
+            return new WordAbandoned();
+        }
+
+        var index = chosenPositions.LastIndexOf(coordinate);
+
+        if (index >= 0)
+        {
+            var newChosenPositions = chosenPositions.Take(index + 1).ToImmutableList();
+
+            var word = string.Join(
+                "",
+                newChosenPositions.Select(moggleBoard.GetLetterAtCoordinate).Select(x => x.WordText)
+            );
+
+            var animationWord = solver.CheckLegal(word).ToAnimationWord(true, word);
+
+            return new MoveRetraced(
+                newChosenPositions,
+                animationWord
+            );
+        }
+
+        if (!chosenPositions.Any() || chosenPositions.Last().IsAdjacent(coordinate))
+        {
+            var newChosenPositions = chosenPositions.Add(coordinate);
+
+            var word = string.Join(
+                "",
+                newChosenPositions.Select(moggleBoard.GetLetterAtCoordinate).Select(x => x.WordText)
+            );
+
+            var checkResult = solver.CheckLegal(word);
+
+            if (checkResult is WordCheckResult.Legal legal)
+            {
+                if (foundWordsState.FoundWords.Contains(legal.Word))
+                {
+                    return new WordContinued(
+                        checkResult.ToAnimationWord(true, word),
+                        newChosenPositions
+                    );
+                }
+
+                return new WordComplete(
+                    legal.Word,
+                    newChosenPositions
+                );
+            }
+
+            return new WordContinued(
+                checkResult.ToAnimationWord(false, word),
+                newChosenPositions
+            );
+        }
+
+        return IllegalMove.Instance;
+    }
 }
 
 public record AnimationWord(string Text, AnimationWord.WordType Type)
 {
-        public int LingerDuration
+    public int LingerDuration
+    {
+        get
         {
-            get
-            {
-                const int basis = 1000;
+            const int basis = 1000;
 
-                return Type switch
-                {
-                    WordType.Found           => basis * 10,
-                    WordType.PreviouslyFound => basis * 5,
-                    WordType.Invalid         => basis * 1,
-                    WordType.Illegal         => basis * 3,
-                    _                        => throw new ArgumentOutOfRangeException()
-                };
-            }
+            return Type switch
+            {
+                WordType.Found           => basis * 10,
+                WordType.PreviouslyFound => basis * 5,
+                WordType.Invalid         => basis * 1,
+                WordType.Illegal         => basis * 3,
+                _                        => throw new ArgumentOutOfRangeException()
+            };
         }
+    }
 
     public enum WordType
     {

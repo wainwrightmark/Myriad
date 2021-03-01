@@ -15,7 +15,10 @@ public class FoundWordsFeature : Feature<FoundWordsState>
     /// <inheritdoc />
     protected override FoundWordsState GetInitialState()
     {
-        return new(ImmutableHashSet<FoundWord>.Empty);
+        return new (
+            ImmutableSortedSet<FoundWord>.Empty,
+            ImmutableHashSet<FoundWord>.Empty
+        );
     }
 }
 

@@ -9,7 +9,9 @@ public record StartGameAction(
     Lazy<WordList> WordList,
     IMoggleGameMode GameMode,
     ImmutableDictionary<string, string> Settings) :
-    IAction<MoggleState>,
+    IAction<MoggleBoard>,
+    IAction<Solver>,
+    IAction<ChosenPositionsState>,
     IAction<CheatState>,
     IAction<AnimationState>,
     IAction<GameSettingsState>,
@@ -18,11 +20,22 @@ public record StartGameAction(
     IAction<FoundWordsState>
 {
     /// <inheritdoc />
-    public MoggleState Reduce(MoggleState board) => MoggleState.StartNewGame(
-        WordList,
-        GameMode,
-        Settings
-    );
+    public ChosenPositionsState Reduce(ChosenPositionsState state)
+    {
+        return new(ImmutableList<Coordinate>.Empty);
+    }
+
+    /// <inheritdoc />
+    public Solver Reduce(Solver state)
+    {
+        return GameMode.CreateGame(Settings, WordList).Solver;
+    }
+
+    /// <inheritdoc />
+    public MoggleBoard Reduce(MoggleBoard state)
+    {
+        return GameMode.CreateGame(Settings, WordList).board;
+    }
 
     public AnimationState Reduce(AnimationState state)
     {
@@ -75,7 +88,11 @@ public record StartGameAction(
     /// <inheritdoc />
     public FoundWordsState Reduce(FoundWordsState state)
     {
-        return new (ImmutableHashSet<FoundWord>.Empty);
+        return new(
+                ImmutableSortedSet<FoundWord>.Empty,
+                ImmutableHashSet<FoundWord>.Empty
+            )
+            ;
     }
 }
 

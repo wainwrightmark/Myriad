@@ -6,15 +6,16 @@ using Moggle.States;
 namespace Moggle
 {
 
-//TODO less data in this action
-public record MoveAction(string BoardId, MoveResult Result, Coordinate Coordinate) : IAction<MoggleState>,
-    IAction<RecentWordsState>
+public record MoveAction(string BoardId, MoveResult Result, Coordinate Coordinate)
+    : IAction<ChosenPositionsState>,
+      IAction<RecentWordsState>,
+      IAction<FoundWordsState>
 {
     /// <inheritdoc />
-    public MoggleState Reduce(MoggleState state)
+    public ChosenPositionsState Reduce(ChosenPositionsState state)
     {
         if (Result is MoveResult.SuccessResult sr)
-            return sr.MoggleState;
+            return state with { ChosenPositions = sr.NewCoordinates };
 
         return state;
     }
@@ -41,20 +42,28 @@ public record MoveAction(string BoardId, MoveResult Result, Coordinate Coordinat
 
         return newState;
     }
+
+    public FoundWordsState Reduce(FoundWordsState state)
+    {
+        if (Result is MoveResult.WordComplete wc)
+            return state with { FoundWords = state.FoundWords.Add(wc.FoundWord) };
+
+        return state;
+    }
 }
 
-public record LoadWordsAction(IReadOnlyList<SavedWord> Save) : IAction<MoggleState>
+public record LoadWordsAction(IReadOnlyList<WordCheckResult.Legal> Save) : IAction<FoundWordsState>
 {
     /// <inheritdoc />
-    public MoggleState Reduce(MoggleState state)
+    public FoundWordsState Reduce(FoundWordsState state)
     {
         var newWords =
             state.FoundWords.Union(
-            Save.Select(x=> state.Solver.CheckLegal(x.wordText))
-            .OfType<WordCheckResult.Legal>()
-            .Select(x => x.Word));
+                Save
+                    .Select(x => x.Word)
+            );
 
-        var newState  = state with { FoundWords = newWords };
+        var newState = state with { FoundWords = newWords };
 
         return newState;
     }
