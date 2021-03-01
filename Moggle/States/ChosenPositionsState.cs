@@ -61,7 +61,7 @@ public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
         }
         else
         {
-            var centre = (fullWidth /(board.Columns - 1) , fullHeight / (board.Rows - 1));
+            var centre = (fullWidth /2 , fullHeight / 2);
 
             for (var i = 0; i < board.Letters.Length; i++)
             {

@@ -16,7 +16,7 @@ public record LoadWordsAction(IReadOnlyList<WordCheckResult.Legal> Save) : IActi
                     .Select(x => x.Word)
             );
 
-        var newState = state with { FoundWords = newWords };
+        var newState = state with { FoundWords = newWords, FWComparisonStrings = state.FWComparisonStrings.Union(Save.Select(x=>x.Word.Comparison))};
 
         return newState;
     }

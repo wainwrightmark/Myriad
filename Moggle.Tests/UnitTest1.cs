@@ -33,7 +33,6 @@ public class UnitTest1
     {
         IMoggleGameMode mode = classic ? ClassicGameMode.Instance : ModernGameMode.Instance;
 
-
         var settings = ImmutableDictionary.CreateRange(
             new[]
             {
@@ -52,7 +51,7 @@ public class UnitTest1
             }
         );
 
-        var board = mode.CreateBoard(settings, _wordList);
+        var board  = mode.CreateBoard(settings, _wordList);
         var solver = mode.CreateSolver(settings, _wordList);
 
         return (board, solver);
@@ -88,12 +87,11 @@ public class UnitTest1
             }
         );
 
+        var board  = mode.CreateBoard(settings, _wordList);
+        var solver = mode.CreateSolver(settings, _wordList);
 
-            var board = mode.CreateBoard(settings, _wordList);
-            var solver = mode.CreateSolver(settings, _wordList);
-
-            return (board, solver);
-        }
+        return (board, solver);
+    }
 
     [Theory]
     [InlineData("")]
@@ -384,6 +382,27 @@ public class UnitTest1
         static string GetUniqueKey(string s)
         {
             return new MoggleBoard(Letter.CreateFromString(s).ToImmutableArray(), 3).UniqueKey;
+        }
+    }
+
+    [Fact]
+    public void TargetWordsShouldEqualFoundWords()
+    {
+        for (int i = 1; i <= 100; i++)
+        {
+            var w1 = ExpressionWord.TryCreate($"{i}")!;
+            var w2 = new TargetWord($"{i}", $"{i}");
+
+            var hc1 = w1.GetHashCode();
+            var hc2 = w2.GetHashCode();
+
+            hc1.Should().Be(hc2);
+
+            var eq  = hc1.Equals(hc2);
+            var eq2 = hc2.Equals(hc1);
+
+            eq.Should().BeTrue();
+            eq2.Should().BeTrue();
         }
     }
 }

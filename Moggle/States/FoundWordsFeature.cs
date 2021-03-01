@@ -15,9 +15,17 @@ public class FoundWordsFeature : Feature<FoundWordsState>
     /// <inheritdoc />
     protected override FoundWordsState GetInitialState()
     {
-        return new (
+        return new(
             ImmutableSortedSet<FoundWord>.Empty,
-            ImmutableHashSet<FoundWord>.Empty
+            ImmutableHashSet<string>.Empty, 
+            ImmutableHashSet<FoundWord>.Empty,
+           
+            new TargetWordContext(
+                CenturyGameMode.Instance.GetTargetWords(
+                    ImmutableDictionary<string, string>.Empty,
+                    WordList.LazyInstance
+                )
+            )
         );
     }
 }

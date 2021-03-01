@@ -32,28 +32,28 @@ public record CenturyGameMode : WhitelistGameMode
     /// <inheritdoc />
     public override int Columns => 3;
 
-        /// <inheritdoc />
-        public override MoggleBoard GenerateCuratedRandomBoard(Random random)
-        {
-            var operators = "+++---**/^";
-            var numbers   = "1122334455667788990";
+    /// <inheritdoc />
+    public override MoggleBoard GenerateCuratedRandomBoard(Random random)
+    {
+        var operators = "+++---**/^";
+        var numbers   = "1122334455667788990";
 
-            var opCount = 2;
+        var opCount = 2;
 
-            opCount = new[] { 1, 2, 2, 3, 3, 4 }.RandomSubset(1, random).Single();
+        opCount = new[] { 1, 2, 2, 3, 3, 4 }.RandomSubset(1, random).Single();
 
-            var numCount = 9 - opCount;
-            var chars = operators.RandomSubset(opCount, random)
-                    .Concat(numbers.RandomSubset(numCount, random));
+        var numCount = 9 - opCount;
 
-            var letters = chars.Select(Letter.Create).ToImmutableArray();
+        var chars = operators.RandomSubset(opCount, random)
+            .Concat(numbers.RandomSubset(numCount, random));
 
-            return new MoggleBoard(letters, 3);
-        }
+        var letters = chars.Select(Letter.Create).ToImmutableArray();
 
+        return new MoggleBoard(letters, 3);
+    }
 
-        /// <inheritdoc />
-        public override ImmutableArray<Letter> GetLetters(Random random)
+    /// <inheritdoc />
+    public override ImmutableArray<Letter> GetLetters(Random random)
     {
         var lettersString = GoodSeedHelper.GetGoodCenturyGame(random);
         var array         = lettersString.EnumerateRunes().Select(Letter.Create).ToImmutableArray();
@@ -64,7 +64,6 @@ public record CenturyGameMode : WhitelistGameMode
     /// <inheritdoc />
     public override SolveSettings GetSolveSettings(ImmutableDictionary<string, string> settings)
     {
-
         return new(null, false, (1, 100));
     }
 
@@ -80,6 +79,16 @@ public record CenturyGameMode : WhitelistGameMode
             yield return AnimateSetting;
         }
     }
-}
+
+    /// <inheritdoc />
+    public override IReadOnlyCollection<TargetWord> GetTargetWords(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
+    {
+        return Enumerable.Range(1, 100)
+            .Select(x => new TargetWord(x.ToString(), (((x % 100) / 10) * 10).ToString()))
+            .ToList();
+    }
+    }
 
 }

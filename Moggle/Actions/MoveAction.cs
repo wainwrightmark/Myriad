@@ -44,7 +44,11 @@ public record MoveAction(string BoardId, MoveResult Result, Coordinate Coordinat
     public FoundWordsState Reduce(FoundWordsState state)
     {
         if (Result is MoveResult.WordComplete wc)
-            return state with { FoundWords = state.FoundWords.Add(wc.FoundWord) };
+            return state with
+            {
+                FoundWords = state.FoundWords.Add(wc.FoundWord),
+                FWComparisonStrings = state.FWComparisonStrings.Add(wc.FoundWord.Comparison)
+            };
 
         return state;
     }

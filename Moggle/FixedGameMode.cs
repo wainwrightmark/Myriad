@@ -171,6 +171,12 @@ public record FixedGameMode : IMoggleGameMode
             yield return WordsToAnimate;
         }
     }
-}
+
+        /// <inheritdoc />
+        public IReadOnlyCollection<TargetWord>? GetTargetWords(ImmutableDictionary<string, string> settings, Lazy<WordList> wordList)
+        {
+            return null;
+        }
+    }
 
 }

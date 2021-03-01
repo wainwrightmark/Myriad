@@ -89,6 +89,14 @@ public record SecretGameMode : IMoggleGameMode
             yield return Animate;
         }
     }
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<TargetWord>? GetTargetWords(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
+    {
+        return null;
+    }
 }
 
 }

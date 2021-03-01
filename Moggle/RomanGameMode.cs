@@ -32,7 +32,7 @@ public record RomanGameMode : WhitelistGameMode
     public override MoggleBoard GenerateCuratedRandomBoard(Random random)
     {
         var chars = "+-*".RandomSubset(2, random)
-                .Concat("IIIIIIVVVXXX".RandomSubset(7, random));
+            .Concat("IIIIIIVVVXXX".RandomSubset(7, random));
 
         var letters = chars.Select(Letter.Create).ToImmutableArray();
 
@@ -68,6 +68,16 @@ public record RomanGameMode : WhitelistGameMode
             yield return Seed;
             yield return AnimateSetting;
         }
+    }
+
+    /// <inheritdoc />
+    public override IReadOnlyCollection<TargetWord> GetTargetWords(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
+    {
+        return Enumerable.Range(1, 100)
+            .Select(x => new TargetWord(x.ToString(), (((x % 100) / 10) * 10).ToString()))
+            .ToList();
     }
 }
 

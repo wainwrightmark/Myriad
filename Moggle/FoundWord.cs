@@ -2,7 +2,6 @@
 
 namespace Moggle
 {
-
 public abstract record FoundWord(string Text) : IComparable
 {
     public abstract string Display { get; }
@@ -20,7 +19,12 @@ public abstract record FoundWord(string Text) : IComparable
         other is not null && Comparison.Equals(other.Comparison);
 
     /// <inheritdoc />
-    public override int GetHashCode() => Comparison.GetHashCode();
+    public override int GetHashCode()
+    {
+        var r = Comparison.GetHashCode();
+
+        return r;
+    }
 
     /// <inheritdoc />
     public int CompareTo(object? obj)

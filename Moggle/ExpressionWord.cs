@@ -1,4 +1,6 @@
-﻿namespace Moggle
+﻿using System;
+
+namespace Moggle
 {
 
 public record ExpressionWord : FoundWord
@@ -25,9 +27,19 @@ public record ExpressionWord : FoundWord
     {
         if (fw is ExpressionWord mew)
             return -Result.CompareTo(mew.Result);
+        
 
         return base.CompareTo(fw);
     }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+
+    /// <inheritdoc />
+    protected override Type EqualityContract { get; } = typeof(FoundWord);
 
     /// <inheritdoc />
     public override string Display => $"{Result}: {Text}";

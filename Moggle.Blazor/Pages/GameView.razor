@@ -38,7 +38,7 @@
 
 
   @{
-    var d = ChosenPositions.Value.GetPathD(Board.Value, 
+    var d = ChosenPositions.Value.GetPathD(Board.Value,
                                            RecentWordsState.Value.Rotation, FullWidth, FullHeight);
   }
   <path
@@ -107,9 +107,43 @@
 </svg>
 
 
+@if (FoundWordsState.Value.TargetWordContext is not null)
+{
+  <MudExpansionPanels MultiExpansion="true">
+    @foreach (var group in FoundWordsState.Value.TargetWordContext.GroupLookup.OrderBy(x => x.Key))
+    {
+      var groupKey = @group.Key;
+      var remainingInGroup = FoundWordsState.Value.RemainingInGroup(groupKey);
+      var text = $"{groupKey}";
+
+      <MudExpansionPanel @key="@groupKey">
+        <TitleContent>
+          <div class="d-flex">
+            <MudText Class="mt-1">@text</MudText>
+            <MudBadge Content="@remainingInGroup" Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+              <MudIcon Icon="@Icons.Material.MilitaryTech" Color="Color.Default"/>
+            </MudBadge>
+          </div>
+        </TitleContent>
+
+        <ChildContent>
+          @foreach (var w in group)
+          {
+            <MudCheckBox @key="@w.Display"
+                          Disabled="true"
+                          Label="@w.Display"
+                          Checked="@FoundWordsState.Value.Contains(w)"/>
+          }
+        </ChildContent>
+
+      </MudExpansionPanel>
+    }
+  </MudExpansionPanels>
+}
+else
+{
 <MudChip Icon="@Filled.MilitaryTech">@FoundWordsState.Value.GetScore()</MudChip>
 <MudChip Icon="@Filled.Notes">@FoundWordsState.Value.GetNumberOfWords()</MudChip>
-
 
 <MudList>
 
@@ -138,6 +172,10 @@
 {
   <MudButton OnClick="() => Dispatcher.Dispatch(new CheatAction())">Cheat</MudButton>
 }
+}
+
+
+
 
 
 @code {

@@ -80,6 +80,10 @@ public abstract record WhitelistGameMode : IMoggleGameMode
 
     /// <inheritdoc />
     public abstract IEnumerable<Setting> Settings { get; }
+
+    public abstract IReadOnlyCollection<TargetWord>? GetTargetWords(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList);
 }
 
 /// <summary>
@@ -219,6 +223,14 @@ public abstract record BagGameMode : IMoggleGameMode
             yield return DurationSetting;
             yield return AnimateSetting;
         }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<TargetWord>? GetTargetWords(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
+    {
+        return null;
     }
 }
 
