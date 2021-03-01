@@ -68,7 +68,7 @@ public abstract record MoveResult
     {
         var chosenPositions = chosenPositionsState.ChosenPositions;
 
-        if (chosenPositions.Any() && chosenPositions.Last().Equals(coordinate))
+        if (chosenPositions.Any() && (chosenPositions.Last().Equals(coordinate) || chosenPositions.First().Equals(coordinate)))
         {
             return new WordAbandoned();
         }
