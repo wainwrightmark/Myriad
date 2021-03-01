@@ -44,7 +44,10 @@
   <path
     id="rope"
 
-    style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default; transition: 1s @animationTiming; fill: none;"
+    style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default;
+                                    -webkit-transition:  1s @AnimationTiming;
+                                    transition: 1s @AnimationTiming;
+                                    fill: none;"
     stroke-linejoin="round"
     stroke-linecap="round"
     d="@d"/>
@@ -56,7 +59,7 @@
     var (cx, cy) = GetLocation(coordinate, true);
 
     <g class="square"
-       style="transform: translate(@(cx)px, @(cy)px);"
+       style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
        @onclick="@(() => CellClicked(coordinate))">
       <circle
         id="@($"{coordinate}_bigCircle")"
@@ -293,7 +296,7 @@ else
     return color;
   }
 
-    const string animationTiming = "ease-out";
+    const string AnimationTiming = "ease-out";
 }
 
 <style>
@@ -310,7 +313,10 @@ else
     font-weight: bold;
   }
 
-  .square { transition: 1s @animationTiming }
+  .square {
+    -webkit-transition: 1s @AnimationTiming;
+     transition: 1s @AnimationTiming;
+  }
 
   .circle {
     stroke-width: @CircleStrokeWidth;
@@ -325,6 +331,8 @@ else
     animation-name: disappearAnimation;
     animation-fill-mode: forwards;
     animation-timing-function: ease-out;
+
+    -webkit-transform-origin: 40% 40%;
     transform-origin: 40% 40%;
   }
 
@@ -339,6 +347,7 @@ else
 
     100% {
       opacity: 0;
+      -webkit-transform: scale(4, 4) rotate(120deg);
       transform: scale(4, 4) rotate(120deg);
     }
   }
