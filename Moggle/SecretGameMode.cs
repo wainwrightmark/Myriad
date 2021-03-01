@@ -15,27 +15,30 @@ public record SecretGameMode : IMoggleGameMode
     public string Name => "Secret";
 
     /// <inheritdoc />
-    public (MoggleBoard board, Solver Solver)
-        CreateGame(
-            ImmutableDictionary<string, string> settings,
-            Lazy<WordList> wordList)
+    public MoggleBoard CreateBoard(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
     {
         var wordsText = Words.Get(settings);
+        var allWords  = Creator.GridCreator.GetAllWords(wordsText).ToList();
+        var grid      = Creator.GridCreator.CreateNodeGrid(allWords, null, 10000);
+        var random    = RandomHelper.GetRandom(wordsText);
+        var board     = grid.ToMoggleBoard(() => ModernGameMode.Instance.GetRandomRune(random));
 
+        return board;
+    }
+
+    /// <inheritdoc />
+    public Solver CreateSolver(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
+    {
+        var wordsText     = Words.Get(settings);
         var minWordLength = MinWordLength.Get(settings);
-
-        var allWords = Creator.GridCreator.GetAllWords(wordsText).ToList();
-
-        var grid = Creator.GridCreator.CreateNodeGrid(allWords, null, 10000);
-
-        var random = RandomHelper.GetRandom(wordsText);
-
-        var board         = grid.ToMoggleBoard(() => ModernGameMode.Instance.GetRandomRune(random));
+        var allWords      = Creator.GridCreator.GetAllWords(wordsText).ToList();
         var solveSettings = new SolveSettings(minWordLength, false, null);
-
-        var solver = new Solver(wordList.Value.AddWords(allWords), solveSettings);
-
-        return (board, solver);
+        var solver        = new Solver(wordList.Value.AddWords(allWords), solveSettings);
+        return solver;
     }
 
     /// <inheritdoc />

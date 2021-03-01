@@ -17,7 +17,19 @@ public abstract record WhitelistGameMode : IMoggleGameMode
     public abstract string Name { get; }
 
     /// <inheritdoc />
-    public (MoggleBoard board, Solver Solver) CreateGame(
+    public Solver CreateSolver(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
+    {
+        var solveSettings = GetSolveSettings(settings);
+
+        var solver = new Solver(wordList, solveSettings);
+
+        return solver;
+    }
+
+    /// <inheritdoc />
+    public MoggleBoard CreateBoard(
         ImmutableDictionary<string, string> settings,
         Lazy<WordList> wordList)
     {
@@ -27,12 +39,7 @@ public abstract record WhitelistGameMode : IMoggleGameMode
         var array  = GetLetters(random);
 
         var board = new MoggleBoard(array, Columns);
-
-        var solveSettings = GetSolveSettings(settings);
-
-        var solver = new Solver(wordList, solveSettings);
-
-        return (board, solver);
+        return board;
     }
 
     public abstract MoggleBoard GenerateRandomBoard(Random random);
@@ -54,8 +61,11 @@ public abstract record WhitelistGameMode : IMoggleGameMode
     {
         if (AnimateSetting.Get(settings))
         {
-            var (board, solver) = CreateGame(settings, wordList);
-            return Animation.CreateForAllSolutions(board, solver, ReverseAnimationOrder);
+            return Animation.CreateForAllSolutions(
+                CreateBoard(settings, wordList),
+                CreateSolver(settings, wordList),
+                ReverseAnimationOrder
+            );
         }
 
         return null;
@@ -83,10 +93,9 @@ public abstract record BagGameMode : IMoggleGameMode
     public abstract string Name { get; }
 
     /// <inheritdoc />
-    public (MoggleBoard board, Solver Solver)
-        CreateGame(
-            ImmutableDictionary<string, string> settings,
-            Lazy<WordList> wordList)
+    public MoggleBoard CreateBoard(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
     {
         var width  = Width.Get(settings);
         var height = Height.Get(settings);
@@ -119,11 +128,19 @@ public abstract record BagGameMode : IMoggleGameMode
 
         var board = new MoggleBoard(array, width);
 
+        return board;
+    }
+
+    /// <inheritdoc />
+    public Solver CreateSolver(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
+    {
         var solveSettings = GetSolveSettings(settings);
 
         var solver = new Solver(wordList, solveSettings);
 
-        return (board, solver);
+        return solver;
     }
 
     public virtual ImmutableArray<Letter> GetLettersFromSeed(string seed, int size)
@@ -164,8 +181,11 @@ public abstract record BagGameMode : IMoggleGameMode
     {
         if (AnimateSetting.Get(settings))
         {
-            var (board, solver) = CreateGame(settings, wordList);
-            return Animation.CreateForAllSolutions(board, solver, ReverseAnimationOrder);
+            return Animation.CreateForAllSolutions(
+                CreateBoard(settings, wordList),
+                CreateSolver(settings, wordList),
+                ReverseAnimationOrder
+            );
         }
 
         return null;

@@ -15,10 +15,9 @@ public record FixedGameMode : IMoggleGameMode
     public string Name => "Fixed";
 
     /// <inheritdoc />
-    public (MoggleBoard board, Solver Solver)
-        CreateGame(
-            ImmutableDictionary<string, string> settings,
-            Lazy<WordList> wordList)
+    public MoggleBoard CreateBoard(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
     {
         var letters = Letters.Get(settings)
             .EnumerateRunes()
@@ -35,6 +34,28 @@ public record FixedGameMode : IMoggleGameMode
         }
 
         var board = new MoggleBoard(letters, c.Column + 1);
+
+        return board;
+    }
+
+    /// <inheritdoc />
+    public Solver CreateSolver(
+        ImmutableDictionary<string, string> settings,
+        Lazy<WordList> wordList)
+    {
+        var letters = Letters.Get(settings)
+            .EnumerateRunes()
+            .Select(Letter.Create)
+            .ToImmutableArray();
+
+        var c = Coordinate.GetMaxCoordinateForSquareGrid(letters.Length);
+
+        var total = (c.Column + 1) * (c.Row + 1);
+
+        if (letters.Length < total)
+        {
+            letters = letters.AddRange(Enumerable.Repeat(PaddingLetter, total - letters.Length));
+        }
 
         int? minWordLength = MinWordLength.Get(settings);
 
@@ -73,7 +94,7 @@ public record FixedGameMode : IMoggleGameMode
             solver = new Solver(wordList.Value.AddWords(words), solveSettings);
         }
 
-        return (board, solver);
+        return solver;
     }
 
     /// <inheritdoc />

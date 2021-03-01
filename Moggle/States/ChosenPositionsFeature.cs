@@ -25,11 +25,10 @@ public class MoggleBoardFeature : Feature<MoggleBoard>
     /// <inheritdoc />
     protected override MoggleBoard GetInitialState()
     {
-        return CenturyGameMode.Instance.CreateGame(
-                ImmutableDictionary<string, string>.Empty,
-                WordList.LazyInstance
-            )
-            .board;
+        return CenturyGameMode.Instance.CreateBoard(
+            ImmutableDictionary<string, string>.Empty,
+            WordList.LazyInstance
+        );
     }
 }
 

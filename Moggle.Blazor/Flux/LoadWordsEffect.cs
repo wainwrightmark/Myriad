@@ -21,10 +21,8 @@ public class LoadWordsEffect : Effect<StartGameAction>
     /// <inheritdoc />
     public override async Task HandleAsync(StartGameAction action, IDispatcher dispatcher)
     {
-        var (board, solver) = action.GameMode.CreateGame(
-            action.Settings,
-            new Lazy<WordList>(() => WordList.Empty)
-        );
+        var board = action.GameMode.CreateBoard(action.Settings, new Lazy<WordList>(() => WordList.Empty));
+        var solver = action.GameMode.CreateSolver(action.Settings, new Lazy<WordList>(() => WordList.Empty));
 
         var uk = board.UniqueKey;
 

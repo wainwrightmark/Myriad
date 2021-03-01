@@ -28,13 +28,13 @@ public record StartGameAction(
     /// <inheritdoc />
     public Solver Reduce(Solver state)
     {
-        return GameMode.CreateGame(Settings, WordList).Solver;
+        return GameMode.CreateSolver(Settings, WordList);
     }
 
     /// <inheritdoc />
     public MoggleBoard Reduce(MoggleBoard state)
     {
-        return GameMode.CreateGame(Settings, WordList).board;
+        return GameMode.CreateBoard(Settings, WordList);
     }
 
     public AnimationState Reduce(AnimationState state)
@@ -55,9 +55,10 @@ public record StartGameAction(
 
         if (state.AllowCheating)
         {
-            var g = GameMode.CreateGame(Settings, WordList);
+            var board  = GameMode.CreateBoard(Settings, WordList);
+            var solver = GameMode.CreateSolver(Settings, WordList);
 
-            possibleWords = g.Solver.GetPossibleSolutions(g.board).ToImmutableList();
+            possibleWords = solver.GetPossibleSolutions(board).ToImmutableList();
         }
         else
             possibleWords = ImmutableList<FoundWord>.Empty;

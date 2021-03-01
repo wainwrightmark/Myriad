@@ -12,12 +12,12 @@ public class SolverFeature : Feature<Solver>
     /// <inheritdoc />
     protected override Solver GetInitialState()
     {
-            return CenturyGameMode.Instance.CreateGame(
-                    ImmutableDictionary<string, string>.Empty,
-                    WordList.LazyInstance
-                )
-                .Solver;
-        }
+        return CenturyGameMode.Instance.CreateSolver(
+                ImmutableDictionary<string, string>.Empty,
+                WordList.LazyInstance
+            )
+            ;
+    }
 }
 
 }

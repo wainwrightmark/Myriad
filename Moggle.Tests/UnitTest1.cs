@@ -52,7 +52,10 @@ public class UnitTest1
             }
         );
 
-        return mode.CreateGame(settings, _wordList);
+        var board = mode.CreateBoard(settings, _wordList);
+        var solver = mode.CreateSolver(settings, _wordList);
+
+        return (board, solver);
     }
 
     private (MoggleBoard board, Solver solver) CreateMathStateFromSeed(
@@ -86,8 +89,11 @@ public class UnitTest1
         );
 
 
-        return mode.CreateGame(settings, _wordList);
-    }
+            var board = mode.CreateBoard(settings, _wordList);
+            var solver = mode.CreateSolver(settings, _wordList);
+
+            return (board, solver);
+        }
 
     [Theory]
     [InlineData("")]
@@ -348,9 +354,9 @@ public class UnitTest1
                 true.ToString()
             ),
             WordList.LazyInstance
-        );
+        )!;
 
-        var (board, _) = CenturyGameMode.Instance.CreateGame(
+        var board = CenturyGameMode.Instance.CreateBoard(
             ImmutableDictionary<string, string>.Empty,
             WordList.LazyInstance
         );
