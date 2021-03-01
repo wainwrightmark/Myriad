@@ -299,27 +299,40 @@ else
 
 
   .foundWord {
+    -webkit-animation-name: disappearAnimation-webkit;
     animation-name: disappearAnimation;
     animation-fill-mode: forwards;
     animation-timing-function: ease-out;
-
-    /*-webkit-transform-origin: 40% 40%;
-    transform-origin: 40% 40%;*/
   }
 
-
-  @@keyframes disappearAnimation {
-    0% { opacity: 1; }
+  @@-webkit-keyframes disappearAnimation-webkit {
+    0% {
+      opacity: 1;
+    }
 
     50% {
       opacity: 0.2;
       -webkit-transform: translateY(50%);
-      transform: translateY(50%);
     }
 
     100% {
       opacity: 0;
       -webkit-transform: translateY(100%);
+    }
+  }
+
+  @@-webkit-keyframes disappearAnimation {
+    0% {
+       opacity: 1;
+    }
+
+    50% {
+      opacity: 0.2;
+      transform: translateY(50%);
+    }
+
+    100% {
+      opacity: 0;
       transform: translateY(100%);
     }
   }
