@@ -6,12 +6,39 @@
 
 <svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
 
+
+  <defs>
+    <filter id="MyFilter" filterUnits="userSpaceOnUse">
+
+      <!-- offsetBlur -->
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+      <feOffset in="blur" dx="4" dy="4" result="offsetBlur"/>
+
+      <!-- litPaint -->
+      <feSpecularLighting in="blur" surfaceScale="5" specularConstant=".75"
+                          specularExponent="20" lighting-color="#bbbbbb"
+                          result="specOut">
+        <fePointLight x="-5000" y="-10000" z="20000"/>
+      </feSpecularLighting>
+      <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut"/>
+      <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic"
+                   k1="0" k2="1" k3="1" k4="0" result="litPaint"/>
+
+      <!-- merge offsetBlur + litPaint -->
+      <feMerge>
+        <feMergeNode in="offsetBlur"/>
+        <feMergeNode in="litPaint"/>
+      </feMerge>
+    </filter>
+
+  </defs>
+
   <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
 
 
-  @if (State.Value.ChosenPositions.Any())
+   @if (State.Value.ChosenPositions.Any())
   {
-    <g>
+    <g filter="url(#MyFilter)">
       @for (var i = 0; i < State.Value.ChosenPositions.Count; i++)
       {
         var (x1, y1) = GetLocation(State.Value.ChosenPositions[i], true);
@@ -28,6 +55,8 @@
 
         <path id="@($"line-{i}")"
               class="line"
+              stroke-dasharray="7 10"
+              stroke-linecap="round"
               d="@d"/>
       }
     </g>
@@ -45,7 +74,8 @@
       <circle
         id="@($"{coordinate}_bigCircle")"
         stroke="@color"
-        fill="@Colors.Shades.White"
+        fill="@Colors.Shades.Black"
+        fill-opacity="0.01"
         r="@CircleRadius"
         class="circle">
       </circle>
@@ -55,6 +85,7 @@
 
         dominant-baseline="middle"
         text-anchor="middle"
+        stroke="@Colors.Shades.White"
         fill="@Colors.Shades.Black">
         @State.Value.Board.GetLetterAtCoordinate(coordinate).ButtonText
 
@@ -67,7 +98,7 @@
     var (cx, cy) = GetLocation(coordinate.Rotate(State.Value.Board.MaxCoordinate, -rotate), false);
     var id = $"{word.Text}{coordinate}";
     <text>
-      <text
+      <text filter="url(#MyFilter)"
         fill="@GetColor(word)"
         class="foundWord"
         style="animation-duration: @(word.LingerDuration)ms"
@@ -82,6 +113,8 @@
       </text>
     </text>
   }
+
+
 
 
 </svg>
@@ -122,115 +155,115 @@
 
 @code {
 
-    [Inject]
-    private IState<MoggleState> State { get; set; }
+  [Inject]
+  private IState<MoggleState> State { get; set; }
 
-    [Inject]
-    private IState<TimeState> TimeState { get; set; }
+  [Inject]
+  private IState<TimeState> TimeState { get; set; }
 
-    [Inject]
-    private IState<FoundWordsState> UncheckedWordState { get; set; }
+  [Inject]
+  private IState<FoundWordsState> UncheckedWordState { get; set; }
 
-    [Inject]
-    private IState<CheatState> CheatState { get; set; }
+  [Inject]
+  private IState<CheatState> CheatState { get; set; }
 
-    [Inject]
-    private IState<AnimationState> AnimationState { get; set; }
+  [Inject]
+  private IState<AnimationState> AnimationState { get; set; }
 
-    [Inject]
-    private IState<RecentWordsState> RecentWordsState { get; set; }
+  [Inject]
+  private IState<RecentWordsState> RecentWordsState { get; set; }
 
-    [Inject]
-    private IState<GameSettingsState> GameSettingsState { get; set; }
+  [Inject]
+  private IState<GameSettingsState> GameSettingsState { get; set; }
 
-    [Inject]
-    public IDispatcher Dispatcher { get; set; }
+  [Inject]
+  public IDispatcher Dispatcher { get; set; }
 
-    [Parameter]
-    public StartGameAction? StartGameAction { get; set; }
+  [Parameter]
+  public StartGameAction? StartGameAction { get; set; }
 
-    /// <inheritdoc />
-    protected override void OnParametersSet()
-    {
-      if (StartGameAction != null)
-        Dispatcher.Dispatch(StartGameAction);
+  /// <inheritdoc />
+  protected override void OnParametersSet()
+  {
+    if (StartGameAction != null)
+      Dispatcher.Dispatch(StartGameAction);
 
-      base.OnParametersSet();
-    }
+    base.OnParametersSet();
+  }
 
-    public bool IsGameInProgress => !TimeState.Value.TimeSituation.IsFinished;
+  public bool IsGameInProgress => !TimeState.Value.TimeSituation.IsFinished;
 
-    public double CircleRadius => FullWidth / Math.Max(Columns, Rows) * 0.4;
-    public double SquareSize => FullWidth / Math.Max(Columns, Rows);
+  public double CircleRadius => FullWidth / Math.Max(Columns, Rows) * 0.4;
+  public double SquareSize => FullWidth / Math.Max(Columns, Rows);
 
     public const double FullWidth = 360;
     public const double FullHeight = 360;
 
-    public double LineWidth => FullWidth * 0.05;
-    public double CircleStrokeWidth => FullWidth * 0.02;
+  public double LineWidth => FullWidth * 0.05;
+  public double CircleStrokeWidth => FullWidth * 0.02;
 
-    public int Columns => State.Value.Board.Columns;
-    public int Rows => State.Value.Board.Rows;
+  public int Columns => State.Value.Board.Columns;
+  public int Rows => State.Value.Board.Rows;
 
-    public void CellClicked(Coordinate coordinate)
+  public void CellClicked(Coordinate coordinate)
+  {
+    if (IsGameInProgress)
     {
-      if(IsGameInProgress)
-      {
-        var mr = State.Value.TryGetMoveResult(coordinate);
+      var mr = State.Value.TryGetMoveResult(coordinate);
       Dispatcher.Dispatch(new MoveAction(State.Value.Board.UniqueKey, mr, coordinate));
-      }
     }
+  }
 
-    private string GetColor(AnimationWord animationWord)
+  private string GetColor(AnimationWord animationWord)
+  {
+    return animationWord.Type switch
     {
-      return animationWord.Type switch
-      {
-        AnimationWord.WordType.Found           => Colors.Green.Default,
-        AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
-        AnimationWord.WordType.Invalid         => Colors.Red.Default,
-        AnimationWord.WordType.Illegal => Colors.Orange.Default,
-        _                                      => throw new ArgumentOutOfRangeException()
+      AnimationWord.WordType.Found           => Colors.Green.Default,
+      AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
+      AnimationWord.WordType.Invalid         => Colors.Red.Default,
+      AnimationWord.WordType.Illegal => Colors.Orange.Default,
+      _                                      => throw new ArgumentOutOfRangeException()
       };
-    }
+  }
 
-    public Coordinate GetRotated(Coordinate coordinate) => coordinate.Rotate(
-      State.Value.Board.MaxCoordinate,
-      RecentWordsState.Value.Rotation * -1);
+  public Coordinate GetRotated(Coordinate coordinate) => coordinate.Rotate(
+    State.Value.Board.MaxCoordinate,
+    RecentWordsState.Value.Rotation * -1);
 
-    public (double x, double y) GetLocation(Coordinate coordinate, bool rotate)
+  public (double x, double y) GetLocation(Coordinate coordinate, bool rotate)
+  {
+    var rotated = rotate ? GetRotated(coordinate) : coordinate;
+
+    var cx = rotated.Column * SquareSize
+             + SquareSize * 0.5;
+
+    var cy = rotated.Row * SquareSize
+             + SquareSize * 0.5;
+    return (cx, cy);
+  }
+
+  public string GetColor(Coordinate coordinate)
+  {
+    if (!IsGameInProgress || !State.Value.ChosenPositions.Any())
+      return Colors.Grey.Default;
+
+    var result = State.Value.TryGetMoveResult(coordinate);
+
+    var color = result switch
     {
-      var rotated = rotate ? GetRotated(coordinate) : coordinate;
-
-      var cx = rotated.Column * SquareSize
-               + SquareSize * 0.5;
-
-      var cy = rotated.Row * SquareSize
-               + SquareSize * 0.5;
-      return (cx, cy);
-    }
-
-    public string GetColor(Coordinate coordinate)
-    {
-      if (!IsGameInProgress || !State.Value.ChosenPositions.Any())
-        return Colors.Grey.Default;
-
-      var result = State.Value.TryGetMoveResult(coordinate);
-
-      var color = result switch
-      {
-        MoveResult.IllegalMove   => Colors.Grey.Default,
-        MoveResult.InvalidWord   => Colors.Grey.Darken1,
-        MoveResult.MoveRetraced  => Colors.Green.Lighten3,
-        MoveResult.WordAbandoned => Colors.Orange.Default,
-        MoveResult.WordComplete  => Colors.Green.Darken2,
-        MoveResult.WordContinued => Colors.Green.Default,
-        _                        => throw new ArgumentOutOfRangeException(nameof(result))
+      MoveResult.IllegalMove   => Colors.Grey.Default,
+      MoveResult.InvalidWord   => Colors.Grey.Darken1,
+      MoveResult.MoveRetraced  => Colors.Green.Lighten3,
+      MoveResult.WordAbandoned => Colors.Orange.Default,
+      MoveResult.WordComplete  => Colors.Green.Darken2,
+      MoveResult.WordContinued => Colors.Green.Default,
+      _                        => throw new ArgumentOutOfRangeException(nameof(result))
       };
 
-      return color;
-    }
+    return color;
+  }
 
-    //const string animationTiming = "cubic-bezier(0, 1.06, 0.16, 0.461)";
+  //const string animationTiming = "cubic-bezier(0, 1.06, 0.16, 0.461)";
     const string animationTiming = "ease-out";
 }
 
@@ -260,7 +293,7 @@
 
   .line {
     stroke-width: @LineWidth;
-    stroke: @Colors.Green.Default;
+    stroke: @Colors.LightBlue.Default;
     transition: 1s @animationTiming;
   }
 
