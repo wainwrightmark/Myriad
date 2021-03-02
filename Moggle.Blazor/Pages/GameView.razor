@@ -83,33 +83,25 @@
 
 @if (FoundWordsState.Value.Data is FoundWordsData.TargetWordsData data)
 {
-  <MudExpansionPanels MultiExpansion="true" >
+  <MudTabs Rounded="true" AlwaysShowScrollButtons="true">
     @foreach (var group in data.WordsToFind.GroupBy(x => x.Value.group).OrderBy(x=>x.Key))
     {
       var groupKey = @group.Key;
       var remainingInGroup = group.Count(x => x.Value.word is null);
       var text = $"{groupKey}";
 
-      <MudExpansionPanel @key="@groupKey" Dense="true">
-        <TitleContent>
-          <MudBadge Content="@remainingInGroup" Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
-            <MudText Class="mt-1">@text</MudText>
-          </MudBadge>
-        </TitleContent>
-
-        <ChildContent>
-          @foreach (var w in group)
+      <MudTabPanel @key="@groupKey" Text="@text" BadgeData="@remainingInGroup">
+        @foreach (var w in group.OrderBy(x=>x))
           {
             <MudCheckBox @key="@w.Key"
                           Disabled="true"
                           Label="@w.Key"
                           Checked="@(w.Value.word is not null)"/>
           }
-        </ChildContent>
 
-      </MudExpansionPanel>
+      </MudTabPanel>
     }
-  </MudExpansionPanels>
+  </MudTabs>
 }
 else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchData)
 {
