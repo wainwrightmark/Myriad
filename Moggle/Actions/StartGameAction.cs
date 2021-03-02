@@ -89,15 +89,9 @@ public record StartGameAction(
     /// <inheritdoc />
     public FoundWordsState Reduce(FoundWordsState state)
     {
-        var targetWords = GameMode.GetTargetWords(Settings, WordList);
+        var data = GameMode.GetFoundWordsData(Settings, WordList);
 
-        return new(
-                ImmutableSortedSet<FoundWord>.Empty,
-                ImmutableHashSet<string>.Empty,
-                ImmutableHashSet<FoundWord>.Empty,
-                targetWords is null? null :
-                new TargetWordContext(targetWords)
-            );
+        return new FoundWordsState(data);
     }
 }
 

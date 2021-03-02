@@ -1,8 +1,19 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using Fluxor;
 
 namespace Moggle.States
 {
+
+public static class Defaults
+{
+    public static IMoggleGameMode Mode => CenturyGameMode.Instance;
+
+    public static ImmutableDictionary<string, string> Settings =>
+        ImmutableDictionary<string, string>.Empty;
+
+    public static Lazy<WordList> WordList => Moggle.WordList.LazyInstance;
+}
 
 public class FoundWordsFeature : Feature<FoundWordsState>
 {
@@ -15,18 +26,9 @@ public class FoundWordsFeature : Feature<FoundWordsState>
     /// <inheritdoc />
     protected override FoundWordsState GetInitialState()
     {
-        return new(
-            ImmutableSortedSet<FoundWord>.Empty,
-            ImmutableHashSet<string>.Empty, 
-            ImmutableHashSet<FoundWord>.Empty,
-           
-            new TargetWordContext(
-                CenturyGameMode.Instance.GetTargetWords(
-                    ImmutableDictionary<string, string>.Empty,
-                    WordList.LazyInstance
-                )
-            )
-        );
+        var data = Defaults.Mode.GetFoundWordsData(Defaults.Settings, Defaults.WordList);
+
+        return new FoundWordsState(data);
     }
 }
 

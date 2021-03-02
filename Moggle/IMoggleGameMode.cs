@@ -1,33 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Moggle.States;
 
 namespace Moggle
 {
-
-public record TargetWord(string Text, string Group) : FoundWord(Text)
-{
-    /// <inheritdoc />
-    public override string Display => Text;
-
-    /// <inheritdoc />
-    public override string Comparison => Text;
-
-    /// <inheritdoc />
-    public override string AnimationString => Text;
-
-    /// <inheritdoc />
-    public override int Points => 1;
-
-    /// <inheritdoc />
-    protected override Type EqualityContract { get; } = typeof(FoundWord);
-
-    /// <inheritdoc />
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-}
 
 public interface IMoggleGameMode
 {
@@ -43,7 +20,7 @@ public interface IMoggleGameMode
 
     IEnumerable<Setting> Settings { get; }
 
-    IReadOnlyCollection<TargetWord>? GetTargetWords(
+    public FoundWordsData GetFoundWordsData(
         ImmutableDictionary<string, string> settings,
         Lazy<WordList> wordList);
 

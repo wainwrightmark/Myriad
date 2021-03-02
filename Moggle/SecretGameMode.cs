@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Moggle.States;
 
 namespace Moggle
 {
@@ -91,11 +92,9 @@ public record SecretGameMode : IMoggleGameMode
     }
 
     /// <inheritdoc />
-    public IReadOnlyCollection<TargetWord>? GetTargetWords(
-        ImmutableDictionary<string, string> settings,
-        Lazy<WordList> wordList)
+    public FoundWordsData GetFoundWordsData(ImmutableDictionary<string, string> settings, Lazy<WordList> wordList)
     {
-        return null;
+        return new FoundWordsData.OpenSearchData(ImmutableDictionary<FoundWord, bool>.Empty);
     }
 }
 

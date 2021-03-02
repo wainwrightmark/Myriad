@@ -105,7 +105,7 @@ public abstract record MoveResult
 
             if (checkResult is WordCheckResult.Legal legal)
             {
-                if (foundWordsState.FoundWords.Contains(legal.Word))
+                if (foundWordsState.Data.WordIsFound(legal.Word))
                 {
                     return new WordContinued(
                         checkResult.ToAnimationWord(true, word),

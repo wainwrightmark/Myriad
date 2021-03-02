@@ -81,32 +81,29 @@
 </svg>
 
 
-@if (FoundWordsState.Value.TargetWordContext is not null)
+@if (FoundWordsState.Value.Data is FoundWordsData.TargetWordsData data)
 {
-  <MudExpansionPanels MultiExpansion="true">
-    @foreach (var group in FoundWordsState.Value.TargetWordContext.GroupLookup.OrderBy(x => x.Key))
+  <MudExpansionPanels MultiExpansion="true" >
+    @foreach (var group in data.WordsToFind.GroupBy(x => x.Value.group).OrderBy(x=>x.Key))
     {
       var groupKey = @group.Key;
-      var remainingInGroup = FoundWordsState.Value.RemainingInGroup(groupKey);
+      var remainingInGroup = group.Count(x => x.Value.word is null);
       var text = $"{groupKey}";
 
-      <MudExpansionPanel @key="@groupKey">
+      <MudExpansionPanel @key="@groupKey" Dense="true">
         <TitleContent>
-          <div class="d-flex">
+          <MudBadge Content="@remainingInGroup" Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
             <MudText Class="mt-1">@text</MudText>
-            <MudBadge Content="@remainingInGroup" Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
-              <MudIcon Icon="@Icons.Material.MilitaryTech" Color="Color.Default"/>
-            </MudBadge>
-          </div>
+          </MudBadge>
         </TitleContent>
 
         <ChildContent>
           @foreach (var w in group)
           {
-            <MudCheckBox @key="@w.Display"
+            <MudCheckBox @key="@w.Key"
                           Disabled="true"
-                          Label="@w.Display"
-                          Checked="@FoundWordsState.Value.Contains(w)"/>
+                          Label="@w.Key"
+                          Checked="@(w.Value.word is not null)"/>
           }
         </ChildContent>
 
@@ -114,10 +111,10 @@
     }
   </MudExpansionPanels>
 }
-else
+else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchData)
 {
-  <MudChip Icon="@Filled.MilitaryTech">@FoundWordsState.Value.GetScore()</MudChip>
-  <MudChip Icon="@Filled.Notes">@FoundWordsState.Value.GetNumberOfWords()</MudChip>
+  <MudChip Icon="@Filled.MilitaryTech">@openSearchData.GetScore()</MudChip>
+  <MudChip Icon="@Filled.Notes">@openSearchData.GetNumberOfWords()</MudChip>
 
   <MudList>
 
@@ -130,14 +127,13 @@ else
     }
     else
     {
-      @foreach (var w in FoundWordsState.Value.FoundWords)
+      @foreach (var w in openSearchData.FoundWordsDictionary)
       {
-        var word = w;
         <MudCheckBox
           Disabled="@(IsGameInProgress)"
-          CheckedChanged="(bool b) => { Dispatcher.Dispatch(new UnCheckWord(word, b)); }"
-          Label=@word.Display
-          Checked="@(!FoundWordsState.Value.UncheckedWords.Contains(word))"/>
+          CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableDisableWordAction(w.Key, b)); }"
+          Label=@w.Key.Display
+          Checked="@(w.Value)"/>
       }
     }
   </MudList>
@@ -306,9 +302,7 @@ else
   }
 
   @@-webkit-keyframes disappearAnimation-webkit {
-    0% {
-      opacity: 1;
-    }
+    0% { opacity: 1; }
 
     50% {
       opacity: 0.2;
@@ -322,9 +316,7 @@ else
   }
 
   @@-webkit-keyframes disappearAnimation {
-    0% {
-       opacity: 1;
-    }
+    0% { opacity: 1; }
 
     50% {
       opacity: 0.2;

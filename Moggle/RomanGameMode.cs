@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Moggle.States;
 using MoreLinq;
 
 namespace Moggle
@@ -70,15 +71,19 @@ public record RomanGameMode : WhitelistGameMode
         }
     }
 
-    /// <inheritdoc />
-    public override IReadOnlyCollection<TargetWord> GetTargetWords(
-        ImmutableDictionary<string, string> settings,
-        Lazy<WordList> wordList)
-    {
-        return Enumerable.Range(1, 100)
-            .Select(x => new TargetWord(x.ToString(), (((x % 100) / 10) * 10).ToString()))
-            .ToList();
+        /// <inheritdoc />
+        public override FoundWordsData GetFoundWordsData(
+            ImmutableDictionary<string, string> settings,
+            Lazy<WordList> wordList)
+        {
+            var words = Enumerable.Range(1, 100)
+                .Select(x => (word: x.ToString(), group: (((x % 100) / 10) * 10).ToString()))
+                .ToList();
+
+            return new FoundWordsData.TargetWordsData(
+                words.ToImmutableDictionary(x => x.word, x => (x.group, null as FoundWord))
+            );
+        }
     }
-}
 
 }

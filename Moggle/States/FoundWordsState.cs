@@ -5,50 +5,99 @@ using System.Linq;
 namespace Moggle.States
 {
 
-public record TargetWordContext
+public abstract record FoundWordsData
 {
-    public TargetWordContext(IEnumerable<TargetWord> targetWords)
+    public record TargetWordsData
+    (
+        ImmutableDictionary<string, (string group, FoundWord? word)>
+            WordsToFind) : FoundWordsData
     {
-        Dictionary  = targetWords.ToDictionary(x => x.Comparison);
-        GroupLookup = Dictionary.Values.ToLookup(x => x.Group);
+        /// <inheritdoc />
+        public override bool WordIsFound(FoundWord s)
+        {
+            return WordsToFind.TryGetValue(s.Comparison, out var p) && p.word is not null;
+        }
+
+        /// <inheritdoc />
+        public override FoundWordsData FindWord(FoundWord word)
+        {
+            if (WordsToFind.TryGetValue(word.Comparison, out var g))
+            {
+                var newWordsToFind = WordsToFind.SetItem(word.Comparison, (g.group, word));
+
+                return this with { WordsToFind = newWordsToFind };
+            }
+
+            return this;
+        }
     }
 
-    public IReadOnlyDictionary<string, TargetWord> Dictionary { get; }
-    public ILookup<string, TargetWord> GroupLookup { get; }
+    public record OpenSearchData
+        (ImmutableDictionary<FoundWord, bool> FoundWordsDictionary) : FoundWordsData
+    {
+        public int GetNumberOfWords()
+        {
+            return FoundWordsDictionary.Count(x => x.Value);
+        }
+
+        public int GetScore()
+        {
+            return FoundWordsDictionary.Where(x => x.Value).Sum(x => x.Key.Points);
+        }
+
+        /// <inheritdoc />
+        public override bool WordIsFound(FoundWord s)
+        {
+            return FoundWordsDictionary.ContainsKey(s);
+        }
+
+        /// <inheritdoc />
+        public override FoundWordsData FindWord(FoundWord word)
+        {
+            if (FoundWordsDictionary.ContainsKey(word))
+                return this;
+
+            return this with { FoundWordsDictionary = FoundWordsDictionary.Add(word, true) };
+        }
+    }
+
+    public abstract bool WordIsFound(FoundWord s);
+
+    public abstract FoundWordsData FindWord(FoundWord word);
 }
 
-public record FoundWordsState(
-    ImmutableSortedSet<FoundWord> FoundWords,
-    ImmutableHashSet<string> FWComparisonStrings,
-    ImmutableHashSet<FoundWord> UncheckedWords,
-    TargetWordContext? TargetWordContext)
+public record FoundWordsState(FoundWordsData Data)
 {
-    public int RemainingInGroup(string groupKey)
+    public FoundWordsState EnableWord(FoundWord word, bool enable)
     {
-        if (TargetWordContext is null)
-            return 0;
+        if (Data is FoundWordsData.OpenSearchData osd)
+        {
+            osd = osd with
+            {
+                FoundWordsDictionary = osd.FoundWordsDictionary.SetItem(word, enable)
+            };
 
-        var c = TargetWordContext.GroupLookup[groupKey]
-            .Count(x => !Contains(x));
+            return this with { Data = osd };
+        }
 
-        return c;
+        return this;
     }
 
-    public bool Contains(FoundWord fw)
+    public FoundWordsState FindWord(FoundWord word)
     {
-        var r = FWComparisonStrings.Contains(fw.Comparison);
-        //var r = FoundWords.Contains(fw);
-        return r;
+        return this with { Data = Data.FindWord(word) };
     }
 
-    public int GetNumberOfWords()
+    public FoundWordsState FindWords(IEnumerable<FoundWord> words)
     {
-        return FoundWords.Except(UncheckedWords).Count;
-    }
+        var data = this.Data;
 
-    public int GetScore()
-    {
-        return FoundWords.Except(UncheckedWords).Sum(x => x.Points);
+        foreach (var foundWord in words)
+        {
+            data = data.FindWord(foundWord);
+        }
+
+        return this with { Data = data };
     }
 }
 

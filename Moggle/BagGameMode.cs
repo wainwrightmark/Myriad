@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using Moggle.States;
 using MoreLinq.Extensions;
 
 namespace Moggle
@@ -81,7 +82,8 @@ public abstract record WhitelistGameMode : IMoggleGameMode
     /// <inheritdoc />
     public abstract IEnumerable<Setting> Settings { get; }
 
-    public abstract IReadOnlyCollection<TargetWord>? GetTargetWords(
+    /// <inheritdoc />
+    public abstract FoundWordsData GetFoundWordsData(
         ImmutableDictionary<string, string> settings,
         Lazy<WordList> wordList);
 }
@@ -226,11 +228,9 @@ public abstract record BagGameMode : IMoggleGameMode
     }
 
     /// <inheritdoc />
-    public IReadOnlyCollection<TargetWord>? GetTargetWords(
-        ImmutableDictionary<string, string> settings,
-        Lazy<WordList> wordList)
+    public FoundWordsData GetFoundWordsData(ImmutableDictionary<string, string> settings, Lazy<WordList> wordList)
     {
-        return null;
+        return new FoundWordsData.OpenSearchData(ImmutableDictionary<FoundWord, bool>.Empty);
     }
 }
 

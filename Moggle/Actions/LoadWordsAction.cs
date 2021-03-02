@@ -10,15 +10,9 @@ public record LoadWordsAction(IReadOnlyList<WordCheckResult.Legal> Save) : IActi
     /// <inheritdoc />
     public FoundWordsState Reduce(FoundWordsState state)
     {
-        var newWords =
-            state.FoundWords.Union(
-                Save
-                    .Select(x => x.Word)
-            );
+        var r = state.FindWords(Save.Select(x => x.Word));
 
-        var newState = state with { FoundWords = newWords, FWComparisonStrings = state.FWComparisonStrings.Union(Save.Select(x=>x.Word.Comparison))};
-
-        return newState;
+        return r;
     }
 }
 

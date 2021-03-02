@@ -384,27 +384,6 @@ public class UnitTest1
             return new MoggleBoard(Letter.CreateFromString(s).ToImmutableArray(), 3).UniqueKey;
         }
     }
-
-    [Fact]
-    public void TargetWordsShouldEqualFoundWords()
-    {
-        for (int i = 1; i <= 100; i++)
-        {
-            var w1 = ExpressionWord.TryCreate($"{i}")!;
-            var w2 = new TargetWord($"{i}", $"{i}");
-
-            var hc1 = w1.GetHashCode();
-            var hc2 = w2.GetHashCode();
-
-            hc1.Should().Be(hc2);
-
-            var eq  = hc1.Equals(hc2);
-            var eq2 = hc2.Equals(hc1);
-
-            eq.Should().BeTrue();
-            eq2.Should().BeTrue();
-        }
-    }
 }
 
 }
