@@ -4,109 +4,116 @@
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
 
-
-<svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
-
-
-  <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
+<MudContainer MaxWidth="MaxWidth.Small">
+  <svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
 
 
-  @{
-    var d = ChosenPositions.Value.GetPathD(Board.Value,
-                                           RecentWordsState.Value.Rotation, FullWidth, FullHeight);
-  }
-  <path
-    id="rope"
-
-    style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default; -webkit-transition: 1s @AnimationTiming; transition: 1s @AnimationTiming; fill: none;"
-    stroke-linejoin="round"
-    stroke-linecap="round"
-    d="@d"/>
+    <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
 
 
-  @foreach (var coordinate in Board.Value.GetAllCoordinates())
-  {
-    var color = GetColor(coordinate);
-    var (cx, cy) = GetLocation(coordinate, true);
+    @{
+      var d = ChosenPositions.Value.GetPathD(Board.Value,
+                                             RecentWordsState.Value.Rotation, FullWidth, FullHeight);
+    }
+    <path
+      id="rope"
 
-    <g class="square"
-       style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
-       @onclick="@(() => CellClicked(coordinate))">
-      <circle
-        id="@($"{coordinate}_bigCircle")"
-        stroke="@color"
-        fill="@Colors.Shades.Black"
-        fill-opacity="0.01"
-        r="@CircleRadius"
-        class="circle">
-      </circle>
+      style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default; -webkit-transition: 1s @AnimationTiming; transition: 1s @AnimationTiming; fill: none;"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+      d="@d"/>
 
-      <text
-        id="@($"{coordinate}_text")"
 
-        dominant-baseline="middle"
-        text-anchor="middle"
-        stroke="@Colors.Shades.White"
-        fill="@Colors.Shades.Black">
-        @Board.Value.GetLetterAtCoordinate(coordinate).ButtonText
+    @foreach (var coordinate in Board.Value.GetAllCoordinates())
+    {
+      var color = GetColor(coordinate);
+      var (cx, cy) = GetLocation(coordinate, true);
 
+      <g class="square"
+         style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
+         @onclick="@(() => CellClicked(coordinate))">
+        <circle
+          id="@($"{coordinate}_bigCircle")"
+          stroke="@color"
+          fill="@Colors.Shades.Black"
+          fill-opacity="0.01"
+          r="@CircleRadius"
+          class="circle">
+        </circle>
+
+        <text
+          id="@($"{coordinate}_text")"
+
+          dominant-baseline="middle"
+          text-anchor="middle"
+          stroke="@Colors.Shades.White"
+          fill="@Colors.Shades.Black">
+          @Board.Value.GetLetterAtCoordinate(coordinate).ButtonText
+
+        </text>
+      </g>
+    }
+
+    @foreach (var (word, coordinate, rotate,_ ) in RecentWordsState.Value.RecentWords)
+    {
+      var (cx, cy) = GetLocation(coordinate.Rotate(Board.Value.MaxCoordinate, -rotate), false);
+      var id = $"{word.Text}{coordinate}";
+      <text>
+        <text
+          fill="@GetColor(word)"
+          class="foundWord"
+          style="animation-duration: @(word.LingerDuration)ms"
+          pointer-events="none"
+          id="@id"
+          x="@cx"
+          y="@cy"
+          dominant-baseline="middle"
+          text-anchor="middle">
+          @word.Text
+
+        </text>
       </text>
-    </g>
-  }
-
-  @foreach (var (word, coordinate, rotate,_ ) in RecentWordsState.Value.RecentWords)
-  {
-    var (cx, cy) = GetLocation(coordinate.Rotate(Board.Value.MaxCoordinate, -rotate), false);
-    var id = $"{word.Text}{coordinate}";
-    <text>
-      <text
-        fill="@GetColor(word)"
-        class="foundWord"
-        style="animation-duration: @(word.LingerDuration)ms"
-        pointer-events="none"
-        id="@id"
-        x="@cx"
-        y="@cy"
-        dominant-baseline="middle"
-        text-anchor="middle">
-        @word.Text
-
-      </text>
-    </text>
-  }
+    }
 
 
 
 
-</svg>
+  </svg>
+</MudContainer>
 
 
 @if (FoundWordsState.Value.Data is FoundWordsData.TargetWordsData data)
 {
-  <MudTabs Rounded="true" AlwaysShowScrollButtons="true">
-    @foreach (var group in data.WordsToFind.GroupBy(x => x.Value.group).OrderBy(x=>x.Key))
-    {
-      var groupKey = @group.Key;
-      var remainingInGroup = group.Count(x => x.Value.word is null);
-      var text = $"{groupKey}";
+  <MudContainer MaxWidth="MaxWidth.Small">
 
-      <MudTabPanel @key="@groupKey" Text="@text" BadgeData="@remainingInGroup">
-        @foreach (var w in group.OrderBy(x=>x))
+    <MudTabs>
+      @foreach (var group in data.WordsToFind.GroupBy(x => x.Value.group).OrderBy(x => x.Key.Order))
+      {
+        var groupKey = @group.Key;
+        var remainingInGroup = group.Count(x => x.Value.word is null);
+
+        <MudTabPanel @key="@groupKey.Display" Text="@groupKey.Display" BadgeData="@remainingInGroup">
+
+          @foreach (var w in group.OrderBy(x => x.Key))
           {
-            <MudCheckBox @key="@w.Key"
+            var key = $"CheckBox{@w.Key}";
+            <MudCheckBox @key="@key"
                           Disabled="true"
                           Label="@w.Key"
                           Checked="@(w.Value.word is not null)"/>
           }
 
-      </MudTabPanel>
-    }
-  </MudTabs>
+        </MudTabPanel>
+      }
+    </MudTabs>
+
+
+  </MudContainer>
 }
 else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchData)
 {
-  <MudChip Icon="@Filled.MilitaryTech">@openSearchData.GetScore()</MudChip>
-  <MudChip Icon="@Filled.Notes">@openSearchData.GetNumberOfWords()</MudChip>
+  <MudChip Icon="@Icons.Filled.MilitaryTech">@openSearchData.GetScore()</MudChip>
+  <MudChip Icon="@Icons.Filled.Notes">@openSearchData.GetNumberOfWords()</MudChip>
 
   <MudList>
 

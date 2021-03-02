@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -7,9 +8,14 @@ namespace Moggle.States
 
 public abstract record FoundWordsData
 {
+    public record TargetWordGroup(string Display, int Order)
+    {
+
+    }
+
     public record TargetWordsData
     (
-        ImmutableDictionary<string, (string group, FoundWord? word)>
+        ImmutableDictionary<string, (TargetWordGroup group, FoundWord? word)>
             WordsToFind) : FoundWordsData
     {
         /// <inheritdoc />

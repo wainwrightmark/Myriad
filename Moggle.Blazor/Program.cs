@@ -31,9 +31,7 @@ public class Program
 
         builder.RootComponents.Add<App>("#app");
 
-        builder.Services.AddMudBlazorDialog();
-        builder.Services.AddMudBlazorSnackbar();
-        builder.Services.AddMudBlazorResizeListener();
+        builder.Services.AddMudServices();
 
         builder.Services.AddIndexedDB(
             dbStore =>

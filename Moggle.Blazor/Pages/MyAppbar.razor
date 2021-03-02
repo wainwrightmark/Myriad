@@ -6,7 +6,7 @@
 @inject IDialogService Dialog
 
 
-<MudFab Color="Color.Secondary" Icon="@Filled.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(-1))"/>
+<MudFab Color="Color.Secondary" Icon="@Icons.Filled.RotateLeft" OnClick="() => Dispatcher.Dispatch(new RotateAction(-1))"/>
 
 <MudAppBarSpacer/>
 
@@ -19,17 +19,17 @@
 
 <MudFab Color="Color.Primary" OnClick="OpenDialog" Size="Size.Large" Label="New Game"/>
 <MudAppBarSpacer/>
-<MudFab Color="Color.Secondary" Icon="@Filled.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(1))"/>
+<MudFab Color="Color.Secondary" Icon="@Icons.Filled.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(1))"/>
 <MudAppBarSpacer/>
 
 <MudIconButton
-  Icon="@Icons.Material.Face"
+  Icon="@Icons.Material.Filled.Face"
   Color="Color.Inherit"
   Edge="Edge.End" OnClick="ToggleCheating">
 </MudIconButton>
 
 <MudIconButton
-  Icon="@Brands.GitHub"
+  Icon="@Icons.Custom.Brands.GitHub"
   Color="Color.Inherit"
   Edge="Edge.End"
   Link="https://github.com/wainwrightmark/Moggle"

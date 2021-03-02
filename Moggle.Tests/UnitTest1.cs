@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Moggle.States;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -383,6 +384,21 @@ public class UnitTest1
         {
             return new MoggleBoard(Letter.CreateFromString(s).ToImmutableArray(), 3).UniqueKey;
         }
+    }
+
+    [Fact]
+    public void TestTargetWords()
+    {
+        var g1 = CenturyGameMode.Instance.GetFoundWordsData(
+            ImmutableDictionary<string, string>.Empty,
+            WordList.LazyInstance
+        );
+
+        g1.Should().BeOfType<FoundWordsData.TargetWordsData>();
+
+        var data = g1 as FoundWordsData.TargetWordsData;
+
+        data.WordsToFind.Should().HaveCount(100);
     }
 }
 
