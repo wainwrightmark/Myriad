@@ -77,19 +77,8 @@ public record NodeGrid(
                             int reflection,
                             Coordinate maxCoordinate)
                         {
-                            switch (rotation)
-                            {
-                                case 0 when reflection == 0: return c;
-                                case 0: return c.ReflectColumn(maxCoordinate.Column);
-                                default:
-                                {
-                                    if (reflection == 0)
-                                        return c.Rotate(maxCoordinate, rotation);
-
-                                    return c.Rotate(maxCoordinate, rotation)
-                                        .ReflectColumn(maxCoordinate.Column);
-                                }
-                            }
+                            return c.RotateAndFlip(maxCoordinate, rotation, reflection == 0)
+                                .ReflectColumn(maxCoordinate.Column);
                         }
 
                         yield return Dictionary.Select(
@@ -162,14 +151,13 @@ public record NodeGrid(
             builder.Add(Letter.Create(rune));
         }
 
-        return new MoggleBoard(builder.ToImmutableArray(), MaxCoordinate.Column + 1
-        );
+        return new MoggleBoard(builder.ToImmutableArray(), MaxCoordinate.Column + 1);
     }
 
     /// <inheritdoc />
     public override string ToString()
     {
-        return ToMoggleBoard(()=>new Rune('-')).ToString();
+        return ToMoggleBoard(() => new Rune('-')).ToString();
     }
 }
 

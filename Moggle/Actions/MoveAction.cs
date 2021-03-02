@@ -32,6 +32,7 @@ public record MoveAction(string BoardId, MoveResult Result, Coordinate Coordinat
                 Result.AnimationWord,
                 Coordinate,
                 state.Rotation,
+                state.Flip,
                 DateTime.Now.AddMilliseconds(Result.AnimationWord.LingerDuration)
             );
 

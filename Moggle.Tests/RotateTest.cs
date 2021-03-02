@@ -27,7 +27,7 @@ public class RotateTest
         int expectedColumn,
         int size)
     {
-        var (actualRow, actualColumn) = new Coordinate(row, column).Rotate(new Coordinate(size - 1, size - 1), rotation);
+        var (actualRow, actualColumn) = new Coordinate(row, column).RotateAndFlip(new Coordinate(size - 1, size - 1), rotation, false);
 
         actualRow.Should().Be(expectedRow);
         actualColumn.Should().Be(expectedColumn);
@@ -75,7 +75,7 @@ public class RotateTest
 
         Coordinate Rotate(Coordinate coordinate, int rotation)
         {
-            return coordinate.Rotate(maxCoordinate, rotation);
+            return coordinate.RotateAndFlip(maxCoordinate, rotation, false);
         }
     }
 }

@@ -13,5 +13,15 @@ public record RotateAction(int Amount) : IAction<RecentWordsState>
     }
 }
 
+public record FlipAction : IAction<RecentWordsState>
+{
+    /// <inheritdoc />
+    public RecentWordsState Reduce(RecentWordsState state)
+    {
+        return state with { Flip = !state.Flip };
+    }
+}
+
+
 
 }

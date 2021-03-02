@@ -3,6 +3,6 @@
 namespace Moggle.States
 {
 
-public record RecentWordsState(ImmutableList<RecentWord> RecentWords, int Rotation) { }
+public record RecentWordsState(ImmutableList<RecentWord> RecentWords, int Rotation, bool Flip) { }
 
 }

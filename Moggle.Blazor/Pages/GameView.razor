@@ -13,7 +13,7 @@
 
     @{
       var d = ChosenPositions.Value.GetPathD(Board.Value,
-                                             RecentWordsState.Value.Rotation, FullWidth, FullHeight);
+                                             RecentWordsState.Value.Rotation, RecentWordsState.Value.Flip, FullWidth, FullHeight);
     }
     <path
       id="rope"
@@ -54,9 +54,9 @@
       </g>
     }
 
-    @foreach (var (word, coordinate, rotate,_ ) in RecentWordsState.Value.RecentWords)
+    @foreach (var (word, coordinate, rotate, flip,_ ) in RecentWordsState.Value.RecentWords)
     {
-      var (cx, cy) = GetLocation(coordinate.Rotate(Board.Value.MaxCoordinate, -rotate), false);
+      var (cx, cy) = GetLocation(coordinate.RotateAndFlip(Board.Value.MaxCoordinate, -rotate, RecentWordsState.Value.Flip), false);
       var id = $"{word.Text}{coordinate}";
       <text>
         <text
@@ -226,9 +226,9 @@ else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchD
       };
   }
 
-  public Coordinate GetRotated(Coordinate coordinate) => coordinate.Rotate(
+  public Coordinate GetRotated(Coordinate coordinate) => coordinate.RotateAndFlip(
     Board.Value.MaxCoordinate,
-    RecentWordsState.Value.Rotation * -1);
+    RecentWordsState.Value.Rotation * -1, RecentWordsState.Value.Flip);
 
   public (double x, double y) GetLocation(Coordinate coordinate, bool rotate)
   {

@@ -20,6 +20,7 @@
 <MudFab Color="Color.Primary" OnClick="OpenDialog" Size="Size.Large" Label="New Game"/>
 <MudAppBarSpacer/>
 <MudFab Color="Color.Secondary" Icon="@Icons.Filled.RotateRight" OnClick="() => Dispatcher.Dispatch(new RotateAction(1))"/>
+<MudFab Color="Color.Secondary" Icon="@Icons.Filled.Flip" OnClick="() => Dispatcher.Dispatch(new FlipAction())"/>
 <MudAppBarSpacer/>
 
 <MudIconButton

@@ -7,16 +7,16 @@ namespace Moggle
 
 public record Coordinate(int Row, int Column) : IComparable<Coordinate>, IComparable
 {
-    public Coordinate Rotate(
+    public Coordinate RotateAndFlip(
         Coordinate maxCoordinate,
-        int rotation)
+        int rotation, bool flip)
     {
         while (rotation < 0)
             rotation += 4;
 
         var max = Math.Max(maxCoordinate.Column, maxCoordinate.Row);
 
-        return (rotation % 4) switch
+        var rotated = (rotation % 4) switch
         {
             0 => this,
             1 => new((max - Column), Row),
@@ -24,6 +24,11 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
             3 => new(Column, (max - Row)),
             _ => throw new ArgumentException(nameof(rotation))
         };
+
+        if (flip)
+            return rotated.ReflectColumn(maxCoordinate.Column);
+
+        return rotated;
     }
 
     /// <summary>

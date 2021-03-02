@@ -68,7 +68,8 @@ public abstract record MoveResult
     {
         var chosenPositions = chosenPositionsState.ChosenPositions;
 
-        if (chosenPositions.Any() && (chosenPositions.Last().Equals(coordinate) || chosenPositions.First().Equals(coordinate)))
+        if (chosenPositions.Any() && (chosenPositions.Last().Equals(coordinate)
+                                   || chosenPositions.First().Equals(coordinate)))
         {
             return new WordAbandoned();
         }
@@ -141,8 +142,8 @@ public record AnimationWord(string Text, AnimationWord.WordType Type)
             {
                 WordType.Found           => basis * 10,
                 WordType.PreviouslyFound => basis * 5,
-                WordType.Invalid         => basis * 1,
-                WordType.Illegal         => basis * 3,
+                WordType.Invalid         => basis * 2,
+                WordType.Illegal         => basis * 4,
                 _                        => throw new ArgumentOutOfRangeException()
             };
         }

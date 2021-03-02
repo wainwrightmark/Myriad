@@ -12,10 +12,11 @@ public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
     public string GetPathD(
         MoggleBoard board,
         int rotate,
+        bool flip,
         double fullWidth,
         double fullHeight)
     {
-        var coordinates = GetPathCoordinates(board, rotate, fullWidth, fullHeight)
+        var coordinates = GetPathCoordinates(board, rotate, flip, fullWidth, fullHeight)
             .ToList();
 
         var d = "M " + coordinates.Select(x => $"{x.x:N2} {x.y:N2}").ToDelimitedString(" L ");
@@ -26,6 +27,7 @@ public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
     private IEnumerable<(double x, double y)> GetPathCoordinates(
         MoggleBoard board,
         int rotate,
+        bool flip,
         double fullWidth,
         double fullHeight)
     {
@@ -85,9 +87,10 @@ public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
             return (cx, cy);
         }
 
-        Coordinate GetRotated(Coordinate coordinate) => coordinate.Rotate(
+        Coordinate GetRotated(Coordinate coordinate) => coordinate.RotateAndFlip(
             board.MaxCoordinate,
-            rotate * -1
+            rotate * -1,
+            flip
         );
     }
 }

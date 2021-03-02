@@ -12,7 +12,7 @@ public class RecentWordsFeature : Feature<RecentWordsState>
     /// <inheritdoc />
     protected override RecentWordsState GetInitialState()
     {
-        return new(ImmutableList<RecentWord>.Empty, 0);
+        return new(ImmutableList<RecentWord>.Empty, 0, false);
     }
 }
 

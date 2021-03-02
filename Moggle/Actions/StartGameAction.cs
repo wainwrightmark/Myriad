@@ -75,7 +75,7 @@ public record StartGameAction(
     /// <inheritdoc />
     public RecentWordsState Reduce(RecentWordsState state)
     {
-        return new(state.RecentWords, state.Rotation);
+        return new(ImmutableList<RecentWord>.Empty, 0, false);
     }
 
     /// <inheritdoc />

@@ -33,8 +33,7 @@ public record MoggleBoard
                 for (var reflection = 0; reflection < 2; reflection++)
                 {
                     var s = GetAllCoordinates()
-                        .Select(x => x.Rotate(MaxCoordinate, rotation))
-                        .Select(x => reflection == 0 ? x : x.ReflectColumn(Columns - 1))
+                        .Select(x => x.RotateAndFlip(MaxCoordinate,  rotation, reflection == 0))
                         .Select(GetLetterAtCoordinate)
                         .Select(x => x.WordText)
                         .ToDelimitedString("");
