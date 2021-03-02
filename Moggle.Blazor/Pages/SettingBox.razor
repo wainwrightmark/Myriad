@@ -5,7 +5,14 @@
 }
 else if (Setting is Setting.Integer integerSetting)
 {
-  <MudTextField  @bind-Value="@IntValue" Label="@Setting.Name" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.ArrowUpward" OnAdornmentClick="() => IntValue+= integerSetting.Increment"/>
+  <MudTextField  @bind-Value="@IntValue"
+                  Label="@Setting.Name"
+                  Variant="Variant.Outlined"
+                  InputType="InputType.Number"
+                  step="@integerSetting.Increment"
+                  min="@integerSetting.Min"
+                  max="@integerSetting.Max"/>
+
 }
 else if (Setting is Setting.String stringSetting)
 {
