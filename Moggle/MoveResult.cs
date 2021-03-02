@@ -59,7 +59,7 @@ public abstract record MoveResult
 
     public abstract AnimationWord? AnimationWord { get; }
 
-    public static MoveResult TryGetMoveResult(
+    public static MoveResult GetMoveResult(
         Coordinate coordinate,
         ChosenPositionsState chosenPositionsState,
         MoggleBoard moggleBoard,

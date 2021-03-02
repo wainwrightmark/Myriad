@@ -25,7 +25,7 @@ public record Animation(ImmutableList<Step> Steps)
         {
             case Step.Move move:
             {
-                var mr = MoveResult.TryGetMoveResult(move.Coordinate, cps, mb, solver, fws);
+                var mr = MoveResult.GetMoveResult(move.Coordinate, cps, mb, solver, fws);
                 return new StepWithResult(c, mr, index + 1);
             }
             case Step.Rotate: return new StepWithResult(c, null, index + 1);
