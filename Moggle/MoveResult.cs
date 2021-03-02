@@ -85,7 +85,7 @@ public abstract record MoveResult
                 newChosenPositions.Select(moggleBoard.GetLetterAtCoordinate).Select(x => x.WordText)
             );
 
-            var animationWord = solver.CheckLegal(word).ToAnimationWord(true, word);
+            var animationWord = solver.CheckLegal(word, newChosenPositions).ToAnimationWord(true, word);
 
             return new MoveRetraced(
                 newChosenPositions,
@@ -102,7 +102,7 @@ public abstract record MoveResult
                 newChosenPositions.Select(moggleBoard.GetLetterAtCoordinate).Select(x => x.WordText)
             );
 
-            var checkResult = solver.CheckLegal(word);
+            var checkResult = solver.CheckLegal(word, newChosenPositions);
 
             if (checkResult is WordCheckResult.Legal legal)
             {

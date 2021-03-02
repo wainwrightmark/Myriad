@@ -1,7 +1,9 @@
-﻿namespace Moggle
+﻿using System.Collections.Immutable;
+
+namespace Moggle
 {
 
-public record StringWord(string Text) : FoundWord(Text)
+public record StringWord(string Text, ImmutableList<Coordinate> Path) : FoundWord(Text, Path)
 {
     public override string Display => Text;
 

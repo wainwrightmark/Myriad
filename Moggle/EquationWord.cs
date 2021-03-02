@@ -1,7 +1,9 @@
-﻿namespace Moggle
+﻿using System.Collections.Immutable;
+
+namespace Moggle
 {
 
-public record EquationWord(string Text) : FoundWord(Text)
+public record EquationWord(string Text, ImmutableList<Coordinate> Path) : FoundWord(Text, Path)
 {
     /// <inheritdoc />
     public override string Display => Text;

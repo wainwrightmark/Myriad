@@ -15,20 +15,20 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         solveSettings
     ) { }
 
-    public WordCheckResult CheckLegal(string s)
+    public WordCheckResult CheckLegal(string s, ImmutableList<Coordinate> path)
     {
         if (SolveSettings.MinWordLength.HasValue && s.Length >= SolveSettings.MinWordLength
                                                  && WordList.LegalWords.Contains(s))
-            return new WordCheckResult.Legal(new StringWord(s));
+            return new WordCheckResult.Legal(new StringWord(s,path));
 
         if (SolveSettings.AllowMath && s.All(IsMath))
         {
             if (SolveSettings.AllowTrueEquations && Parser.IsValidEquation(s))
-                return new WordCheckResult.Legal(new EquationWord(s));
+                return new WordCheckResult.Legal(new EquationWord(s, path));
 
             if (SolveSettings.MathExpressionsRange is not null)
             {
-                var w = ExpressionWord.TryCreate(s);
+                var w = ExpressionWord.TryCreate(s, path);
 
                 if (w is not null)
                 {
@@ -121,16 +121,6 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         return finder.WordsSoFar.Keys.OrderBy(x => x);
     }
 
-    public IEnumerable<KeyValuePair<FoundWord, ImmutableList<Coordinate>>> GetPossiblePaths(
-        MoggleBoard board)
-    {
-        var finder = new WordFinder(board, this);
-
-        finder.Run();
-
-        return finder.WordsSoFar.OrderBy(x => x.Key);
-    }
-
     private class WordFinder
     {
         public WordFinder(MoggleBoard board, Solver solver)
@@ -139,7 +129,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             _solver = solver;
         }
 
-        public readonly ConcurrentDictionary<FoundWord, ImmutableList<Coordinate>> WordsSoFar =
+        public readonly ConcurrentDictionary<FoundWord, byte> WordsSoFar =
             new();
 
         private readonly Solver _solver;
@@ -156,12 +146,13 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             {
                 var prefix = Board.GetLetterAtCoordinate(coordinate).WordText;
 
-                var w = _solver.CheckLegal(prefix);
-
                 var list = ImmutableList.Create(coordinate);
+                var w = _solver.CheckLegal(prefix, list);
+
+
 
                 if (w is WordCheckResult.Legal legalWord)
-                    WordsSoFar.TryAdd(legalWord.Word, list);
+                    WordsSoFar.TryAdd(legalWord.Word, 0);
 
                 _queue.Enqueue((prefix, list));
             }
@@ -181,13 +172,12 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             {
                 var l         = Board.GetLetterAtCoordinate(adjacentCoordinate);
                 var newPrefix = prefix + l.WordText;
-
-                var w = _solver.CheckLegal(newPrefix);
-
                 var newList = usedCoordinates.Add(adjacentCoordinate);
 
+                var w = _solver.CheckLegal(newPrefix, newList);
+
                 if (w is WordCheckResult.Legal legalWord)
-                    WordsSoFar.TryAdd(legalWord.Word, newList);
+                    WordsSoFar.TryAdd(legalWord.Word, 0);
 
                 if (_solver.IsLegalPrefix(newPrefix))
                 {

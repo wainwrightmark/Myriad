@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Fluxor;
@@ -38,7 +39,8 @@ public class LoadWordsEffect : Effect<StartGameAction>
 
         if (savedWords != null && savedWords.Any())
         {
-            var legalSavedWords = savedWords.Select(x => solver.CheckLegal(x.wordText))
+            //TODO fix this
+            var legalSavedWords = savedWords.Select(x => solver.CheckLegal(x.wordText, ImmutableList<Coordinate>.Empty))
                 .OfType<WordCheckResult.Legal>()
                 .ToList();
 

@@ -2,10 +2,21 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Moggle.Actions;
 using MoreLinq;
 
 namespace Moggle.States
 {
+
+public record SetPositionsAction
+    (ImmutableList<Coordinate> NewCoordinates) : IAction<ChosenPositionsState>
+{
+    /// <inheritdoc />
+    public ChosenPositionsState Reduce(ChosenPositionsState state)
+    {
+        return new(NewCoordinates);
+    }
+}
 
 public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
 {
@@ -32,6 +43,7 @@ public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
         double fullHeight)
     {
         var squareSize = Math.Min(fullWidth, fullHeight) / Math.Max(board.Columns, board.Rows);
+
         if (ChosenPositions.Any())
         {
             var locations = ChosenPositions.Select(GetLocation).ToArray();
@@ -46,8 +58,8 @@ public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
 
                 var loc = locations[index];
 
-                if( remainder == 0 || locations.Length <= index + 1)
-                        yield return loc;
+                if (remainder == 0 || locations.Length <= index + 1)
+                    yield return loc;
                 else
                 {
                     var next = locations[index + 1];
@@ -63,7 +75,7 @@ public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
         }
         else
         {
-            var centre = (fullWidth /2 , fullHeight / 2);
+            var centre = (fullWidth / 2, fullHeight / 2);
 
             for (var i = 0; i < board.Letters.Length; i++)
             {
@@ -81,8 +93,8 @@ public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
         {
             var rotated = GetRotated(coordinate);
 
-            var cx = (rotated.Column + 0.5 ) * squareSize;
-            var cy = (rotated.Row + 0.5 ) * squareSize;
+            var cx = (rotated.Column + 0.5) * squareSize;
+            var cy = (rotated.Row + 0.5) * squareSize;
 
             return (cx, cy);
         }

@@ -1,21 +1,21 @@
-﻿using System;
+﻿using System.Collections.Immutable;
 
 namespace Moggle
 {
 
 public record ExpressionWord : FoundWord
 {
-    private ExpressionWord(string text, int result) : base(text)
+    private ExpressionWord(string text, int result, ImmutableList<Coordinate> path) : base(text, path)
     {
         Result = result;
     }
 
-    public static ExpressionWord? TryCreate(string s)
+    public static ExpressionWord? TryCreate(string s, ImmutableList<Coordinate> path)
     {
         var v = MathParser.Parser.GetExpressionValue(s);
 
         if (v.HasValue)
-            return new ExpressionWord(s, v.Value);
+            return new ExpressionWord(s, v.Value, path);
 
         return null;
     }

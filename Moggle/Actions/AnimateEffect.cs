@@ -19,7 +19,10 @@ public class AnimateEffect : Effect<AnimateAction>
             case Step.Rotate rotate:
                 dispatcher.Dispatch(new RotateAction(rotate.Amount));
                 break;
-            default: throw new ArgumentOutOfRangeException();
+            case Step.SetCoordinatesAction setCoordinates:
+                dispatcher.Dispatch(new Step.SetCoordinatesAction(setCoordinates.Path));
+                break;
+            default:                                throw new ArgumentOutOfRangeException();
         }
 
         return Task.CompletedTask;

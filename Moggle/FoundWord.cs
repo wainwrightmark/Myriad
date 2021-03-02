@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Immutable;
 
 namespace Moggle
 {
-public abstract record FoundWord(string Text) : IComparable
+public abstract record FoundWord(string Text, ImmutableList<Coordinate> Path) : IComparable
 {
     public abstract string Display { get; }
     public abstract string Comparison { get; }

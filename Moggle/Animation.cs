@@ -11,6 +11,7 @@ public abstract record Step
 {
     public record Rotate(int Amount) : Step;
     public record Move(Coordinate Coordinate) : Step;
+    public record SetCoordinatesAction(ImmutableList<Coordinate> Path) : Step;
 }
 
 public record StepWithResult(Step Step, MoveResult? MoveResult, int NewIndex) { }
@@ -57,7 +58,7 @@ public record Animation(ImmutableList<Step> Steps)
 
         var paths =
             RemoveRedundant(
-                solver.GetPossiblePaths(board),
+                solver.GetPossibleSolutions(board),
                 solver,
                 board
             );
@@ -82,7 +83,7 @@ public record Animation(ImmutableList<Step> Steps)
             if (!stepsInCommon.Any())
             {
                 if (previous.Any())
-                    steps.Add(new Step.Move(previous.Last())); //abandon
+                    steps.Add(new Step.SetCoordinatesAction(ImmutableList<Coordinate>.Empty)); //abandon
 
                 steps.AddRange(path.Select(x => new Step.Move(x)));
             }
@@ -92,7 +93,7 @@ public record Animation(ImmutableList<Step> Steps)
             }
             else //backtrack then continue
             {
-                steps.Add(new Step.Move(stepsInCommon.Last()));
+                steps.Add(new Step.SetCoordinatesAction(ImmutableList<Coordinate>.Empty));
                 steps.AddRange(path.Skip(stepsInCommon.Count).Select(x => new Step.Move(x)));
             }
 
@@ -108,16 +109,16 @@ public record Animation(ImmutableList<Step> Steps)
         return new Animation(steps.ToImmutableList());
 
         static IEnumerable<ImmutableList<Coordinate>> RemoveRedundant(
-            IEnumerable<KeyValuePair<FoundWord, ImmutableList<Coordinate>>> initial,
+            IEnumerable<FoundWord> initial,
             Solver solver,
             MoggleBoard board)
         {
             var everything = initial.Select(
-                    x =>
-                        (finalValue: x.Key, coordinates: x.Value,
-                         subvalues: GetAllSubValues(x.Value).ToList())
+                    foundWord =>
+                        (foundWord,
+                         subvalues: GetAllSubValues(foundWord).ToList())
                 )
-                .ToDictionary(x => x.finalValue);
+                .ToDictionary(x => x.foundWord);
 
             var cont = true;
 
@@ -126,7 +127,7 @@ public record Animation(ImmutableList<Step> Steps)
                 cont = false;
 
                 var singleSourceWords = everything.Values
-                    .SelectMany(x => Enumerable.Append(x.subvalues, x.finalValue))
+                    .SelectMany(x => x.subvalues.Append(x.foundWord))
                     .GroupBy(x => x)
                     .Where(x => x.Count() == 1)
                     .Select(x => x.Key)
@@ -137,7 +138,7 @@ public record Animation(ImmutableList<Step> Steps)
                     if (everything.Remove(singleSourceWord, out var av))
                     {
                         cont = true; //we have successfully removed something
-                        yield return av.coordinates;
+                        yield return av.foundWord.Path;
 
                         foreach (var subWord in av.subvalues)
                             everything.Remove(subWord);
@@ -149,7 +150,7 @@ public record Animation(ImmutableList<Step> Steps)
             {
                 var e = everything.First();
 
-                yield return e.Value.coordinates;
+                yield return e.Value.foundWord.Path;
 
                 everything.Remove(e.Key);
 
@@ -159,16 +160,15 @@ public record Animation(ImmutableList<Step> Steps)
                 }
             }
 
-            IEnumerable<FoundWord> GetAllSubValues(ImmutableList<Coordinate> list)
+            IEnumerable<FoundWord> GetAllSubValues(FoundWord word)
             {
-                for (var i = 1; i < list.Count; i++)
+                for (var i = 1; i < word.Path.Count; i++)
                 {
-                    var text = string.Join(
-                        "",
-                        list.Take(i).Select(board.GetLetterAtCoordinate).Select(x => x.WordText)
-                    );
+                    var subPath = word.Path.GetRange(0, i);
 
-                    var r = solver.CheckLegal(text);
+                    var text = word.Text.Substring(0, i);
+
+                    var r = solver.CheckLegal(text, subPath);
 
                     if (r is WordCheckResult.Legal legal)
                         yield return legal.Word;
