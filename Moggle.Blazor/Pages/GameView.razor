@@ -4,7 +4,6 @@
 @using System.Collections.Immutable
 @using System.Net.Http.Headers
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
-@inject IDialogService Dialog
 
 <MudContainer MaxWidth="MaxWidth.Small">
   <svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
@@ -35,9 +34,7 @@
          style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
 
 
-         @onclick="@((ca) =>  CellClicked(coordinate, ca))"
-
-      >
+         @onclick="@((ca) => CellClicked(coordinate, ca))">
         <circle
           id="@($"{coordinate}_bigCircle")"
           stroke="@color"
@@ -87,219 +84,139 @@
   </svg>
 </MudContainer>
 
-
-@if (FoundWordsState.Value.Data is FoundWordsData.TargetWordsData data)
-{
-  <MudContainer MaxWidth="MaxWidth.Small">
-
-    <MudTabs>
-      @foreach (var group in data.WordsToFind.GroupBy(x => x.Value.group).OrderBy(x => x.Key.Order))
-      {
-        var groupKey = @group.Key;
-        var remainingInGroup = group.Count(x => x.Value.word is null);
-
-        <MudTabPanel @key="@groupKey.Display" Text="@groupKey.Display" BadgeData="@remainingInGroup">
-
-          @foreach (var w in group.OrderBy(x => x.Key))
-          {
-            var key = $"CheckBox{@w.Key}";
-
-            var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
-
-            <MudChip @key="@key" Disabled="@(w.Value.word is null)" OnClick="() => SelectFoundWord(w.Value.word)" Label="true" Icon="@icon">
-              @w.Key.PadLeft(3)
-            </MudChip>
-          }
-
-        </MudTabPanel>
-      }
-    </MudTabs>
-
-
-  </MudContainer>
-}
-else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchData)
-{
-  <MudChip Icon="@Icons.Filled.MilitaryTech">@openSearchData.GetScore()</MudChip>
-  <MudChip Icon="@Icons.Filled.Notes">@openSearchData.GetNumberOfWords()</MudChip>
-
-  <MudList>
-
-    @if (CheatState.Value.Revealed)
-    {
-      @foreach (var w in CheatState.Value.PossibleWords)
-      {
-        <MudChip OnClick="()=>SelectFoundWord(w)" Label="true">@w.Display</MudChip>
-      }
-    }
-    else
-    {
-      @foreach (var w in openSearchData.FoundWordsDictionary)
-      {
-        <MudCheckBox
-          @onclick="()=>SelectFoundWord(w.Key)"
-          Disabled="@(IsGameInProgress)"
-          CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableDisableWordAction(w.Key, b)); }"
-          Label=@w.Key.Display
-          Checked="@(w.Value)"/>
-      }
-    }
-  </MudList>
-
-  @if (CheatState.Value.AllowCheating && !CheatState.Value.Revealed)
-  {
-    <MudButton OnClick="() => Dispatcher.Dispatch(new CheatAction())">Cheat</MudButton>
-  }
-}
-
-
-
+<MudContainer MaxWidth="MaxWidth.Small">
+  <ResultsView></ResultsView>
+</MudContainer>
 
 
 @code {
 
-    [Inject]
-    private IState<MoggleBoard> Board { get; set; }
+  [Inject]
+  private IState<MoggleBoard> Board { get; set; }
 
-    [Inject]
-    private IState<ChosenPositionsState> ChosenPositions { get; set; }
+  [Inject]
+  private IState<ChosenPositionsState> ChosenPositions { get; set; }
 
-    [Inject]
-    private IState<Solver> Solver { get; set; }
+  [Inject]
+  private IState<Solver> Solver { get; set; }
 
-    [Inject]
-    private IState<TimeState> TimeState { get; set; }
+  [Inject]
+  private IState<TimeState> TimeState { get; set; }
 
-    [Inject]
-    private IState<FoundWordsState> FoundWordsState { get; set; }
+  [Inject]
+  private IState<FoundWordsState> FoundWordsState { get; set; }
 
-    [Inject]
-    private IState<CheatState> CheatState { get; set; }
+  [Inject]
+  private IState<CheatState> CheatState { get; set; }
 
-    [Inject]
-    private IState<AnimationState> AnimationState { get; set; }
+  [Inject]
+  private IState<AnimationState> AnimationState { get; set; }
 
-    [Inject]
-    private IState<RecentWordsState> RecentWordsState { get; set; }
+  [Inject]
+  private IState<RecentWordsState> RecentWordsState { get; set; }
 
-    [Inject]
-    private IState<GameSettingsState> GameSettingsState { get; set; }
+  [Inject]
+  private IState<GameSettingsState> GameSettingsState { get; set; }
 
-    [Inject]
-    public IDispatcher Dispatcher { get; set; }
+  [Inject]
+  public IDispatcher Dispatcher { get; set; }
 
-    [Parameter]
-    public StartGameAction? StartGameAction { get; set; }
+  [Parameter]
+  public StartGameAction? StartGameAction { get; set; }
 
-    /// <inheritdoc />
-    protected override void OnParametersSet()
-    {
-      if (StartGameAction != null)
-        Dispatcher.Dispatch(StartGameAction);
+  /// <inheritdoc />
+  protected override void OnParametersSet()
+  {
+    if (StartGameAction != null)
+      Dispatcher.Dispatch(StartGameAction);
 
-      base.OnParametersSet();
-    }
+    base.OnParametersSet();
+  }
 
-    public bool IsGameInProgress => !TimeState.Value.TimeSituation.IsFinished;
+  public bool IsGameInProgress => !TimeState.Value.TimeSituation.IsFinished;
 
-    public double CircleRadius => FullWidth / Math.Max(Columns, Rows) * 0.4;
-    public double SquareSize => FullWidth / Math.Max(Columns, Rows);
+  public double CircleRadius => FullWidth / Math.Max(Columns, Rows) * 0.4;
+  public double SquareSize => FullWidth / Math.Max(Columns, Rows);
 
     public const double FullWidth = 360;
     public const double FullHeight = 360;
 
-    public double LineWidth => FullWidth * 0.05;
-    public double CircleStrokeWidth => FullWidth * 0.02;
+  public double LineWidth => FullWidth * 0.05;
+  public double CircleStrokeWidth => FullWidth * 0.02;
 
-    public int Columns => Board.Value.Columns;
-    public int Rows => Board.Value.Rows;
+  public int Columns => Board.Value.Columns;
+  public int Rows => Board.Value.Rows;
 
-    public void CellClicked(Coordinate coordinate, MouseEventArgs mouseEventArgs)
+  public void CellClicked(Coordinate coordinate, MouseEventArgs mouseEventArgs)
+  {
+    if (IsGameInProgress)
     {
+      var mr = MoveResult.GetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
 
-
-      if (IsGameInProgress)
+      if (mouseEventArgs.Detail > 1) //double click
       {
-        var mr = MoveResult.GetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
-
-
-        if(mouseEventArgs.Detail > 1)//double click
+        if (mr is MoveResult.SuccessResult sr) { }
+        else
         {
-          if (mr is MoveResult.SuccessResult sr)
-          {
-            mr = sr with { NewCoordinates = ImmutableList<Coordinate>.Empty }; //abandon the word
-          }
-          else
-          {
-            mr = new MoveResult.WordAbandoned();
-          }
+          mr = new MoveResult.WordAbandoned();
         }
+      }
 
-        Dispatcher.Dispatch(new MoveAction(Board.Value.UniqueKey, mr, coordinate));
-      }
-      else
-      {
-        Dispatcher.Dispatch(new SetPositionsAction(ImmutableList<Coordinate>.Empty));
-      }
+      Dispatcher.Dispatch(new MoveAction(Board.Value.UniqueKey, mr, coordinate));
     }
-
-    private string GetColor(AnimationWord animationWord)
+    else
     {
-      return animationWord.Type switch
-      {
-        AnimationWord.WordType.Found           => Colors.Green.Default,
-        AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
-        AnimationWord.WordType.Invalid         => Colors.Red.Default,
-        AnimationWord.WordType.Illegal => Colors.Orange.Default,
-        _                                      => throw new ArgumentOutOfRangeException()
+      Dispatcher.Dispatch(new SetPositionsAction(ImmutableList<Coordinate>.Empty));
+    }
+  }
+
+  private string GetColor(AnimationWord animationWord)
+  {
+    return animationWord.Type switch
+    {
+      AnimationWord.WordType.Found           => Colors.Green.Default,
+      AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
+      AnimationWord.WordType.Invalid         => Colors.Red.Default,
+      AnimationWord.WordType.Illegal => Colors.Orange.Default,
+      _                                      => throw new ArgumentOutOfRangeException()
       };
-    }
+  }
 
-    public Coordinate GetRotated(Coordinate coordinate) => coordinate.RotateAndFlip(
-      Board.Value.MaxCoordinate,
-      RecentWordsState.Value.Rotation * -1, RecentWordsState.Value.Flip);
+  public Coordinate GetRotated(Coordinate coordinate) => coordinate.RotateAndFlip(
+    Board.Value.MaxCoordinate,
+    RecentWordsState.Value.Rotation * -1, RecentWordsState.Value.Flip);
 
-    public (double x, double y) GetLocation(Coordinate coordinate, bool rotate)
+  public (double x, double y) GetLocation(Coordinate coordinate, bool rotate)
+  {
+    var rotated = rotate ? GetRotated(coordinate) : coordinate;
+
+    var cx = rotated.Column * SquareSize
+             + SquareSize * 0.5;
+
+    var cy = rotated.Row * SquareSize
+             + SquareSize * 0.5;
+    return (cx, cy);
+  }
+
+  public string GetColor(Coordinate coordinate)
+  {
+    if (!IsGameInProgress || !ChosenPositions.Value.ChosenPositions.Any())
+      return Colors.Grey.Default;
+
+    var result = MoveResult.GetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
+
+    var color = result switch
     {
-      var rotated = rotate ? GetRotated(coordinate) : coordinate;
-
-      var cx = rotated.Column * SquareSize
-               + SquareSize * 0.5;
-
-      var cy = rotated.Row * SquareSize
-               + SquareSize * 0.5;
-      return (cx, cy);
-    }
-
-    public string GetColor(Coordinate coordinate)
-    {
-      if (!IsGameInProgress || !ChosenPositions.Value.ChosenPositions.Any())
-        return Colors.Grey.Default;
-
-      var result = MoveResult.GetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
-
-      var color = result switch
-      {
-        MoveResult.IllegalMove   => Colors.Grey.Default,
-        MoveResult.MoveRetraced  => Colors.Green.Lighten3,
-        MoveResult.WordAbandoned => Colors.Orange.Default,
-        MoveResult.WordComplete  => Colors.Green.Darken2,
-        MoveResult.WordContinued => Colors.Green.Default,
-        _                        => throw new ArgumentOutOfRangeException(nameof(result))
+      MoveResult.IllegalMove   => Colors.Grey.Default,
+      MoveResult.MoveRetraced  => Colors.Green.Lighten3,
+      MoveResult.WordAbandoned => Colors.LightBlue.Default,
+      MoveResult.WordComplete  => Colors.Green.Darken2,
+      MoveResult.WordContinued => Colors.Green.Default,
+      _                        => throw new ArgumentOutOfRangeException(nameof(result))
       };
 
-      return color;
-    }
-
-    public void SelectFoundWord(FoundWord? foundWord)
-    {
-      if(foundWord is not null && !ChosenPositions.Value.ChosenPositions.SequenceEqual(foundWord.Path))
-        Dispatcher.Dispatch(new SetPositionsAction(foundWord.Path));
-      else
-      {
-        Dispatcher.Dispatch(new SetPositionsAction(ImmutableList<Coordinate>.Empty));
-      }
-    }
+    return color;
+  }
 
     const string AnimationTiming = "ease-out";
 }
