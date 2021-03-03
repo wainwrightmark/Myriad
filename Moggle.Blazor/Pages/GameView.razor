@@ -37,6 +37,7 @@
          @onclick="@((ca) => CellClicked(coordinate, ca))">
         <circle
           id="@($"{coordinate}_bigCircle")"
+
           stroke="@color"
           fill="@Colors.Shades.Black"
           fill-opacity="0.01"
@@ -155,7 +156,7 @@
 
       if (mouseEventArgs.Detail > 1) //double click
       {
-        if (mr is MoveResult.SuccessResult sr) { }
+        if (mr is MoveResult.SuccessResult) { }//Don't do anything special
         else
         {
           mr = new MoveResult.WordAbandoned();
@@ -219,6 +220,7 @@
   }
 
     const string AnimationTiming = "ease-out";
+
 }
 
 <style>
