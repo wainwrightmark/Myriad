@@ -63,6 +63,12 @@ public class Program
                                 Name    = nameof(SavedWord.wordText),
                                 KeyPath = nameof(SavedWord.wordText),
                                 Auto    = false
+                            },
+                            new ()
+                            {
+                                Name    = nameof(SavedWord.coordinateString),
+                                KeyPath = nameof(SavedWord.coordinateString),
+                                Auto    = false
                             }
                         }
                     }

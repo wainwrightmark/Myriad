@@ -26,7 +26,7 @@ public class SaveWordEffect : Effect<MoveAction>
                 new StoreRecord<SavedWord>()
                 {
                     Storename = nameof(SavedWord),
-                    Data = new SavedWord() { boardId = action.BoardId, wordText = wc.FoundWord.Text }
+                    Data = new SavedWord() { boardId = action.BoardId, wordText = wc.FoundWord.Text, coordinateString = SavedWord.CreateCoordinatesString(wc.FoundWord.Path) }
                 }
             );
         }

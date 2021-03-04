@@ -14,6 +14,6 @@
 - [ ] Multiplayer
 - [x] Power Operator
 - [ ] Swipe support
-- [ ] Save coordinates of found words
-- [ ] Rotation arrows on SVG
+- [x] Save coordinates of found words
+- [x] Rotation arrows on SVG
 - [ ] Specific word challenges

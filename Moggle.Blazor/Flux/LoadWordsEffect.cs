@@ -40,7 +40,7 @@ public class LoadWordsEffect : Effect<StartGameAction>
         if (savedWords != null && savedWords.Any())
         {
             //TODO fix this
-            var legalSavedWords = savedWords.Select(x => solver.CheckLegal(x.wordText, ImmutableList<Coordinate>.Empty))
+            var legalSavedWords = savedWords.Select(x => solver.CheckLegal(x.wordText, x.GetCoordinates().ToImmutableList()))
                 .OfType<WordCheckResult.Legal>()
                 .ToList();
 
