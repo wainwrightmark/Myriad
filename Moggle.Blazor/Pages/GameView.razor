@@ -11,10 +11,11 @@
 
     <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
 
-
     @{
-      var d = ChosenPositions.Value.GetPathD(Board.Value,
-                                             RecentWordsState.Value.Rotation, RecentWordsState.Value.Flip, FullWidth, FullHeight);
+      var d = ChosenPositions.Value.GetPathData(Board.Value,
+                                                RecentWordsState.Value.Rotation, RecentWordsState.Value.Flip, FullWidth, FullHeight);
+
+      var opacity = ChosenPositions.Value.ChosenPositions.Any() ? "1" : "0";
     }
     <path
       id="rope"
@@ -22,6 +23,7 @@
       style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default; -webkit-transition: 1s @AnimationTiming; transition: 1s @AnimationTiming; fill: none;"
       stroke-linejoin="round"
       stroke-linecap="round"
+      opacity="@opacity"
       d="@d"/>
 
 
@@ -58,7 +60,8 @@
       </g>
     }
 
-    @foreach (var (word, coordinate, rotate, flip,_ ) in RecentWordsState.Value.RecentWords)
+
+    @foreach (var (word, coordinate, rotate, _,_ ) in RecentWordsState.Value.RecentWords)
     {
       var (cx, cy) = GetLocation(coordinate.RotateAndFlip(Board.Value.MaxCoordinate, -rotate, RecentWordsState.Value.Flip), false);
       var id = $"{word.Text}{coordinate}";
@@ -80,9 +83,49 @@
     }
 
 
+    <g transform="translate(0 @(SquareSize* (Rows - 1) ))" id="rotateArrow">
+      <path @onclick="() => Dispatcher.Dispatch(new RotateAction(-1))"
+
+             d="M0.9 0.3C1 3.3 1.4 6 2 8.4 2.7 10.7 3.7 12.5 5.3 13.9 9.8 17.9 18.7 15.6 18.7 15.6L18.3 12.2 24.7 16.6 19.5 22.7 19.2 19.8C19.2 19.8 10.4 21.8 4.9 16.3 1.6 13 0.2 7.6 0.3 0.4 0.4 0.4 0.7 0.3 0.9 0.3ZM0.9 0.3"/>
+    </g>
+
+    <g id="flipArrow" transform="translate(@(SquareSize * (Columns  - 1)) 0)">
+      <path
+        dominant-baseline=""
+            @onclick="() => Dispatcher.Dispatch(new FlipAction())"
+          d="M13,13l-13,-14c0,0,0,9,0,9l-14,0c0,0,0,-9,0,-9l-13,14l13,14l0,-9l14,0l0,9l13,-14z"
+
+        />
+    </g>
 
 
   </svg>
+
+
+  <style>
+    .arrow {
+      clip-rule: evenodd;
+      fill-rule: evenodd;
+    }
+  </style>
+
+
+  @code{
+
+    private string GetColor(AnimationWord animationWord)
+    {
+      return animationWord.Type switch
+      {
+        AnimationWord.WordType.Found           => Colors.Green.Default,
+        AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
+        AnimationWord.WordType.Invalid         => Colors.Red.Default,
+        AnimationWord.WordType.Illegal => Colors.Orange.Default,
+        _                                      => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+  }
+
 </MudContainer>
 
 <MudContainer MaxWidth="MaxWidth.Small">
@@ -156,7 +199,7 @@
 
       if (mouseEventArgs.Detail > 1) //double click
       {
-        if (mr is MoveResult.SuccessResult) { }//Don't do anything special
+        if (mr is MoveResult.SuccessResult) { } //Don't do anything special
         else
         {
           mr = new MoveResult.WordAbandoned();
@@ -171,18 +214,6 @@
     }
   }
 
-  private string GetColor(AnimationWord animationWord)
-  {
-    return animationWord.Type switch
-    {
-      AnimationWord.WordType.Found           => Colors.Green.Default,
-      AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
-      AnimationWord.WordType.Invalid         => Colors.Red.Default,
-      AnimationWord.WordType.Illegal => Colors.Orange.Default,
-      _                                      => throw new ArgumentOutOfRangeException()
-      };
-  }
-
   public Coordinate GetRotated(Coordinate coordinate) => coordinate.RotateAndFlip(
     Board.Value.MaxCoordinate,
     RecentWordsState.Value.Rotation * -1, RecentWordsState.Value.Flip);
@@ -191,11 +222,9 @@
   {
     var rotated = rotate ? GetRotated(coordinate) : coordinate;
 
-    var cx = rotated.Column * SquareSize
-             + SquareSize * 0.5;
+    var cx = (rotated.Column + 0.5) * SquareSize;
 
-    var cy = rotated.Row * SquareSize
-             + SquareSize * 0.5;
+    var cy = (rotated.Row + 0.5) * SquareSize;
     return (cx, cy);
   }
 
@@ -248,7 +277,8 @@
     transition: 3s cubic-bezier(0, 1.45, 0.72, 1.33)
   }
 
-  .circle:hover { transform: scale(1.2) }
+  .circle:hover { transform: scale(1.1) }
+
 
 
   .foundWord {

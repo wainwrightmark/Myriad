@@ -21,7 +21,11 @@
 
           var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
 
-          <MudChip @key="@key" Disabled="@(w.Value.word is null)" OnClick="() => SelectFoundWord(w.Value.word)" Label="true" Icon="@icon">
+          <MudChip @key="@key"
+                    Disabled="@(w.Value.word is null)"
+                    OnClick="() => SelectFoundWord(w.Value.word)"
+                    Label="true"
+                    Icon="@icon">
             @w.Key.PadLeft(3)
           </MudChip>
         }
@@ -48,12 +52,30 @@ else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchD
     {
       @foreach (var w in openSearchData.FoundWordsDictionary)
       {
-        <MudCheckBox
-          @onclick="() => SelectFoundWord(w.Key)"
-           Disabled="@(IsGameInProgress)"
-           CheckedChanged="(bool b) => { Dispatcher.Dispatch(new EnableDisableWordAction(w.Key, b)); }"
-           Label=@w.Key.Display
-           Checked="@(w.Value)"/>
+        var icon = w.Value ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
+
+        @code
+        {
+          void Flip(KeyValuePair<FoundWord, bool> w)
+          {
+            Dispatcher.Dispatch(new EnableDisableWordAction(w.Key, !w.Value));
+          }
+
+          void ChipClicked(MouseEventArgs args, KeyValuePair<FoundWord, bool> w)
+          {
+            if (args.Detail > 1)
+              Flip(w);
+
+              SelectFoundWord(w.Key);
+            
+          }
+        }<MudChip
+
+           @onclick="(args) => ChipClicked(args, w)"
+            Label="true"
+            Icon="@icon">
+           @w.Key.Display
+         </MudChip>
       }
     }
   </MudList>

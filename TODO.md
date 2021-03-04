@@ -9,7 +9,11 @@
 - [x] Change saved game settings (remove seed from key)
 - [x] Animations for all found words
 - [x] Separate all state objects
-- [ ] Reflection
+- [x] Reflection
 - [x] Game keys should be rotation / reflection independent
 - [ ] Multiplayer
 - [x] Power Operator
+- [ ] Swipe support
+- [ ] Save coordinates of found words
+- [ ] Rotation arrows on SVG
+- [ ] Specific word challenges

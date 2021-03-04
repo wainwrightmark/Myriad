@@ -20,7 +20,7 @@ public record SetPositionsAction
 
 public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
 {
-    public string GetPathD(
+    public string GetPathData(
         MoggleBoard board,
         int rotate,
         bool flip,
