@@ -1,4 +1,9 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -52,21 +57,61 @@ public class CreatorTests
         possibleWords.Should().BeEquivalentTo(allWords.Where(x => x.Length > 1));
     }
 
+    private const int delay = 100000;
+
+    public static TheoryData<string, string> GetWordLists()
+    {
+        var resourceSet =
+            Lists.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, true, true);
+
+        var td = new TheoryData<string, string>();
+
+        foreach (DictionaryEntry entry in resourceSet)
+        {
+            td.Add(entry.Key?.ToString()!, entry.Value?.ToString());
+        }
+
+        return td;
+    }
+
     [Theory]
-    [InlineData("red green blue", 3,3)]
-    [InlineData("red green blue", 4,4)]
+    [MemberData(nameof(GetWordLists))]
+    //[InlineData("red green blue", 3,3)]
+    //[InlineData("red green blue", 4,4)]
     //[InlineData("White Yellow Blue Red Green Black Brown Azure Ivory Teal Silver Purple Gray Orange Maroon Charcoal Aquamarine Coral Fuchsia Wheat Lime Crimson Khaki pink Magenta Gold Plum Olive Cyan", 4,4)]
     //[InlineData("one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eigteen nineteen twenty thirty forty fifty sixty seventy eighty ninety hundred thousand million billion trillion half third quarter", 4,4)]
     //[InlineData("artichoke aubergine eggplant asparagus legumes alfalfa azuki bean sprout pea borlotti broad beans chickpea lentil peanut soy mangetout broccoli cabbage kohlrabi cauliflower celery endive fiddleheads frisee fennel bokchoy chard collard kale mustard spinach anise basil caraway coriander chamomile daikon fennel lavender lemongrass marjoram oregano parsley rosemary thyme lettuce arugula mushroom nettle okra onion chive garlic leek onion shallot scallion pepper chili jalapeno habanero paprika tabasco cayenne radicchio rhubarb beetroot carrot celeriac corms eddoe konjac taro chestnut ginger parsnip rutabaga radish wasabi horseradish tuber jicama artichoke potato yam turnip spinach sweetcorn squash melon butternut courgette cucumber delicata marrow tomato watercress", 4,4)]
-    [InlineData("Ant Bear Bee Bird Butterfly Camel Cat Caterpillar Chicken Cow Crab Crocodile Deer Dog Dolphin Donkey Duck Elephant Fish Frog Giraffe Goat Hamster Hedgehog Horse Jellyfish Ladybird Sheep Lion Mole Monkey Mouse Octopus Owl Panda Penguin Pig Pony Rabbit Seahorse Snake Spider Starfish Stingray Tiger Turkey Turtle Unicorn Whale Worm Zebra Pigeon Dinosaur Dragon Kangaroo Clownfish Rhinoceros Toad Puppy Hippo Rat Ostrich Peacock", 4,4)]
-
-    public void TestMostWords(string wordsString, int width, int height)
+    //[InlineData("Ant Bear Bee Bird Butterfly Camel Cat Caterpillar Chicken Cow Crab Crocodile Deer Dog Dolphin Donkey Duck Elephant Fish Frog Giraffe Goat Hamster Hedgehog Horse Jellyfish Ladybird Sheep Lion Mole Monkey Mouse Octopus Owl Panda Penguin Pig Pony Rabbit Seahorse Snake Spider Starfish Stingray Tiger Turkey Turtle Unicorn Whale Worm Zebra Pigeon Dinosaur Dragon Kangaroo Clownfish Rhinoceros Toad Puppy Hippo Rat Ostrich Peacock", 4,4)]
+    //[InlineData("Alabama Alaska Arizona Arkansas California Colorado Connecticut Delaware Florida Georgia Hawaii Idaho Illinois Indiana Iowa Kansas Kentucky Louisiana Maine Maryland Massachusetts Michigan Minnesota Mississippi Missouri Montana Nebraska Nevada NewHampshire NewJersey NewMexico NewYork NorthCarolina NorthDakota Ohio Oklahoma Oregon Pennsylvania RhodeIsland SouthCarolina SouthDakota Tennessee Texas Utah Vermont Virginia Washington WestVirginia Wisconsin Wyoming", 4,4)]
+    //[InlineData("Austria Italy Belgium Latvia Bulgaria Lithuania Croatia Luxembourg Cyprus Malta Czechia Netherlands Denmark Poland Estonia Portugal Finland Romania France Slovakia Germany Slovenia Greece Spain Hungary Sweden Ireland", 4,4)]
+    //[InlineData("Acrobatics Archery Badminton Baseball Basketball Billiards Bobsleigh Bodybuilding Bowling Boxing Canoeing Cheerleading Chess Cricket Croquet Curling Darts Diving Dodgeball Fencing Football Soccer Frisbee Golf Handball Hockey Judo Karate Kayaking Kendo Lacrosse Luge Motocross Paintball Parachuting Paragliding Parkour Polo Powerlifting Rafting Gymnastics Rowing Rugby Sailing Sandboarding Shooting Skateboarding Skeleton Skiing Snowboarding Softball Skating Climbing Squash Surfing Swimming Tennis Taekwondo Tennis Trampolining Triathlon Volleyball Polo Weightlifting Windsurfing Wrestling", 4,4)]
+    public void TestMostWords(string group, string wordsString)
     {
+        var width      = 4;
+        var height     = 4;
+        var sw         = Stopwatch.StartNew();
         var coordinate = new Coordinate(height - 1, width - 1);
         var logger     = new TestOutputLogger("Test", TestOutputHelper);
-        var words      = GridCreator.GetAllWords(wordsString).ToImmutableList();
+        var words      = GetAllWords(wordsString).ToImmutableList();
 
-        var ct = new CancellationTokenSource(100000);
+        static IEnumerable<string> GetAllWords(string text)
+        {
+            var words = text.ToUpper()
+                .Split(
+                    new[] { '\r', '\n' },
+                    StringSplitOptions.None | StringSplitOptions.RemoveEmptyEntries
+                )
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(LettersOnly)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            return words;
+
+            string LettersOnly(string s) => new(s.Where(char.IsLetter).ToArray());
+        }
+
+        var ct = new CancellationTokenSource(delay);
 
         var grid = GridCreator.CreateGridForMostWords(
             ImmutableList<string>.Empty,
@@ -78,9 +123,15 @@ public class CreatorTests
 
         grid.Should().NotBeNull();
 
-        TestOutputHelper.WriteLine(grid!.Value.words.ToDelimitedString(", "));
+        TestOutputHelper.WriteLine(sw.Elapsed.ToString());
 
-        TestOutputHelper.WriteLine(grid.Value.grid.ToString());
+        var gridText = grid.Value.grid.ToMoggleBoard(() => new Rune('_'))
+            .Letters.Select(x => x.WordText.First())
+            .ToDelimitedString("");
+
+        TestOutputHelper.WriteLine(
+            $"{group}; {gridText};{grid!.Value.words.ToDelimitedString(", ")}"
+        );
     }
 
     public const string StacysMomChorus = @"

@@ -28,6 +28,16 @@ else if (Setting is Setting.String stringSetting)
   }
 
 }
+else if (Setting is Setting.StringChoice stringChoice)
+{
+  <MudSelect Label="@Setting.Name" @bind-Value="StringChoiceValue">
+    @foreach (var option in stringChoice.Options)
+    {
+      <MudSelectItem Value="@option" >@option</MudSelectItem>
+    }
+  </MudSelect>
+}
+
 else
 {
   <MudText>Could not render setting.</MudText>
@@ -56,6 +66,11 @@ else
   public string StringValue
   {
     get => (Setting as Setting.String)!.Get(Values);
+    set => Values[Setting.Name] = value;
+  }
+  public string StringChoiceValue
+  {
+    get => (Setting as Setting.StringChoice)!.Get(Values);
     set => Values[Setting.Name] = value;
   }
 

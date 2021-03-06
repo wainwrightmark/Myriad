@@ -66,15 +66,20 @@ public static class GridCreator
 
         void SetBest(NodeGrid grid, ImmutableList<string> words)
         {
-            if (bestSoFar is null || bestSoFar.Value.words.Count < words.Count)
+            if (bestSoFar is null ||
+                bestSoFar.Value.words.Count < words.Count ||
+                (bestSoFar.Value.words.Count == words.Count
+              && bestSoFar.Value.words.Sum(x => x.Length) < words.Sum(x => x.Length)))
             {
-                logger.LogInformation(
-                    $"Found grid for {words.Count} words: {words.ToDelimitedString(", ")}"
+                logger?.LogInformation(
+                    $"Found grid for {words.Count} of {mustWords.Count + possibleWords.Count} words, {words.Sum(x => x.Length)} letters: {words.ToDelimitedString(", ")}"
                 );
 
                 bestSoFar = (grid, words);
             }
         }
+
+        var totalCellCount = (maxCoordinate.Column + 1) * (maxCoordinate.Row + 1);
 
         while (!cancellation.IsCancellationRequested
             && stack.Count + mustWords.Count > (bestSoFar?.words.Count ?? 0)
@@ -87,7 +92,32 @@ public static class GridCreator
 
             var words = mustWords.Add(w.pw);
 
+            //TODO loosen multiplicities
+            var mSum = w.multiplicities.Sum(x => x.Value.Multiplicity);
+
+            if (mSum > totalCellCount) //impossible
+                continue;
+
             var nodes = CreateNodes(words, w.multiplicities.Values);
+
+            if (totalCellCount > mSum)
+            {
+                var stuff =
+                    nodes.Select(x => x.RootNodeGroup)
+                        .OrderByDescending(x => x.ConstraintScore)
+                        .Take(totalCellCount - mSum)
+                        .GroupBy(x => x.Rune);
+
+                foreach (var group in stuff)
+                {
+                    var currentValue = w.multiplicities[group.Key];
+
+                    w.multiplicities[group.Key] = currentValue with
+                    {
+                        Multiplicity = currentValue.Multiplicity + group.Count()
+                    };
+                }
+            }
 
             var creator = new Creator();
 
@@ -111,7 +141,7 @@ public static class GridCreator
                     cancellation
                 );
 
-                if(newBest is not null)
+                if (newBest is not null)
                     SetBest(newBest.Value.grid, newBest.Value.words);
             }
         }

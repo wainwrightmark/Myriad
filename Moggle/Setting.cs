@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Moggle
@@ -48,6 +50,25 @@ public abstract record Setting(string Name)
             if (bool.TryParse(s, out value))
                 return true;
 
+            return false;
+        }
+    }
+
+    public record StringChoice(string Name, ImmutableList<string> Options) : SettingBase<string>(
+        Name,
+        Options.First()
+    )
+    {
+        /// <inheritdoc />
+        public override bool TryGet(string s, out string value)
+        {
+            if (Options.Contains(s))
+            {
+                value= s;
+                return true;
+            }
+
+            value = Default;
             return false;
         }
     }

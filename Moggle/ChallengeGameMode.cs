@@ -76,7 +76,8 @@ public record ChallengeGameMode : IMoggleGameMode
 
     private (string group, string grid, IReadOnlyCollection<string> words) GetGame(
         ImmutableDictionary<string, string> settings) =>
-        GoodSeedHelper.GetChallengeGame(RandomHelper.GetRandom(Seed.Get(settings)));
+        
+        GoodSeedHelper.GetChallengeGame(Concept.Get(settings));
 
     /// <inheritdoc />
     public Animation? GetAnimation(
@@ -96,15 +97,14 @@ public record ChallengeGameMode : IMoggleGameMode
 
     public virtual Setting.Bool Animate => new(nameof(Animate), false);
 
-    public virtual Setting.String Seed =>
-        new(nameof(Seed), null, "", "Random Seed") { GetRandomValue = GoodSeedHelper.GetGoodSeed };
+    public Setting.StringChoice Concept { get; } =  new(nameof(Concept), GoodSeedHelper.GoodChallengeGames.Value.Select(x=>x.group).ToImmutableList());
 
     /// <inheritdoc />
     public IEnumerable<Setting> Settings
     {
         get
         {
-            yield return Seed;
+            yield return Concept;
             yield return Animate;
         }
     }

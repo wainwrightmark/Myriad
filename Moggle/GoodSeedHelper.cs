@@ -17,7 +17,7 @@ public static class GoodSeedHelper
     public static string GetGoodCenturyGame(Random random) => GoodCenturyGames.GetRandomElement(random);
 
     public static (string group, string grid, IReadOnlyCollection<string> words)
-        GetChallengeGame(Random random) => GoodChallengeGames.GetRandomElement(random);
+        GetChallengeGame(string name) => GoodChallengeGames.Value.Single(x=>x.group.Equals(name, StringComparison.OrdinalIgnoreCase));
 
     public static T GetRandomElement<T>(this Lazy<IReadOnlyList<T>> stuff, Random random)
     {
