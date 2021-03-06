@@ -116,6 +116,17 @@ namespace Moggle {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Numbers; DIHMIRUTTEOWYNEF; TEN, ONE, TWO, TWENTY, FORTY, FOUR, FOURTEEN, THREE, THIRTY, THIRTEEN, THIRD
+        ///Colours; NGYCEAROLETVDWHI; RED, GREEN, ORANGE, GRAY, CYAN, CORAL, TEAL, WHEAT, WHITE, IVORY
+        ///.
+        /// </summary>
+        internal static string ChallengeGames {
+            get {
+                return ResourceManager.GetString("ChallengeGames", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to stomached
         ///mutual
         ///manse

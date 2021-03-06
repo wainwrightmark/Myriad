@@ -400,6 +400,18 @@ public class UnitTest1
 
         data.WordsToFind.Should().HaveCount(100);
     }
+
+    [Fact]
+    public void TestChallengeGames()
+    {
+        var board = ChallengeGameMode.Instance.CreateBoard(
+            ImmutableDictionary<string, string>.Empty,
+            WordList.LazyInstance
+        );
+
+        board.Letters.Should().NotBeEmpty();
+
+    }
 }
 
 }

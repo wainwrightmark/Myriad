@@ -53,17 +53,17 @@ public abstract record NumberGameMode : WhitelistGameMode
         TargetWordGroups =
             new List<FoundWordsData.TargetWordGroup>()
             {
-                new("Units", 0),
-                new("Tens", 10),
-                new("Twenties", 20),
-                new("Thirties", 30),
-                new("Forties", 40),
-                new("Fifties", 50),
-                new("Sixties", 60),
-                new("Seventies", 70),
-                new("Eighties", 80),
-                new("Nineties", 90),
-                new("One Hundred", 100),
+                new("Units", 0, false),
+                new("Tens", 10, false),
+                new("Twenties", 20, false),
+                new("Thirties", 30, false),
+                new("Forties", 40, false),
+                new("Fifties", 50, false),
+                new("Sixties", 60, false),
+                new("Seventies", 70, false),
+                new("Eighties", 80, false),
+                new("Nineties", 90, false),
+                new("One Hundred", 100, false),
             }.ToDictionary(x => x.Order);
 
 

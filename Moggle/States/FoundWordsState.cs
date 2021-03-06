@@ -8,7 +8,7 @@ namespace Moggle.States
 
 public abstract record FoundWordsData
 {
-    public record TargetWordGroup(string Display, int Order)
+    public record TargetWordGroup(string Display, int Order, bool HideText)
     {
 
     }

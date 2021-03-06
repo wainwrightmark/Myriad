@@ -1,7 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using Divergic.Logging.Xunit;
 using FluentAssertions;
+using Moggle.Creator;
+using MoreLinq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -35,17 +39,45 @@ public class CreatorTests
         const int msDelay = 10000;
         var       logger  = new TestOutputLogger("Test", TestOutputHelper);
 
-        var grid = Creator.GridCreator.CreateNodeGridFromText(wordsString, logger, msDelay);
+        var grid = GridCreator.CreateNodeGridFromText(wordsString, logger, msDelay);
 
         TestOutputHelper.WriteLine(grid.ToMoggleBoard(() => new Rune('*')).ToMultiLineString());
 
-        var allWords = Creator.GridCreator.GetAllWords(wordsString).ToList();
+        var allWords = GridCreator.GetAllWords(wordsString).ToList();
 
         var solver = new Solver(WordList.FromWords(allWords), new SolveSettings(2, false, null));
 
         var possibleWords = solver.GetPossibleSolutions(grid.ToMoggleBoard(() => new Rune('*')));
 
         possibleWords.Should().BeEquivalentTo(allWords.Where(x => x.Length > 1));
+    }
+
+    [Theory]
+    [InlineData("red green blue", 3,3)]
+    [InlineData("red green blue", 4,4)]
+    [InlineData("White Yellow Blue Red Green Black Brown Azure Ivory Teal Silver Purple Gray Orange Maroon Charcoal Aquamarine Coral Fuchsia Wheat Lime Crimson Khaki pink Magenta Gold Plum Olive Cyan", 4,4)]
+    [InlineData("one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eigteen nineteen twenty thirty forty fifty sixty seventy eighty ninety hundred thousand million billion trillion half third quarter", 4,4)]
+    public void TestMostWords(string wordsString, int width, int height)
+    {
+        var coordinate = new Coordinate(height - 1, width - 1);
+        var logger     = new TestOutputLogger("Test", TestOutputHelper);
+        var words      = GridCreator.GetAllWords(wordsString).ToImmutableList();
+
+        var ct = new CancellationTokenSource(100000);
+
+        var grid = GridCreator.CreateGridForMostWords(
+            ImmutableList<string>.Empty,
+            words,
+            logger,
+            coordinate,
+            ct.Token
+        );
+
+        grid.Should().NotBeNull();
+
+        TestOutputHelper.WriteLine(grid!.Value.words.ToDelimitedString(", "));
+
+        TestOutputHelper.WriteLine(grid.Value.grid.ToString());
     }
 
     public const string StacysMomChorus = @"

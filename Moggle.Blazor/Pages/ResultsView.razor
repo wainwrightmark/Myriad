@@ -19,6 +19,9 @@
         {
           var key = $"CheckBox{@w.Key}";
 
+          var text = (group.Key.HideText && w.Value.word is null ?
+            new string('?', w.Key.Length) : w.Key).PadLeft(3);
+
           var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
 
           <MudChip @key="@key"
@@ -26,7 +29,7 @@
                     OnClick="() => SelectFoundWord(w.Value.word)"
                     Label="true"
                     Icon="@icon">
-            @w.Key.PadLeft(3)
+            @text
           </MudChip>
         }
 
@@ -67,7 +70,7 @@ else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchD
               Flip(w);
 
               SelectFoundWord(w.Key);
-            
+
           }
         }<MudChip
 

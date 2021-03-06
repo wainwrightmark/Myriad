@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using MoreLinq;
 
 namespace Moggle.Creator
 {
@@ -34,6 +36,87 @@ public static class GridCreator
         return words;
 
         string LettersOnly(string s) => new(s.Where(char.IsLetter).ToArray());
+    }
+
+    public static (NodeGrid grid, ImmutableList<string> words)? CreateGridForMostWords(
+        ImmutableList<string> mustWords,
+        ImmutableList<string> possibleWords,
+        ILogger? logger,
+        Coordinate maxCoordinate,
+        CancellationToken cancellation)
+    {
+        var stack =
+            new Stack<(string pw, Dictionary<Rune, BaseRuneMultiplicity> multiplicities, int sum)>(
+                possibleWords.Select(
+                        pw =>
+                        {
+                            var multiplicities =
+                                CreateMultiplicities(mustWords.Append(pw))
+                                    .ToDictionary(x => x.Rune);
+
+                            var sum = multiplicities.Sum(x => x.Value.Multiplicity);
+
+                            return (pw, multiplicities, sum);
+                        }
+                    )
+                    .OrderByDescending(x => x.sum)
+            );
+
+        (NodeGrid grid, ImmutableList<string> words)? bestSoFar = null;
+
+        void SetBest(NodeGrid grid, ImmutableList<string> words)
+        {
+            if (bestSoFar is null || bestSoFar.Value.words.Count < words.Count)
+            {
+                logger.LogInformation(
+                    $"Found grid for {words.Count} words: {words.ToDelimitedString(", ")}"
+                );
+
+                bestSoFar = (grid, words);
+            }
+        }
+
+        while (!cancellation.IsCancellationRequested
+            && stack.Count + mustWords.Count > (bestSoFar?.words.Count ?? 0)
+            && stack.TryPop(out var w))
+        {
+            var emptyGrid = new NodeGrid(
+                ImmutableSortedDictionary<Coordinate, ImmutableSortedSet<Node>>.Empty,
+                maxCoordinate
+            );
+
+            var words = mustWords.Add(w.pw);
+
+            var nodes = CreateNodes(words, w.multiplicities.Values);
+
+            var creator = new Creator();
+
+            var r = creator.Create(
+                new SolveState(emptyGrid, nodes.ToImmutableList()),
+                cancellation,
+                logger
+            );
+
+            if (r is not null)
+            {
+                SetBest(r, words);
+                var remainingPossibles = stack.Select(x => x.pw).ToImmutableList();
+
+                //We need to go deeper
+                var newBest = CreateGridForMostWords(
+                    words,
+                    remainingPossibles,
+                    logger,
+                    maxCoordinate,
+                    cancellation
+                );
+
+                if(newBest is not null)
+                    SetBest(newBest.Value.grid, newBest.Value.words);
+            }
+        }
+
+        return bestSoFar;
     }
 
     public static NodeGrid CreateNodeGrid(
@@ -70,9 +153,9 @@ public static class GridCreator
                 maxCoordinate
             );
 
-            var solver = new Creator();
+            var creator = new Creator();
 
-            var r = solver.Create(
+            var r = creator.Create(
                 new SolveState(emptyGrid, nodes.ToImmutableList()),
                 new CancellationTokenSource(msCancellation).Token,
                 logger
@@ -84,7 +167,7 @@ public static class GridCreator
 
                 logger?.LogInformation(
                     $"{numberOfNodes} cell Grid Found in " + sw.ElapsedMilliseconds
-                                                           + $"ms after {solver.TriedGrids.Count} tries"
+                                                           + $"ms after {creator.TriedGrids.Count} tries"
                 );
 
                 return r;
@@ -97,7 +180,7 @@ public static class GridCreator
             var newNumber = mostConstrainedNode.RootNodes.Count + 1;
 
             logger?.LogInformation(
-                $"No Grid found after {sw.ElapsedMilliseconds}ms, increasing {mostConstrainedNode.Rune} to {mostConstrainedNode.RootNodes.Count + 1} after {solver.TriedGrids.Count} tries"
+                $"No Grid found after {sw.ElapsedMilliseconds}ms, increasing {mostConstrainedNode.Rune} to {mostConstrainedNode.RootNodes.Count + 1} after {creator.TriedGrids.Count} tries"
             );
 
             runeMultiplicities[mostConstrainedNode.Rune] =
