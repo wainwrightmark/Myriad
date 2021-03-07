@@ -96,7 +96,7 @@ public static class GoodSeedHelper
             );
 
     private static readonly Regex ChallengeGameRegex = new(
-        @"\A(?<group>\w+);\s*(?<grid>\w+);\s*(?<words>(?:\w+,?\s*)*)\Z",
+        @"\A(?<group>\w+);\s*(?<grid>[a-zA-Z0-9_\-]+);\s*(?<words>(?:\w+,?\s*)*)\Z",
         RegexOptions.Compiled
     );
 }

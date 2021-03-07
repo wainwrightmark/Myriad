@@ -26,8 +26,8 @@ public class CreatorTests
     public static TheoryData<string, string, int, int, int> GetWordLists()
     {
         const int delay  = 1000_000;
-        const int width  = 6;
-        const int height = 6;
+        const int width  = 5;
+        const int height = 5;
 
         var resourceSet =
             Lists.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, true, true);

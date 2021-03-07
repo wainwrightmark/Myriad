@@ -67,8 +67,32 @@
       var color = GetColor(coordinate);
       var (cx, cy) = GetLocation(coordinate, true);
 
+      string cursor;
+      if (_mouseDownCoordinate is null)
+      {
+        cursor = "default";
+      }
+      else if (_mouseDownCoordinate == coordinate)
+      {
+        cursor = "grab";
+      }
+      else
+      {
+        var r = Coordinate.GetTransform(_mouseDownCoordinate, coordinate, Board.Value.MaxCoordinate);
+        if (r.HasValue)
+        {
+          cursor = "move";
+        }
+        else
+        {
+          cursor = "no-drop";
+        }
+      }
+
       <g class="square"
          style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
+
+         cursor ="@cursor"
 
          @onmousedown="() => MouseDown(coordinate)"
          @onmouseup="() => MouseUp(coordinate)"
@@ -294,7 +318,6 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    cursor: default;
     font-size: @(144 / Math.Max(Columns, Rows))px;
     width: 100%;
     font-weight: bold;
