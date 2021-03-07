@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -38,13 +37,85 @@ public static class GridCreator
         string LettersOnly(string s) => new(s.Where(char.IsLetter).ToArray());
     }
 
-    public static (NodeGrid grid, ImmutableList<string> words)? CreateGridForMostWords(
+        private static NodeGrid CreateEmptyGrid(Coordinate maxCoordinate) => new (
+                ImmutableSortedDictionary<Coordinate, ImmutableSortedSet<Node>>.Empty,
+                maxCoordinate
+
+            )!;
+
+
+        private static NodeGrid? TryCreate(
+                    ImmutableList<string> words,
+                    Coordinate maxCoordinate,
+                    ImmutableDictionary<Rune, BaseRuneMultiplicity> dictionary,
+                    ILogger? logger,
+                    CancellationToken cancellation)
+        {
+            var totalCellCount = (maxCoordinate.Column + 1) * (maxCoordinate.Row + 1);
+
+
+            while (
+                dictionary.Sum(x => x.Value.Multiplicity) <= totalCellCount
+             && !cancellation.IsCancellationRequested)
+            {
+                var nodes = CreateNodes(words, dictionary.Values);
+                var creator = new Creator();
+
+                var result =
+                creator.Create(
+                    new SolveState(CreateEmptyGrid(maxCoordinate), nodes.ToImmutableList()),
+                    logger,
+                    10,
+                    cancellation
+
+                );
+
+                switch (result)
+                {
+                    case NodeGridCreateResult.CouldNotPlaceFailure couldNotPlaceFailure:
+                        {
+                            var currentAmount = dictionary[couldNotPlaceFailure.Rune].Multiplicity;
+                            var newAmount     = currentAmount + 1;
+
+                            dictionary = dictionary.SetItem(
+                                couldNotPlaceFailure.Rune,
+                                new BaseRuneMultiplicity(
+                                    couldNotPlaceFailure.Rune,
+                                    newAmount
+                                )
+                            );
+
+                            var totalMultiplicity = dictionary.Sum(x => x.Value.Multiplicity);
+
+                            //logger.LogInformation($"Could not find grid for {words.Count} words with {totalMultiplicity} cells. Increasing {couldNotPlaceFailure.Rune} multiplicity to {newAmount}");
+
+                            break;
+                        }
+                    case NodeGridCreateResult.OtherFailure _:
+                    {
+                        //logger?.LogTrace($"Could not find any grid for {words.ToDelimitedString(", ")}");
+
+                        return null;
+                    }
+                    case NodeGridCreateResult.Success success: return success.NodeGrid;
+                    default: throw new ArgumentOutOfRangeException(nameof(result));
+                }
+            }
+
+            //logger?.LogInformation($"Could not find any grid for {words.ToDelimitedString(", ")}");
+
+            return null;
+        }
+
+        public static (NodeGrid grid, ImmutableList<string> words)? CreateGridForMostWords(
         ImmutableList<string> mustWords,
         ImmutableList<string> possibleWords,
         ILogger? logger,
+        Stopwatch stopwatch,
         Coordinate maxCoordinate,
         CancellationToken cancellation)
     {
+
         var stack =
             new Stack<(string pw, Dictionary<Rune, BaseRuneMultiplicity> multiplicities, int sum)>(
                 possibleWords.Select(
@@ -72,64 +143,26 @@ public static class GridCreator
               && bestSoFar.Value.words.Sum(x => x.Length) < words.Sum(x => x.Length)))
             {
                 logger?.LogInformation(
-                    $"Found grid for {words.Count} of {mustWords.Count + possibleWords.Count} words, {words.Sum(x => x.Length)} letters: {words.ToDelimitedString(", ")}"
+                    $"{stopwatch.Elapsed}: Found grid for {words.Count} of {mustWords.Count + possibleWords.Count} words, {words.Sum(x => x.Length)} letters: {words.ToDelimitedString(", ")}, grid: {grid}"
                 );
 
                 bestSoFar = (grid, words);
             }
         }
 
-        var totalCellCount = (maxCoordinate.Column + 1) * (maxCoordinate.Row + 1);
-
         while (!cancellation.IsCancellationRequested
             && stack.Count + mustWords.Count > (bestSoFar?.words.Count ?? 0)
             && stack.TryPop(out var w))
         {
-            var emptyGrid = new NodeGrid(
-                ImmutableSortedDictionary<Coordinate, ImmutableSortedSet<Node>>.Empty,
-                maxCoordinate
-            );
-
             var words = mustWords.Add(w.pw);
 
-            //TODO loosen multiplicities
-            var mSum = w.multiplicities.Sum(x => x.Value.Multiplicity);
+            var multiplicities = CreateMultiplicities(words).ToImmutableDictionary(x=>x.Rune);
 
-            if (mSum > totalCellCount) //impossible
-                continue;
+            var nodeGrid = TryCreate(words, maxCoordinate, multiplicities, logger, cancellation);
 
-            var nodes = CreateNodes(words, w.multiplicities.Values);
-
-            if (totalCellCount > mSum)
+            if (nodeGrid is not null)
             {
-                var stuff =
-                    nodes.Select(x => x.RootNodeGroup)
-                        .OrderByDescending(x => x.ConstraintScore)
-                        .Take(totalCellCount - mSum)
-                        .GroupBy(x => x.Rune);
-
-                foreach (var group in stuff)
-                {
-                    var currentValue = w.multiplicities[group.Key];
-
-                    w.multiplicities[group.Key] = currentValue with
-                    {
-                        Multiplicity = currentValue.Multiplicity + group.Count()
-                    };
-                }
-            }
-
-            var creator = new Creator();
-
-            var r = creator.Create(
-                new SolveState(emptyGrid, nodes.ToImmutableList()),
-                cancellation,
-                logger
-            );
-
-            if (r is not null)
-            {
-                SetBest(r, words);
+                SetBest(nodeGrid, words);
                 var remainingPossibles = stack.Select(x => x.pw).ToImmutableList();
 
                 //We need to go deeper
@@ -137,6 +170,7 @@ public static class GridCreator
                     words,
                     remainingPossibles,
                     logger,
+                    stopwatch,
                     maxCoordinate,
                     cancellation
                 );
@@ -148,6 +182,7 @@ public static class GridCreator
 
         return bestSoFar;
     }
+
 
     public static NodeGrid CreateNodeGrid(
         IEnumerable<string> allWords,
@@ -187,11 +222,12 @@ public static class GridCreator
 
             var r = creator.Create(
                 new SolveState(emptyGrid, nodes.ToImmutableList()),
-                new CancellationTokenSource(msCancellation).Token,
-                logger
+                logger,
+                100000,
+                new CancellationTokenSource(msCancellation).Token
             );
 
-            if (r is not null)
+            if (r is NodeGridCreateResult.Success success)
             {
                 sw.Stop();
 
@@ -200,7 +236,7 @@ public static class GridCreator
                                                            + $"ms after {creator.TriedGrids.Count} tries"
                 );
 
-                return r;
+                return success.NodeGrid;
             }
 
             var mostConstrainedNode = nodes.Select(x => x.RootNodeGroup)

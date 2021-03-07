@@ -26,6 +26,41 @@
       opacity="@opacity"
       d="@d"/>
 
+    @code
+    {
+
+      Coordinate? _mouseDownCoordinate = null;
+
+      public void MouseDown(Coordinate coordinate)
+      {
+        _mouseDownCoordinate = coordinate;
+      }
+
+      public void MouseUp(Coordinate coordinate)
+      {
+        if (_mouseDownCoordinate is not null)
+        {
+          if (_mouseDownCoordinate != coordinate)
+          {
+            var sourceRotated = GetRotated(_mouseDownCoordinate);
+            var targetRotated = GetRotated(coordinate);
+
+            var transform = Coordinate.GetTransform(sourceRotated, targetRotated, Board.Value.MaxCoordinate);
+
+            if (transform.HasValue)
+            {
+              if (transform.Value.rotate != 0)
+                Dispatcher.Dispatch(new RotateAction(-transform.Value.rotate));
+              if (transform.Value.flip)
+                Dispatcher.Dispatch(new FlipAction());
+            }
+          }
+        }
+
+        _mouseDownCoordinate = null;
+      }
+    }
+
 
     @foreach (var coordinate in Board.Value.GetAllCoordinates())
     {
@@ -35,7 +70,8 @@
       <g class="square"
          style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
 
-
+         @onmousedown="() => MouseDown(coordinate)"
+         @onmouseup="() => MouseUp(coordinate)"
          @onclick="@((ca) => CellClicked(coordinate, ca))">
         <circle
           id="@($"{coordinate}_bigCircle")"
@@ -83,20 +119,18 @@
     }
 
 
-    <g transform="translate(0 @(SquareSize* (Rows - 1) ))" id="rotateArrow">
+    @*<g transform="translate(0 @(SquareSize * (Rows - 1)))" id="rotateArrow">
       <path @onclick="() => Dispatcher.Dispatch(new RotateAction(-1))"
 
              d="M0.9 0.3C1 3.3 1.4 6 2 8.4 2.7 10.7 3.7 12.5 5.3 13.9 9.8 17.9 18.7 15.6 18.7 15.6L18.3 12.2 24.7 16.6 19.5 22.7 19.2 19.8C19.2 19.8 10.4 21.8 4.9 16.3 1.6 13 0.2 7.6 0.3 0.4 0.4 0.4 0.7 0.3 0.9 0.3ZM0.9 0.3"/>
     </g>
 
-    <g id="flipArrow" transform="translate(@(SquareSize * (Columns  - 1)) 0)">
+    <g id="flipArrow" transform="translate(@(SquareSize * (Columns - 1)) 0)">
       <path
         dominant-baseline=""
-            @onclick="() => Dispatcher.Dispatch(new FlipAction())"
-          d="M13,13l-13,-14c0,0,0,9,0,9l-14,0c0,0,0,-9,0,-9l-13,14l13,14l0,-9l14,0l0,9l13,-14z"
-
-        />
-    </g>
+        @onclick="() => Dispatcher.Dispatch(new FlipAction())"
+        d="M13,13l-13,-14c0,0,0,9,0,9l-14,0c0,0,0,-9,0,-9l-13,14l13,14l0,-9l14,0l0,9l13,-14z"/>
+    </g>*@
 
 
   </svg>

@@ -70,13 +70,12 @@ public record SolveState(NodeGrid Grid, ImmutableList<Node> RemainingNodes)
 
         if (nextNode.locations.Count == 0)
         {
-            return CreateResult.CantCreate.Instance;
+            return new CreateResult.CantCreate(nextNode.node.Rune);
         }
 
         List<SolveState> nextStates = new();
 
-        IOrderedEnumerable<Coordinate> orderedLocations =
-            nextNode.locations.OrderByDescending(x => x.DistanceFromCentre(Grid.MaxCoordinate));
+        IOrderedEnumerable<Coordinate> orderedLocations;
 
         if (nextNode.node.RootNodeGroup.RootNodes.Count == 1)
             orderedLocations =
@@ -97,7 +96,7 @@ public record SolveState(NodeGrid Grid, ImmutableList<Node> RemainingNodes)
         if (nextStates.Any())
             return new CreateResult.NextStates(nextStates);
 
-        return CreateResult.CantCreate.Instance;
+        return new CreateResult.CantCreate(nextNode.node.Rune);
     }
 }
 

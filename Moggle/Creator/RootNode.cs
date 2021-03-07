@@ -19,7 +19,7 @@ public class RootNode : Node
         if (nodeGridLocations.TryGetValue(this, out var c))
             return new HashSet<Coordinate> { c };
 
-        var              allowAll = false;
+        var              allowAnyUnusedCell = false;
         ISet<Coordinate> set      = new HashSet<Coordinate>();
 
         foreach (var cn in RootNodeGroup.Constraints.SelectMany(x => x))
@@ -27,10 +27,10 @@ public class RootNode : Node
             if (nodeGridLocations.TryGetValue(cn, out var coordinate))
                 set.Add(coordinate);
             else
-                allowAll = true;
+                allowAnyUnusedCell = true; //This constraint has not been placed - it could be any unused cell
         }
 
-        if (allowAll)
+        if (allowAnyUnusedCell)
             set = grid.GetAllUnusedLocations().Union(set);
 
         if (RootNodeGroup.RootNodes.Count == 1) //TODO why does this make it so much slower

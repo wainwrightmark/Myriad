@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace Moggle.Creator
 {
@@ -9,11 +10,7 @@ public abstract record CreateResult
 
     public record NextStates(IReadOnlyCollection<SolveState> States) : CreateResult;
 
-    public record CantCreate : CreateResult
-    {
-        private CantCreate() { }
-        public static CantCreate Instance { get; } = new ();
-    }
+    public record CantCreate(Rune StickingPoint) : CreateResult;
 }
 
 }

@@ -9,7 +9,8 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
 {
     public Coordinate RotateAndFlip(
         Coordinate maxCoordinate,
-        int rotation, bool flip)
+        int rotation,
+        bool flip)
     {
         while (rotation < 0)
             rotation += 4;
@@ -29,6 +30,25 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
             return rotated.ReflectColumn(maxCoordinate.Column);
 
         return rotated;
+    }
+
+    public static (int rotate, bool flip)? GetTransform(
+        Coordinate source,
+        Coordinate target,
+        Coordinate maxCoordinate)
+    {
+        foreach (var flip in new[] { false, true })
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var r = source.RotateAndFlip(maxCoordinate, i, flip);
+
+                if (r == target)
+                    return (i, flip);
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -180,7 +200,10 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
         return Column.CompareTo(other.Column);
     }
 
-    private static readonly Regex _regex = new (@"\A\s*\(?(?<x>\d+)\s*,\s*(?<y>\d+)\)?\s*\Z", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex _regex = new(
+        @"\A\s*\(?(?<x>\d+)\s*,\s*(?<y>\d+)\)?\s*\Z",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase
+    );
 
     public static Coordinate? TryParse(string s)
     {

@@ -45,13 +45,11 @@ Stingray
 Tiger
 Turkey
 Turtle
-Unicorn
 Whale
 Worm
 Zebra
 Pigeon
 Dinosaur
-Dragon
 Kangaroo
 Clownfish
 Rhinoceros
