@@ -29,36 +29,47 @@
     @code
     {
 
-      Coordinate? _mouseDownCoordinate = null;
+        Coordinate? _mouseDownCoordinate = null;
 
-      public void MouseDown(Coordinate coordinate)
-      {
-        _mouseDownCoordinate = coordinate;
-      }
-
-      public void MouseUp(Coordinate coordinate)
-      {
-        if (_mouseDownCoordinate is not null)
+        public void MouseDown(Coordinate coordinate)
         {
-          if (_mouseDownCoordinate != coordinate)
-          {
-            var sourceRotated = GetRotated(_mouseDownCoordinate);
-            var targetRotated = GetRotated(coordinate);
-
-            var transform = Coordinate.GetTransform(sourceRotated, targetRotated, Board.Value.MaxCoordinate);
-
-            if (transform.HasValue)
-            {
-              if (transform.Value.rotate != 0)
-                Dispatcher.Dispatch(new RotateAction(-transform.Value.rotate));
-              if (transform.Value.flip)
-                Dispatcher.Dispatch(new FlipAction());
-            }
-          }
+          _mouseDownCoordinate = coordinate;
         }
 
-        _mouseDownCoordinate = null;
-      }
+        public void TouchDown(Coordinate coordinate)
+        {
+          if(_mouseDownCoordinate is null)
+            _mouseDownCoordinate = coordinate;
+        }
+
+        public void TouchUp(Coordinate coordinate)
+        {
+            MouseUp(coordinate);
+        }
+
+        public void MouseUp(Coordinate coordinate)
+        {
+          if (_mouseDownCoordinate is not null)
+          {
+            if (_mouseDownCoordinate != coordinate)
+            {
+              var sourceRotated = GetRotated(_mouseDownCoordinate);
+              var targetRotated = GetRotated(coordinate);
+
+              var transform = Coordinate.GetTransform(sourceRotated, targetRotated, Board.Value.MaxCoordinate);
+
+              if (transform.HasValue)
+              {
+                if (transform.Value.rotate != 0)
+                  Dispatcher.Dispatch(new RotateAction(-transform.Value.rotate));
+                if (transform.Value.flip)
+                  Dispatcher.Dispatch(new FlipAction());
+              }
+            }
+          }
+
+          _mouseDownCoordinate = null;
+        }
     }
 
 
@@ -93,6 +104,8 @@
          style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
 
          cursor ="@cursor"
+         @ontouchstart="()=> TouchDown(coordinate)"
+         @ontouchend="()=> TouchUp(coordinate)"
 
          @onmousedown="() => MouseDown(coordinate)"
          @onmouseup="() => MouseUp(coordinate)"
