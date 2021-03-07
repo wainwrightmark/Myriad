@@ -6,157 +6,216 @@
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 <MudContainer MaxWidth="MaxWidth.Small">
-  <svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
+<svg viewBox="0 0 @FullWidth @FullHeight" class="moggleSVG">
 
 
-    <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
+<rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
 
-    @{
-      var d = ChosenPositions.Value.GetPathData(Board.Value,
-                                                RecentWordsState.Value.Rotation, RecentWordsState.Value.Flip, FullWidth, FullHeight);
+@{
+  var d = ChosenPositions.Value.GetPathData(Board.Value,
+                                            RecentWordsState.Value.Rotation, RecentWordsState.Value.Flip, FullWidth, FullHeight);
 
-      var opacity = ChosenPositions.Value.ChosenPositions.Any() ? "1" : "0";
-    }
-    <path
-      id="rope"
+  var opacity = ChosenPositions.Value.ChosenPositions.Any() ? "1" : "0";
+}
+<path
+  id="rope"
 
-      style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default; -webkit-transition: 1s @AnimationTiming; transition: 1s @AnimationTiming; fill: none;"
-      stroke-linejoin="round"
-      stroke-linecap="round"
-      opacity="@opacity"
-      d="@d"/>
+  style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default; -webkit-transition: 1s @AnimationTiming; transition: 1s @AnimationTiming; fill: none;"
+  stroke-linejoin="round"
+  stroke-linecap="round"
+  opacity="@opacity"
+  d="@d"/>
 
-    @code
+@code
+{
+
+    Coordinate? _mouseDownCoordinate = null;
+
+    TouchPoint[]? touchStartPoints = null;
+
+    public void MouseDown(Coordinate coordinate)
     {
+      _mouseDownCoordinate = coordinate;
+    }
 
-        Coordinate? _mouseDownCoordinate = null;
+    public void OnTouchStart(TouchEventArgs tea, Coordinate coordinate)
+    {
+      touchStartPoints = touchStartPoints = tea.ChangedTouches;
+    }
 
-        public void MouseDown(Coordinate coordinate)
+    public (int rotate, bool flip) GetTransform(int xDiff, int yDiff)
+    {
+      return xDiff switch
+      {
+        0 when yDiff == 0  => (0, false),
+        0                  => (2, true),
+        1 when yDiff == 0  => (0, true),
+        1 when yDiff > 0   => (1, false),
+        1                  => (-1, false),
+        -1 when yDiff == 0 => (0, true),
+        -1 when yDiff > 0  => (-1, false),
+        -1                 => (1, false),
+        _                  => (0, false)
+      };
+    }
+
+    public void OnTouchEnd(TouchEventArgs tea, Coordinate coordinate)
+    {
+      if (touchStartPoints is not null && touchStartPoints.Length == 1 && tea.ChangedTouches.Length == 1)
+      {
+        var source = touchStartPoints[0];
+        var target = tea.ChangedTouches[0];
+
+        var xDiff = target.ScreenX - source.ScreenX;
+        var yDiff = target.ScreenY - source.ScreenY;
+
+        var xDirection = xDiff switch
         {
-          _mouseDownCoordinate = coordinate;
-        }
+          >= 50  => 1,
+          <= -50 => -1,
+          _      => 0
+        };
 
-        public void TouchDown(Coordinate coordinate)
-        {
-          if(_mouseDownCoordinate is null)
-            _mouseDownCoordinate = coordinate;
-        }
+        var yDirection = yDiff switch{
+          >= 50  => 1,
+          <= -50 => -1,
+          _      => 0
+        };
 
-        public void TouchUp(Coordinate coordinate)
-        {
-            MouseUp(coordinate);
-        }
 
-        public void MouseUp(Coordinate coordinate)
+
+        var transform = GetTransform(xDirection, yDirection);
+
+        if (transform.rotate != 0)
         {
-          if (_mouseDownCoordinate is not null)
+          var rotatedCoordinate = GetRotated(coordinate);
+          if(rotatedCoordinate.Row == 0 || rotatedCoordinate.Row == Board.Value.MaxCoordinate.Row) //Top or bottom row
           {
-            if (_mouseDownCoordinate != coordinate)
-            {
-              var sourceRotated = GetRotated(_mouseDownCoordinate);
-              var targetRotated = GetRotated(coordinate);
-
-              var transform = Coordinate.GetTransform(sourceRotated, targetRotated, Board.Value.MaxCoordinate);
-
-              if (transform.HasValue)
-              {
-                if (transform.Value.rotate != 0)
-                  Dispatcher.Dispatch(new RotateAction(-transform.Value.rotate));
-                if (transform.Value.flip)
-                  Dispatcher.Dispatch(new FlipAction());
-              }
-            }
+            Dispatcher.Dispatch(new RotateAction(transform.rotate));
           }
-
-          _mouseDownCoordinate = null;
+          else
+          {
+            Dispatcher.Dispatch(new RotateAction(-transform.rotate));
+          }
         }
+
+        if (transform.flip)
+          Dispatcher.Dispatch(new FlipAction());
+      }
+
+      touchStartPoints
+        = null;
     }
 
-
-    @foreach (var coordinate in Board.Value.GetAllCoordinates())
+    public void MouseUp(Coordinate coordinate)
     {
-      var color = GetColor(coordinate);
-      var (cx, cy) = GetLocation(coordinate, true);
+      if (_mouseDownCoordinate is not null)
+      {
+        if (_mouseDownCoordinate != coordinate)
+        {
+          var sourceRotated = GetRotated(_mouseDownCoordinate);
+          var targetRotated = GetRotated(coordinate);
 
-      string cursor;
-      if (_mouseDownCoordinate is null)
-      {
-        cursor = "default";
-      }
-      else if (_mouseDownCoordinate == coordinate)
-      {
-        cursor = "grab";
-      }
-      else
-      {
-        var r = Coordinate.GetTransform(_mouseDownCoordinate, coordinate, Board.Value.MaxCoordinate);
-        if (r.HasValue)
-        {
-          cursor = "move";
-        }
-        else
-        {
-          cursor = "no-drop";
+          var transform = Coordinate.GetTransform(sourceRotated, targetRotated, Board.Value.MaxCoordinate);
+
+          if (transform.HasValue)
+          {
+            if (transform.Value.rotate != 0)
+              Dispatcher.Dispatch(new RotateAction(-transform.Value.rotate));
+            if (transform.Value.flip)
+              Dispatcher.Dispatch(new FlipAction());
+          }
         }
       }
 
-      <g class="square"
-         style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
-
-         cursor ="@cursor"
-         @ontouchstart="()=> TouchDown(coordinate)"
-         @ontouchend="()=> TouchUp(coordinate)"
-
-         @onmousedown="() => MouseDown(coordinate)"
-         @onmouseup="() => MouseUp(coordinate)"
-         @onclick="@((ca) => CellClicked(coordinate, ca))">
-        <circle
-          id="@($"{coordinate}_bigCircle")"
-
-          stroke="@color"
-          fill="@Colors.Shades.Black"
-          fill-opacity="0.01"
-          r="@CircleRadius"
-          class="circle">
-        </circle>
-
-        <text
-          id="@($"{coordinate}_text")"
-
-          dominant-baseline="middle"
-          text-anchor="middle"
-          stroke="@Colors.Shades.White"
-          fill="@Colors.Shades.Black">
-          @Board.Value.GetLetterAtCoordinate(coordinate).ButtonText
-
-        </text>
-      </g>
+      _mouseDownCoordinate = null;
     }
+}
 
 
-    @foreach (var (word, coordinate, rotate, _,_ ) in RecentWordsState.Value.RecentWords)
+@foreach (var coordinate in Board.Value.GetAllCoordinates())
+{
+  var color = GetColor(coordinate);
+  var (cx, cy) = GetLocation(coordinate, true);
+
+  string cursor;
+  if (_mouseDownCoordinate is null)
+  {
+    cursor = "default";
+  }
+  else if (_mouseDownCoordinate == coordinate)
+  {
+    cursor = "grab";
+  }
+  else
+  {
+    var r = Coordinate.GetTransform(_mouseDownCoordinate, coordinate, Board.Value.MaxCoordinate);
+    if (r.HasValue)
     {
-      var (cx, cy) = GetLocation(coordinate.RotateAndFlip(Board.Value.MaxCoordinate, -rotate, RecentWordsState.Value.Flip), false);
-      var id = $"{word.Text}{coordinate}";
-      <text>
-        <text
-          fill="@GetColor(word)"
-          class="foundWord"
-          style="animation-duration: @(word.LingerDuration)ms"
-          pointer-events="none"
-          id="@id"
-          x="@cx"
-          y="@cy"
-          dominant-baseline="middle"
-          text-anchor="middle">
-          @word.Text
-
-        </text>
-      </text>
+      cursor = "move";
     }
+    else
+    {
+      cursor = "no-drop";
+    }
+  }
+
+  <g class="square"
+     style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
+
+     cursor="@cursor"
+     @ontouchstart="(args) => OnTouchStart(args, coordinate)"
+     @ontouchend="(args) => OnTouchEnd(args, coordinate)"
+     @onmousedown="() => MouseDown(coordinate)"
+     @onmouseup="() => MouseUp(coordinate)"
+     @onclick="@((ca) => CellClicked(coordinate, ca))">
+    <circle
+      id="@($"{coordinate}_bigCircle")"
+
+      stroke="@color"
+      fill="@Colors.Shades.Black"
+      fill-opacity="0.01"
+      r="@CircleRadius"
+      class="circle">
+    </circle>
+
+    <text
+      id="@($"{coordinate}_text")"
+
+      dominant-baseline="middle"
+      text-anchor="middle"
+      stroke="@Colors.Shades.White"
+      fill="@Colors.Shades.Black">
+      @Board.Value.GetLetterAtCoordinate(coordinate).ButtonText
+
+    </text>
+  </g>
+}
 
 
-    @*<g transform="translate(0 @(SquareSize * (Rows - 1)))" id="rotateArrow">
+@foreach (var (word, coordinate, rotate, _,_ ) in RecentWordsState.Value.RecentWords)
+{
+  var (cx, cy) = GetLocation(coordinate.RotateAndFlip(Board.Value.MaxCoordinate, -rotate, RecentWordsState.Value.Flip), false);
+  var id = $"{word.Text}{coordinate}";
+  <text>
+    <text
+      fill="@GetColor(word)"
+      class="foundWord"
+      style="animation-duration: @(word.LingerDuration)ms"
+      pointer-events="none"
+      id="@id"
+      x="@cx"
+      y="@cy"
+      dominant-baseline="middle"
+      text-anchor="middle">
+      @word.Text
+
+    </text>
+  </text>
+}
+
+
+@*<g transform="translate(0 @(SquareSize * (Rows - 1)))" id="rotateArrow">
       <path @onclick="() => Dispatcher.Dispatch(new RotateAction(-1))"
 
              d="M0.9 0.3C1 3.3 1.4 6 2 8.4 2.7 10.7 3.7 12.5 5.3 13.9 9.8 17.9 18.7 15.6 18.7 15.6L18.3 12.2 24.7 16.6 19.5 22.7 19.2 19.8C19.2 19.8 10.4 21.8 4.9 16.3 1.6 13 0.2 7.6 0.3 0.4 0.4 0.4 0.7 0.3 0.9 0.3ZM0.9 0.3"/>
@@ -170,32 +229,32 @@
     </g>*@
 
 
-  </svg>
+</svg>
 
 
-  <style>
-    .arrow {
-      clip-rule: evenodd;
-      fill-rule: evenodd;
-    }
-  </style>
-
-
-  @code{
-
-    private string GetColor(AnimationWord animationWord)
-    {
-      return animationWord.Type switch
-      {
-        AnimationWord.WordType.Found           => Colors.Green.Default,
-        AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
-        AnimationWord.WordType.Invalid         => Colors.Red.Default,
-        AnimationWord.WordType.Illegal => Colors.Orange.Default,
-        _                                      => throw new ArgumentOutOfRangeException()
-        };
-    }
-
+<style>
+  .arrow {
+    clip-rule: evenodd;
+    fill-rule: evenodd;
   }
+</style>
+
+
+@code{
+
+  private string GetColor(AnimationWord animationWord)
+  {
+    return animationWord.Type switch
+    {
+      AnimationWord.WordType.Found           => Colors.Green.Default,
+      AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
+      AnimationWord.WordType.Invalid         => Colors.Red.Default,
+      AnimationWord.WordType.Illegal => Colors.Orange.Default,
+      _                                      => throw new ArgumentOutOfRangeException()
+      };
+  }
+
+}
 
 </MudContainer>
 
