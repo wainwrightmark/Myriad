@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -8,10 +7,7 @@ namespace Moggle.States
 
 public abstract record FoundWordsData
 {
-    public record TargetWordGroup(string Display, int Order, bool HideText)
-    {
-
-    }
+    public record TargetWordGroup(string Display, int Order, bool HideText) { }
 
     public record TargetWordsData
     (
@@ -35,6 +31,17 @@ public abstract record FoundWordsData
             }
 
             return this;
+        }
+
+        /// <inheritdoc />
+        public override FoundWordsData Reset()
+        {
+            var newWordsToFind = WordsToFind.ToImmutableDictionary(
+                x => x.Key,
+                x => (x.Value.group, null as FoundWord)
+            );
+
+            return this with { WordsToFind = newWordsToFind };
         }
     }
 
@@ -65,11 +72,19 @@ public abstract record FoundWordsData
 
             return this with { FoundWordsDictionary = FoundWordsDictionary.Add(word, true) };
         }
+
+        /// <inheritdoc />
+        public override FoundWordsData Reset()
+        {
+            return this with { FoundWordsDictionary = ImmutableDictionary<FoundWord, bool>.Empty };
+        }
     }
 
     public abstract bool WordIsFound(FoundWord s);
 
     public abstract FoundWordsData FindWord(FoundWord word);
+
+    public abstract FoundWordsData Reset();
 }
 
 public record FoundWordsState(FoundWordsData Data)
@@ -96,7 +111,7 @@ public record FoundWordsState(FoundWordsData Data)
 
     public FoundWordsState FindWords(IEnumerable<FoundWord> words)
     {
-        var data = this.Data;
+        var data = Data;
 
         foreach (var foundWord in words)
         {
@@ -104,6 +119,11 @@ public record FoundWordsState(FoundWordsData Data)
         }
 
         return this with { Data = data };
+    }
+
+    public FoundWordsState Reset()
+    {
+        return this with { Data = Data.Reset() };
     }
 }
 

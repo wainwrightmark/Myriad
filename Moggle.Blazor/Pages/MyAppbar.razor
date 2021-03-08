@@ -15,7 +15,15 @@
 }
 <MudAppBarSpacer/>
 
-<MudFab Color="Color.Primary" OnClick="OpenDialog" Size="Size.Large" Label="New Game"/>
+<MudIconButton
+  Icon="@Icons.Material.Filled.Delete"
+  Color="Color.Inherit" OnClick="()=>Dispatcher.Dispatch(new ResetFoundWordsAction(Board.Value))"/>
+
+<MudAppBarSpacer/>
+
+<MudIconButton
+  Icon="@Icons.Material.Filled.FiberNew"
+  Color="Color.Inherit" OnClick="OpenDialog"/>
 <MudAppBarSpacer/>
 
 <MudIconButton
@@ -23,6 +31,8 @@
   Color="Color.Inherit"
   Edge="Edge.End" OnClick="ToggleCheating">
 </MudIconButton>
+
+<MudAppBarSpacer/>
 
 <MudIconButton
   Icon="@Icons.Custom.Brands.GitHub"

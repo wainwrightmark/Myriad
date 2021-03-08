@@ -1,9 +1,10 @@
-﻿using Moggle.States;
+﻿using System.Collections.Immutable;
+using Moggle.States;
 
 namespace Moggle.Actions
 {
 
-public record CheatAction : IAction<CheatState>
+public record CheatAction(Solver Solver, MoggleBoard Board) : IAction<CheatState>
 {
     /// <inheritdoc />
     public CheatState Reduce(CheatState state)
@@ -11,7 +12,9 @@ public record CheatAction : IAction<CheatState>
         if (!state.AllowCheating)
             return state;
 
-        return state with { Revealed = true };
+        var possibleWords = Solver.GetPossibleSolutions(Board).ToImmutableList();
+
+        return state with { Revealed = true, PossibleWords = possibleWords};
     }
 }
 

@@ -46,9 +46,9 @@ public class Program
                         PrimaryKey =
                             new IndexSpec()
                             {
-                                Name    = "uniqueId",
+                                Name    = nameof(SavedWord.uniqueId),
                                 Auto    = true,
-                                KeyPath = "uniqueId",
+                                KeyPath = nameof(SavedWord.uniqueId),
                             },
                         Indexes = new List<IndexSpec>()
                         {

@@ -8,6 +8,8 @@ namespace Moggle
 
 public class SavedWord
 {
+
+    public int uniqueId {get; set; }
     public string boardId { get; set; }
 
     public string wordText { get; set; }

@@ -3,10 +3,7 @@
 @using Moggle.Actions
 @inject NavigationManager NavigationManager
 
-
-
 <GameView StartGameAction="_startGameAction"/>
-
 
 @code
 {
@@ -23,6 +20,10 @@
       var dict2 = parseDict.ToImmutableDictionary(x => x.Key, x => x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
 
       _startGameAction = new StartGameAction(WordList.LazyInstance, mode, dict2);
+    }
+    else
+    {
+      _startGameAction = new StartGameAction(WordList.LazyInstance, Moggle.AllGameModes.Modes.Values.First(), ImmutableDictionary<string, string>.Empty);
     }
 
     await base.OnParametersSetAsync();
