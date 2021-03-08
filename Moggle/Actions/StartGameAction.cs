@@ -37,6 +37,7 @@ public record StartGameAction(
         return GameMode.CreateBoard(Settings, WordList);
     }
 
+    /// <inheritdoc />
     public AnimationState Reduce(AnimationState state)
     {
         var animation = GameMode.GetAnimation(Settings, WordList);
@@ -51,19 +52,7 @@ public record StartGameAction(
         if (Settings.ContainsKey("cheat"))
             state = state with { AllowCheating = true };
 
-        ImmutableList<FoundWord> possibleWords;
-
-        if (state.AllowCheating)
-        {
-            var board  = GameMode.CreateBoard(Settings, WordList);
-            var solver = GameMode.CreateSolver(Settings, WordList);
-
-            possibleWords = solver.GetPossibleSolutions(board).ToImmutableList();
-        }
-        else
-            possibleWords = ImmutableList<FoundWord>.Empty;
-
-        return new CheatState(state.AllowCheating, false, possibleWords);
+        return state;
     }
 
     /// <inheritdoc />

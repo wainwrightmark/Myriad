@@ -4,7 +4,8 @@ using Moggle.States;
 namespace Moggle.Actions
 {
 
-public record CheatAction(Solver Solver, MoggleBoard Board) : IAction<CheatState>
+public record CheatAction(Solver Solver, MoggleBoard Board) : IAction<CheatState>,
+                                                              IAction<FoundWordsState>
 {
     /// <inheritdoc />
     public CheatState Reduce(CheatState state)
@@ -12,9 +13,17 @@ public record CheatAction(Solver Solver, MoggleBoard Board) : IAction<CheatState
         if (!state.AllowCheating)
             return state;
 
+        return state with {Revealed = false};
+    }
+
+    /// <inheritdoc />
+    public FoundWordsState Reduce(FoundWordsState state)
+    {
         var possibleWords = Solver.GetPossibleSolutions(Board).ToImmutableList();
 
-        return state with { Revealed = true, PossibleWords = possibleWords};
+        state = state.FindWords(possibleWords);
+
+        return state;
     }
 }
 

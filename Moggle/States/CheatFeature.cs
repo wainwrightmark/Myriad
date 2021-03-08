@@ -12,7 +12,7 @@ public class CheatFeature : Feature<CheatState>
     /// <inheritdoc />
     protected override CheatState GetInitialState()
     {
-        return new(false, false, ImmutableList<FoundWord>.Empty);
+        return new(false, false);
     }
 }
 

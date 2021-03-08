@@ -17,7 +17,7 @@
 
 <MudIconButton
   Icon="@Icons.Material.Filled.Delete"
-  Color="Color.Inherit" OnClick="()=>Dispatcher.Dispatch(new ResetFoundWordsAction(Board.Value))"/>
+  Color="Color.Inherit" OnClick="() => Dispatcher.Dispatch(new ResetFoundWordsAction(Board.Value))"/>
 
 <MudAppBarSpacer/>
 
@@ -26,11 +26,6 @@
   Color="Color.Inherit" OnClick="OpenDialog"/>
 <MudAppBarSpacer/>
 
-<MudIconButton
-  Icon="@Icons.Material.Filled.Face"
-  Color="Color.Inherit"
-  Edge="Edge.End" OnClick="ToggleCheating">
-</MudIconButton>
 
 <MudAppBarSpacer/>
 
@@ -43,83 +38,92 @@
 
 @code {
 
-    [Inject]private IState<MoggleBoard> Board { get; set; }
-    [Inject]private IState<ChosenPositionsState> ChosenPositions { get; set; }
-    [Inject]private IState<Solver> Solver { get; set; }
-    [Inject]private IState<FoundWordsState> FoundWords { get; set; }
+  [Inject]
+  private IState<MoggleBoard> Board { get; set; }
 
-    [Inject]
-    private IState<GameSettingsState> GameSettingsState { get; set; }
+  [Inject]
+  private IState<ChosenPositionsState> ChosenPositions { get; set; }
 
-    [Inject]
-    private IState<AnimationState> AnimationState { get; set; }
+  [Inject]
+  private IState<Solver> Solver { get; set; }
 
-    [Inject]
-    private IState<TimeState> TimeState { get; set; }
+  [Inject]
+  private IState<FoundWordsState> FoundWords { get; set; }
 
-    [Inject]
-    public IDispatcher Dispatcher { get; set; }
+  [Inject]
+  private IState<GameSettingsState> GameSettingsState { get; set; }
 
-    public bool IsGameVisible => SecondsLeft > 0;
+  [Inject]
+  private IState<AnimationState> AnimationState { get; set; }
 
-    private Timer _timer;
+  [Inject]
+  private IState<TimeState> TimeState { get; set; }
 
-    protected override void OnAfterRender(bool firstRender)
+  [Inject]
+  public IDispatcher Dispatcher { get; set; }
+
+  public bool IsGameVisible => SecondsLeft > 0;
+
+  private Timer _timer;
+
+  protected override void OnAfterRender(bool firstRender)
+  {
+    if (firstRender)
     {
-      if (firstRender)
-      {
-        _timer = new Timer(DateTimeCallback, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-      }
+      _timer = new Timer(DateTimeCallback, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
     }
+  }
 
-    private async void DateTimeCallback(object state)
-    {
-      if (AnimationState.Value.Animation != null)
-        Dispatcher.Dispatch(new AnimateAction(
-                              Board.Value.UniqueKey,
-                              AnimationState.Value.Animation.GetStepWithResult(ChosenPositions.Value, Board.Value, Solver.Value, FoundWords.Value, AnimationState.Value.AnimationFrame)));
+  private async void DateTimeCallback(object state)
+  {
+    if (AnimationState.Value.Animation != null)
+      Dispatcher.Dispatch(new AnimateAction(
+                            Board.Value.UniqueKey,
+                            AnimationState.Value.Animation.GetStepWithResult(ChosenPositions.Value, Board.Value, Solver.Value, FoundWords.Value, AnimationState.Value.AnimationFrame)));
 
-      await InvokeAsync(StateHasChanged);
-    }
+    await InvokeAsync(StateHasChanged);
+  }
 
-    private async Task OpenDialog()
-    {
-      var parameters = new DialogParameters
+  private async Task OpenDialog()
+  {
+    var parameters = new DialogParameters
     {
       { nameof(StartDialog.SetValues), GameSettingsState.Value.LastSettings.ToDictionary(x => x.Key, x => x.Value) },
       { nameof(StartDialog.GameModeName), GameSettingsState.Value.LastGameMode.Name }
     };
 
-      var d = Dialog.Show<StartDialog>("Start Game", parameters);
+    var d = Dialog.Show<StartDialog>("Start Game", parameters);
 
-      var r = await d.Result;
+    var r = await d.Result;
 
-      if (r.Cancelled)
-        return;
+    if (r.Cancelled)
+      return;
 
-      if (r.Data is StartDialog.StartDialogResult startDialogResult)
+    if (r.Data is StartDialog.StartDialogResult startDialogResult)
+    {
+      if (startDialogResult.Settings.Values.Contains("idkfa", StringComparer.OrdinalIgnoreCase))
+      {
+        Dispatcher.Dispatch(new EnableCheatingAction());
+      }
+      else
       {
         var sga = new StartGameAction(WordList.LazyInstance, startDialogResult.Mode, startDialogResult.Settings);
         Dispatcher.Dispatch(sga);
       }
     }
+  }
 
-    public int? SecondsLeft
+  public int? SecondsLeft
+  {
+    get
     {
-      get
+      if (TimeState.Value.TimeSituation is TimeSituation.FinishAt finishAt)
       {
-        if (TimeState.Value.TimeSituation is TimeSituation.FinishAt finishAt)
-        {
-          var r = Convert.ToInt32(finishAt.DateTime.Subtract(DateTime.Now).TotalSeconds);
-          return Math.Max(0, r);
-        }
-        return null;
+        var r = Convert.ToInt32(finishAt.DateTime.Subtract(DateTime.Now).TotalSeconds);
+        return Math.Max(0, r);
       }
+      return null;
     }
-
-    public void ToggleCheating()
-    {
-      Dispatcher.Dispatch(new EnableCheatingAction());
-    }
+  }
 
 }

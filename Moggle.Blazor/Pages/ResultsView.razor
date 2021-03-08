@@ -72,14 +72,14 @@ else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchD
 
   <MudList>
 
-    @if (CheatState.Value.Revealed)
+    @*@if (CheatState.Value.Revealed)
     {
       @foreach (var w in CheatState.Value.PossibleWords)
       {
         <MudChip OnClick="() => SelectFoundWord(w)" Label="true">@w.Display</MudChip>
       }
     }
-    else
+    else*@
     {
       @foreach (var w in openSearchData.FoundWordsDictionary)
       {

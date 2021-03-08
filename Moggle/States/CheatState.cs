@@ -1,11 +1,7 @@
-﻿using System.Collections.Immutable;
-
-namespace Moggle.States
+﻿namespace Moggle.States
 {
 
 public record CheatState(
-    bool AllowCheating,
-    bool Revealed,
-    ImmutableList<FoundWord> PossibleWords) { }
+    bool AllowCheating, bool Revealed) { }
 
 }
