@@ -2,21 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Moggle.Actions;
 using MoreLinq;
 
 namespace Moggle.States
 {
 
-public record SetPositionsAction
-    (ImmutableList<Coordinate> NewCoordinates) : IAction<ChosenPositionsState>
-{
-    /// <inheritdoc />
-    public ChosenPositionsState Reduce(ChosenPositionsState state)
-    {
-        return new(NewCoordinates);
-    }
-}
+
 
 public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
 {

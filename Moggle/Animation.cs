@@ -11,24 +11,50 @@ public abstract record Step
 {
     public record Rotate(int Amount) : Step;
     public record Move(Coordinate Coordinate) : Step;
-    public record SetCoordinatesAction(ImmutableList<Coordinate> Path) : Step;
+    public record SetFoundWord(FoundWord Word) : Step;
+    public record ClearCoordinatesAction : Step;
 }
 
 public record StepWithResult(Step Step, MoveResult? MoveResult, int NewIndex) { }
 
 public record Animation(ImmutableList<Step> Steps)
 {
-    public StepWithResult GetStepWithResult(ChosenPositionsState cps, MoggleBoard mb, Solver solver, FoundWordsState fws, int index)
+    public StepWithResult GetStepWithResult(
+        ChosenPositionsState cps,
+        MoggleBoard mb,
+        Solver solver,
+        FoundWordsState fws,
+        int index)
     {
         var c = Steps[index % Steps.Count];
 
         switch (c)
         {
+            case Step.ClearCoordinatesAction clearCoordinatesAction:
+            {
+                return new StepWithResult(
+                    clearCoordinatesAction,
+                    new MoveResult.WordAbandoned(),
+                    index + 1
+                );
+            }
             case Step.Move move:
             {
                 var mr = MoveResult.GetMoveResult(move.Coordinate, cps, mb, solver, fws);
                 return new StepWithResult(c, mr, index + 1);
             }
+            case Step.SetFoundWord findWord:
+            {
+                return new StepWithResult(
+                    findWord,
+                    new MoveResult.WordComplete(
+                        findWord.Word,
+                        findWord.Word.Path
+                    ),
+                    index + 1
+                );
+            }
+
             case Step.Rotate: return new StepWithResult(c, null, index + 1);
             default:          throw new ArgumentOutOfRangeException(nameof(index));
         }
@@ -40,27 +66,30 @@ public record Animation(ImmutableList<Step> Steps)
 
         foreach (var word in allWords)
         {
-            var cs = board.TryFindWord(word);
-
-            if (cs is not null && cs.Any())
+            var path = board.TryFindWord(word);
+            if (path is not null && path.Any())
             {
-                steps.AddRange(cs.Select(x => new Step.Move(x)));
-                steps.Add(new Step.Rotate(1));
-                steps.Add(new Step.Move(cs.Last()));
+                var fw = FoundWord.Create(word, path);
+                steps.Add(new Step.SetFoundWord(fw));
+
+                //steps.AddRange(cs.Select(x => new Step.Move(x)));
+                //steps.Add(new Step.Rotate(1));
+                //steps.Add(new Step.Move(cs.Last()));
             }
         }
 
         return steps.Any() ? new Animation(steps.ToImmutableList()) : null;
     }
 
-    public static Animation? CreateForAllSolutions(MoggleBoard board, Solver solver, bool reverseAnimationOrder)
+    public static Animation? CreateForAllSolutions(
+        MoggleBoard board,
+        Solver solver,
+        bool reverseAnimationOrder)
     {
-
         var paths =
             RemoveRedundant(
                 solver.GetPossibleSolutions(board),
-                solver,
-                board
+                solver
             );
 
         var sortedPaths =
@@ -83,7 +112,7 @@ public record Animation(ImmutableList<Step> Steps)
             if (!stepsInCommon.Any())
             {
                 if (previous.Any())
-                    steps.Add(new Step.SetCoordinatesAction(ImmutableList<Coordinate>.Empty)); //abandon
+                    steps.Add(new Step.ClearCoordinatesAction()); //abandon
 
                 steps.AddRange(path.Select(x => new Step.Move(x)));
             }
@@ -93,7 +122,7 @@ public record Animation(ImmutableList<Step> Steps)
             }
             else //backtrack then continue
             {
-                steps.Add(new Step.SetCoordinatesAction(ImmutableList<Coordinate>.Empty));
+                steps.Add(new Step.ClearCoordinatesAction());
                 steps.AddRange(path.Skip(stepsInCommon.Count).Select(x => new Step.Move(x)));
             }
 
@@ -110,8 +139,7 @@ public record Animation(ImmutableList<Step> Steps)
 
         static IEnumerable<ImmutableList<Coordinate>> RemoveRedundant(
             IEnumerable<FoundWord> initial,
-            Solver solver,
-            MoggleBoard board)
+            Solver solver)
         {
             var everything = initial.Select(
                     foundWord =>

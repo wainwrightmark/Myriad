@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using Moggle.MathParser;
 
 namespace Moggle
 {
@@ -37,6 +38,19 @@ public abstract record FoundWord(string Text, ImmutableList<Coordinate> Path) : 
     }
 
     protected virtual int CompareTo(FoundWord fw) => string.Compare(Comparison, fw.Comparison, StringComparison.OrdinalIgnoreCase);
+
+    public static FoundWord Create(string s, ImmutableList<Coordinate> path)
+    {
+        var ew = ExpressionWord.TryCreate(s, path);
+
+        if (ew is not null)
+            return ew;
+
+        if (Parser.IsValidEquation(s))
+            return new EquationWord(s, path);
+
+        return new StringWord(s, path);
+    }
 }
 
 

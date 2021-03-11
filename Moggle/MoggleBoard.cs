@@ -82,11 +82,7 @@ public record MoggleBoard
         return sb.ToString().Trim();
     }
 
-
-
-
-
-        /// <inheritdoc />
+    /// <inheritdoc />
     public override string ToString()
     {
         return ToMultiLineString()

@@ -35,9 +35,9 @@ public record SecretGameMode : IMoggleGameMode
         Lazy<WordList> wordList)
     {
         var wordsText     = Words.Get(settings);
-        var minWordLength = MinWordLength.Get(settings);
+        //var minWordLength = MinWordLength.Get(settings);
         var allWords      = Creator.GridCreator.GetAllWords(wordsText).ToList();
-        var solveSettings = new SolveSettings(minWordLength, false, null);
+        var solveSettings = new SolveSettings(allWords.Select(x=>x.Length).Append(3).Min(), false, null);
         var solver        = new Solver(wordList.Value.AddWords(allWords), solveSettings);
         return solver;
     }
@@ -75,7 +75,7 @@ public record SecretGameMode : IMoggleGameMode
             "Words to appear in the grid"
         ) { GetRandomValue = GoodSeedHelper.GetGoodSeed };
 
-    public static readonly Setting.Integer MinWordLength = new(nameof(MinWordLength), 2, 8, 3);
+    //public static readonly Setting.Integer MinWordLength = new(nameof(MinWordLength), 2, 8, 3);
 
     public static readonly Setting.Bool Animate = new(nameof(Animate), false);
 
@@ -84,7 +84,7 @@ public record SecretGameMode : IMoggleGameMode
     {
         get
         {
-            yield return MinWordLength;
+            //yield return MinWordLength;
             yield return Words;
             yield return TimeSituation.Duration;
             yield return Animate;

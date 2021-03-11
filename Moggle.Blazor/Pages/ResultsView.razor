@@ -7,63 +7,61 @@
 
 @if (FoundWordsState.Value.Data is FoundWordsData.TargetWordsData data)
 {
-
   var groups = data.WordsToFind.GroupBy(x => x.Value.group).OrderBy(x => x.Key.Order).ToList();
 
   if (groups.Count == 1)
   {
     var group = groups.Single();
     @foreach (var w in group.OrderBy(x => x.Key))
-        {
-          var key = $"CheckBox{@w.Key}";
+    {
+      var key = $"CheckBox{@w.Key}";
 
-          var text = (group.Key.HideText && w.Value.word is null ?
-            new string('?', w.Key.Length) : w.Key).PadLeft(3);
+      var text = (group.Key.HideText && w.Value.word is null ?
+        new string('?', w.Key.Length) : w.Key).PadLeft(3);
 
-          var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
+      var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
 
-          <MudChip @key="@key"
-                    Disabled="@(w.Value.word is null)"
-                    OnClick="() => SelectFoundWord(w.Value.word)"
-                    Label="true"
-                    Icon="@icon">
-            @text
-          </MudChip>
-        }
+      <MudChip @key="@key"
+                Disabled="@(w.Value.word is null)"
+                OnClick="() => SelectFoundWord(w.Value.word)"
+                Label="true"
+                Icon="@icon">
+        @text
+      </MudChip>
+    }
   }
   else
   {
     <MudTabs>
-    @foreach (var group in groups)
-    {
-      var groupKey = @group.Key;
-      var remainingInGroup = group.Count(x => x.Value.word is null);
+      @foreach (var group in groups)
+      {
+        var groupKey = @group.Key;
+        var remainingInGroup = group.Count(x => x.Value.word is null);
 
-      <MudTabPanel @key="@groupKey.Display" Text="@groupKey.Display" BadgeData="@remainingInGroup">
+        <MudTabPanel @key="@groupKey.Display" Text="@groupKey.Display" BadgeData="@remainingInGroup">
 
-        @foreach (var w in group.OrderBy(x => x.Key))
-        {
-          var key = $"CheckBox{@w.Key}";
+          @foreach (var w in group.OrderBy(x => x.Key))
+          {
+            var key = $"CheckBox{@w.Key}";
 
-          var text = (group.Key.HideText && w.Value.word is null ?
-            new string('?', w.Key.Length) : w.Key).PadLeft(3);
+            var text = (group.Key.HideText && w.Value.word is null ?
+              new string('?', w.Key.Length) : w.Key).PadLeft(3);
 
-          var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
+            var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
 
-          <MudChip @key="@key"
-                    Disabled="@(w.Value.word is null)"
-                    OnClick="() => SelectFoundWord(w.Value.word)"
-                    Label="true"
-                    Icon="@icon">
-            @text
-          </MudChip>
-        }
+            <MudChip @key="@key"
+                      Disabled="@(w.Value.word is null)"
+                      OnClick="() => SelectFoundWord(w.Value.word)"
+                      Label="true"
+                      Icon="@icon">
+              @text
+            </MudChip>
+          }
 
-      </MudTabPanel>
-    }
-  </MudTabs>
+        </MudTabPanel>
+      }
+    </MudTabs>
   }
-
 }
 else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchData)
 {
@@ -72,43 +70,36 @@ else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchD
 
   <MudList>
 
-    @*@if (CheatState.Value.Revealed)
-    {
-      @foreach (var w in CheatState.Value.PossibleWords)
-      {
-        <MudChip OnClick="() => SelectFoundWord(w)" Label="true">@w.Display</MudChip>
-      }
-    }
-    else*@
-    {
-      @foreach (var w in openSearchData.FoundWordsDictionary)
-      {
-        var icon = w.Value ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
 
-        @code
+    @foreach (var w in openSearchData.FoundWordsDictionary)
+    {
+      var icon = w.Value ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
+
+      @code
+      {
+        void Flip(KeyValuePair<FoundWord, bool> w)
         {
-          void Flip(KeyValuePair<FoundWord, bool> w)
-          {
-            Dispatcher.Dispatch(new EnableDisableWordAction(w.Key, !w.Value));
-          }
+          Dispatcher.Dispatch(new EnableDisableWordAction(w.Key, !w.Value));
+        }
 
-          void ChipClicked(MouseEventArgs args, KeyValuePair<FoundWord, bool> w)
-          {
-            if (args.Detail > 1)
-              Flip(w);
+        void ChipClicked(MouseEventArgs args, KeyValuePair<FoundWord, bool> w)
+        {
+          if (args.Detail > 1)
+            Flip(w);
 
-              SelectFoundWord(w.Key);
-
-          }
-        }<MudChip
-
-           @onclick="(args) => ChipClicked(args, w)"
-            Label="true"
-            Icon="@icon">
-           @w.Key.Display
-         </MudChip>
+          SelectFoundWord(w.Key);
+        }
       }
+
+      <MudChip
+
+        @onclick="(args) => ChipClicked(args, w)"
+         Label="true"
+         Icon="@icon">
+        @w.Key.Display
+      </MudChip>
     }
+
   </MudList>
 }
 
