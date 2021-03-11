@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using MoreLinq;
 
 namespace Moggle.Creator
 {
@@ -34,7 +33,7 @@ public static class GridCreator
 
         return words;
 
-        string LettersOnly(string s) => new(s.Where(char.IsLetter).ToArray());
+        static string LettersOnly(string s) => new(s.Where(char.IsLetter).ToArray());
     }
 
         private static NodeGrid CreateEmptyGrid(Coordinate maxCoordinate) => new (
@@ -46,6 +45,7 @@ public static class GridCreator
 
         private static NodeGrid? TryCreate(
                     ImmutableList<string> words,
+                    int maxTries,
                     Coordinate maxCoordinate,
                     ImmutableDictionary<Rune, BaseRuneMultiplicity> dictionary,
                     ILogger? logger,
@@ -65,7 +65,7 @@ public static class GridCreator
                 creator.Create(
                     new SolveState(CreateEmptyGrid(maxCoordinate), nodes.ToImmutableList()),
                     logger,
-                    10,
+                    maxTries,
                     cancellation
 
                 );
@@ -85,103 +85,117 @@ public static class GridCreator
                                 )
                             );
 
-                            var totalMultiplicity = dictionary.Sum(x => x.Value.Multiplicity);
-
-                            //logger.LogInformation($"Could not find grid for {words.Count} words with {totalMultiplicity} cells. Increasing {couldNotPlaceFailure.Rune} multiplicity to {newAmount}");
-
                             break;
                         }
                     case NodeGridCreateResult.OtherFailure _:
                     {
-                        //logger?.LogTrace($"Could not find any grid for {words.ToDelimitedString(", ")}");
-
                         return null;
                     }
-                    case NodeGridCreateResult.Success success: return success.NodeGrid;
+                    case NodeGridCreateResult.Success success:
+                    {
+                        return success.NodeGrid;
+                    }
                     default: throw new ArgumentOutOfRangeException(nameof(result));
                 }
             }
-
-            //logger?.LogInformation($"Could not find any grid for {words.ToDelimitedString(", ")}");
 
             return null;
         }
 
         public static (NodeGrid grid, ImmutableList<string> words)? CreateGridForMostWords(
-        ImmutableList<string> mustWords,
-        ImmutableList<string> possibleWords,
+        ImmutableList<string> words,
+        int maxTries,
         ILogger? logger,
         Stopwatch stopwatch,
         Coordinate maxCoordinate,
         CancellationToken cancellation)
-    {
-
-        var stack =
-            new Stack<(string pw, Dictionary<Rune, BaseRuneMultiplicity> multiplicities, int sum)>(
-                possibleWords.Select(
-                        pw =>
-                        {
-                            var multiplicities =
-                                CreateMultiplicities(mustWords.Append(pw))
-                                    .ToDictionary(x => x.Rune);
-
-                            var sum = multiplicities.Sum(x => x.Value.Multiplicity);
-
-                            return (pw, multiplicities, sum);
-                        }
-                    )
-                    .OrderByDescending(x => x.sum)
-            );
-
-        (NodeGrid grid, ImmutableList<string> words)? bestSoFar = null;
-
-        void SetBest(NodeGrid grid, ImmutableList<string> words)
         {
-            if (bestSoFar is null ||
-                bestSoFar.Value.words.Count < words.Count ||
-                (bestSoFar.Value.words.Count == words.Count
-              && bestSoFar.Value.words.Sum(x => x.Length) < words.Sum(x => x.Length)))
-            {
-                logger?.LogInformation(
-                    $"{stopwatch.Elapsed}: Found grid for {words.Count} of {mustWords.Count + possibleWords.Count} words, {words.Sum(x => x.Length)} letters: {words.ToDelimitedString(", ")}, grid: {grid}"
-                );
+            var maxSize = (maxCoordinate.Column + 1) * (maxCoordinate.Row + 1);
+            var possibleCombinations = new List<ImmutableList<string>>();
 
-                bestSoFar = (grid, words);
+
+            void GetCombinations(ImmutableList<string> mustWords, ImmutableDictionary<char, int> multiplicitiesSoFar, ImmutableList<string> possibleWords)
+            {
+                var currentRemainingWords = possibleWords;
+
+                while (currentRemainingWords.Any())
+                {
+                    var word = currentRemainingWords[0];
+                    currentRemainingWords = currentRemainingWords.RemoveAt(0);
+
+                    var theseWords             = mustWords.Add(word);
+                    var thisWordMultiplicities = multiplicitiesSoFar;
+
+                    foreach (var group in word.GroupBy(x=>x))
+                    {
+                        var c = group.Count();
+                        var current = thisWordMultiplicities.TryGetValue(group.Key, out var v) ? v : 0;
+                        if(c > current)
+                            thisWordMultiplicities = thisWordMultiplicities.SetItem(group.Key, c);
+                    }
+
+                    var sum = thisWordMultiplicities.Sum(x => x.Value);
+
+                    if (sum <= maxSize)
+                    {
+                        possibleCombinations.Add(theseWords);
+                        GetCombinations(theseWords,thisWordMultiplicities, currentRemainingWords);
+                    }
+
+                    if (mustWords.Count == 0)
+                    {
+                        logger?.LogInformation($"{stopwatch.Elapsed}: {word} eliminated. {possibleCombinations.Count} options found. {currentRemainingWords.Count} remain.");
+                    }
+                }
             }
-        }
 
-        while (!cancellation.IsCancellationRequested
-            && stack.Count + mustWords.Count > (bestSoFar?.words.Count ?? 0)
-            && stack.TryPop(out var w))
-        {
-            var words = mustWords.Add(w.pw);
+            GetCombinations(ImmutableList<string>.Empty, ImmutableDictionary<char, int>.Empty, words.OrderByDescending(x=>x.Length).ToImmutableList());
 
-            var multiplicities = CreateMultiplicities(words).ToImmutableDictionary(x=>x.Rune);
+            var groups = possibleCombinations.GroupBy(x => x.Count).OrderBy(x=>x.Key);
 
-            var nodeGrid = TryCreate(words, maxCoordinate, multiplicities, logger, cancellation);
 
-            if (nodeGrid is not null)
+            if (logger is not null)
             {
-                SetBest(nodeGrid, words);
-                var remainingPossibles = stack.Select(x => x.pw).ToImmutableList();
+                logger.LogInformation($"{stopwatch.Elapsed}: {possibleCombinations.Count} possible combinations found");
 
-                //We need to go deeper
-                var newBest = CreateGridForMostWords(
-                    words,
-                    remainingPossibles,
-                    logger,
-                    stopwatch,
+                foreach (var group in groups)
+                    logger.LogInformation(
+                        $"{stopwatch.Elapsed}: {group.Count()} possible combinations of size {@group.Key} found"
+                    );
+            }
+
+
+            var orderedCombinations = possibleCombinations.OrderByDescending(x => x.Count)
+                .ThenByDescending(x => x.Sum(y => y.Length)).ToList();
+
+            int? lastComboWords = null;
+
+            foreach (var wordList in orderedCombinations)
+            {
+                if(wordList.Count != lastComboWords)
+                {
+                    logger.LogInformation($"{stopwatch.Elapsed}: Checking {wordList.Count}");
+                    lastComboWords = wordList.Count;
+                }
+                var multiplicities =
+                CreateMultiplicities(wordList)
+                                       .ToImmutableDictionary(x => x.Rune);
+
+                var grid = TryCreate(
+                    wordList,
+                    maxTries,
                     maxCoordinate,
+                    multiplicities,
+                    logger,
                     cancellation
                 );
 
-                if (newBest is not null)
-                    SetBest(newBest.Value.grid, newBest.Value.words);
+                if (grid is not null)
+                    return (grid, wordList);
             }
-        }
 
-        return bestSoFar;
-    }
+            return null;
+        }
 
 
     public static NodeGrid CreateNodeGrid(

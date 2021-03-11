@@ -39,7 +39,7 @@ public abstract class Node : IEquatable<Node>, IComparable<Node>, IComparable
     /// <inheritdoc />
     public bool Equals(Node? other)
     {
-        if (ReferenceEquals(null, other))
+        if (other is null)
             return false;
 
         if (ReferenceEquals(this, other))

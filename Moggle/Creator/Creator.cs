@@ -49,12 +49,12 @@ public class Creator
                 {
                     stickingPointRunes.AddOrUpdate(cc.StickingPoint, 1, (_, c) => c + 1);
 
-
                     remainingTries--;
 
                     if (remainingTries <= 0)
-                        return new NodeGridCreateResult.CouldNotPlaceFailure(stickingPointRunes.OrderByDescending(x => x.Value).First().Key);
-
+                        return new NodeGridCreateResult.CouldNotPlaceFailure(
+                            stickingPointRunes.OrderByDescending(x => x.Value).First().Key
+                        );
 
                     break;
                 }
@@ -69,7 +69,12 @@ public class Creator
                     break;
                 }
                 case CreateResult.SolvedGrid solvedGrid:
+                {
+                    logger?.LogInformation($"{solvedGrid.Grid.Dictionary.Count} node grid found after {maxTries - remainingTries} tries of {maxTries}" );
+
                     return new NodeGridCreateResult.Success(solvedGrid.Grid);
+                }
+
                 default: throw new ArgumentOutOfRangeException(nameof(r));
             }
         }

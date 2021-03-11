@@ -76,7 +76,7 @@ public record ChallengeGameMode : IMoggleGameMode
 
     private (string group, string grid, IReadOnlyCollection<string> words) GetGame(
         ImmutableDictionary<string, string> settings) =>
-        
+
         GoodSeedHelper.GetChallengeGame(Concept.Get(settings));
 
     /// <inheritdoc />

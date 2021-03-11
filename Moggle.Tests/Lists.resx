@@ -136,6 +136,9 @@
   <data name="Numbers" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\Numbers.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="Pokemon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Pokemon.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
   <data name="Sports" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\Sports.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>

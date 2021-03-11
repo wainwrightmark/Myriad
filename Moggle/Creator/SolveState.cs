@@ -75,14 +75,9 @@ public record SolveState(NodeGrid Grid, ImmutableList<Node> RemainingNodes)
 
         List<SolveState> nextStates = new();
 
-        IOrderedEnumerable<Coordinate> orderedLocations;
-
-        if (nextNode.node.RootNodeGroup.RootNodes.Count == 1)
-            orderedLocations =
-                nextNode.locations.OrderByDescending(x => x.DistanceFromCentre(Grid.MaxCoordinate));
-        else
-            orderedLocations =
-                nextNode.locations.OrderBy(x => x.DistanceFromCentre(Grid.MaxCoordinate));
+        IOrderedEnumerable<Coordinate> orderedLocations = nextNode.node.RootNodeGroup.RootNodes.Count == 1 ?
+            nextNode.locations.OrderByDescending(x => x.DistanceFromCentre(Grid.MaxCoordinate)) :
+            nextNode.locations.OrderBy(x => x.DistanceFromCentre(Grid.MaxCoordinate));
 
         foreach (var coordinate in orderedLocations)
         {

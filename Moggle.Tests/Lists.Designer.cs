@@ -108,13 +108,11 @@ namespace Moggle.Tests {
         ///Tiger
         ///Turkey
         ///Turtle
-        ///Unicorn
         ///Whale
         ///Worm
         ///Zebra
         ///Pigeon
         ///Dinosaur
-        ///Dragon
         ///Kangaroo
         ///Clownfish
         ///Rhinoceros
@@ -350,6 +348,68 @@ namespace Moggle.Tests {
         internal static string Numbers {
             get {
                 return ResourceManager.GetString("Numbers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bulbasaur
+        ///Ivysaur
+        ///Venusaur
+        ///Charmander
+        ///Charmeleon
+        ///Charizard
+        ///Squirtle
+        ///Wartortle
+        ///Blastoise
+        ///Caterpie
+        ///Metapod
+        ///Butterfree
+        ///Weedle
+        ///Kakuna
+        ///Beedrill
+        ///Pidgey
+        ///Pidgeotto
+        ///Pidgeot
+        ///Rattata
+        ///Raticate
+        ///Spearow
+        ///Fearow
+        ///Ekans
+        ///Arbok
+        ///Pikachu
+        ///Raichu
+        ///Sandshrew
+        ///Sandslash
+        ///Nidoran
+        ///Nidorina
+        ///Nidoqueen
+        ///Nidoran
+        ///Nidorino
+        ///Nidoking
+        ///Clefairy
+        ///Clefable
+        ///Vulpix
+        ///Ninetales
+        ///Jigglypuff
+        ///Wigglytuff
+        ///Zubat
+        ///Golbat
+        ///Oddish
+        ///Gloom
+        ///Vileplume
+        ///Paras
+        ///Parasect
+        ///Venonat
+        ///Venomoth
+        ///Diglett
+        ///Dugtrio
+        ///Meowth
+        ///Persian
+        ///Psyduck [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Pokemon {
+            get {
+                return ResourceManager.GetString("Pokemon", resourceCulture);
             }
         }
         

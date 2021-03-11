@@ -13,21 +13,19 @@
   <MudText Typo="Typo.h5">@SecondsLeft</MudText>
   <MudAppBarSpacer/>
 }
-<MudAppBarSpacer/>
-
-<MudIconButton
-  Icon="@Icons.Material.Filled.Delete"
-  Color="Color.Inherit" OnClick="() => Dispatcher.Dispatch(new ResetFoundWordsAction(Board.Value))"/>
-
-<MudAppBarSpacer/>
 
 <MudIconButton
   Icon="@Icons.Material.Filled.FiberNew"
   Color="Color.Inherit" OnClick="OpenDialog"/>
+
+<MudIconButton
+  Icon="@Icons.Material.Filled.Delete"
+  Color="Color.Inherit"
+  Edge="Edge.End"
+  OnClick="() => Dispatcher.Dispatch(new ResetFoundWordsAction(Board.Value))"/>
+
 <MudAppBarSpacer/>
 
-
-<MudAppBarSpacer/>
 
 <MudIconButton
   Icon="@Icons.Custom.Brands.GitHub"

@@ -23,20 +23,22 @@ public class CreatorTests
 
     public CreatorTests(ITestOutputHelper testOutputHelper) => TestOutputHelper = testOutputHelper;
 
-    public static TheoryData<string, string, int, int, int> GetWordLists()
+    public static TheoryData<string,int, string, int, int> GetWordLists()
     {
-        const int delay  = 1000_000;
-        const int width  = 5;
-        const int height = 5;
+        //const int delay    = 2000_000;
+        const int width    = 5;
+        const int height   = 5;
+        const int maxTries = 1000;
 
         var resourceSet =
             Lists.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, true, true);
 
-        var td = new TheoryData<string, string, int, int, int>();
+        var td = new TheoryData<string,int, string, int, int>();
 
-        foreach (DictionaryEntry entry in resourceSet)
+        foreach (DictionaryEntry entry in resourceSet!)
         {
-            td.Add(entry.Key?.ToString()!, entry.Value?.ToString(), delay, width, height);
+            td.Add(entry.Key.ToString()!, maxTries, entry.Value?.ToString()!, width, height);
+            td.Add(entry.Key.ToString()!, maxTries, entry.Value?.ToString()!, width -1, height - 1);
         }
 
         return td;
@@ -47,8 +49,8 @@ public class CreatorTests
     //[InlineData("Colors","red\r\ngreen\r\nblue", 10000, 3,3)]
     public void TestMostWords(
         string group,
+        int maxTries,
         string wordsString,
-        int delay,
         int width,
         int height)
     {
@@ -71,14 +73,14 @@ public class CreatorTests
 
             return words;
 
-            string LettersOnly(string s) => new(s.Where(char.IsLetter).ToArray());
+            static string LettersOnly(string s) => new(s.Where(char.IsLetter).ToArray());
         }
 
-        var ct = new CancellationTokenSource(delay);
+        var ct = new CancellationTokenSource();
 
         var grid = GridCreator.CreateGridForMostWords(
-            ImmutableList<string>.Empty,
             words,
+            maxTries,
             logger,
             sw,
             maxCoordinate,
