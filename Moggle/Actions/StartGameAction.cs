@@ -42,7 +42,7 @@ public record StartGameAction(
     {
         var animation = GameMode.GetAnimation(Settings, WordList);
 
-        var newState = new AnimationState(animation, 0);
+        var newState = new AnimationState(animation, animation == null? null : DateTime.Now, state.FrameMs, 0);
         return newState;
     }
 

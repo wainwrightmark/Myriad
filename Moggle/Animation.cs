@@ -10,9 +10,9 @@ namespace Moggle
 public abstract record Step
 {
     public record Rotate(int Amount) : Step;
-    public record Move(Coordinate Coordinate) : Step;
+    //public record Move(Coordinate Coordinate) : Step;[]
     public record SetFoundWord(FoundWord Word) : Step;
-    public record ClearCoordinatesAction : Step;
+    public record ClearPositionsAction : Step;
 }
 
 public record StepWithResult(Step Step, MoveResult? MoveResult, int NewIndex) { }
@@ -30,19 +30,19 @@ public record Animation(ImmutableList<Step> Steps)
 
         switch (c)
         {
-            case Step.ClearCoordinatesAction clearCoordinatesAction:
+            case Step.ClearPositionsAction clearCoordinatesAction:
             {
                 return new StepWithResult(
                     clearCoordinatesAction,
                     new MoveResult.WordAbandoned(),
-                    index + 1
+                    index
                 );
             }
-            case Step.Move move:
-            {
-                var mr = MoveResult.GetMoveResult(move.Coordinate, cps, mb, solver, fws);
-                return new StepWithResult(c, mr, index + 1);
-            }
+            //case Step.Move move:
+            //{
+            //    var mr = MoveResult.GetMoveResult(move.Coordinate, cps, mb, solver, fws);
+            //    return new StepWithResult(c, mr, index);
+            //}
             case Step.SetFoundWord findWord:
             {
                 return new StepWithResult(
@@ -51,11 +51,11 @@ public record Animation(ImmutableList<Step> Steps)
                         findWord.Word,
                         findWord.Word.Path
                     ),
-                    index + 1
+                    index
                 );
             }
 
-            case Step.Rotate: return new StepWithResult(c, null, index + 1);
+            case Step.Rotate: return new StepWithResult(c, null, index);
             default:          throw new ArgumentOutOfRangeException(nameof(index));
         }
     }
@@ -81,6 +81,19 @@ public record Animation(ImmutableList<Step> Steps)
         return steps.Any() ? new Animation(steps.ToImmutableList()) : null;
     }
 
+    public static Animation? Create(IEnumerable<FoundWord> allWords)
+    {
+        var steps = new List<Step>();
+
+        foreach (var word in allWords)
+        {
+            steps.Add(new Step.SetFoundWord(word));
+        }
+
+        return steps.Any() ? new Animation(steps.ToImmutableList()) : null;
+    }
+
+    /*
     public static Animation? CreateForAllSolutions(
         MoggleBoard board,
         Solver solver,
@@ -204,6 +217,7 @@ public record Animation(ImmutableList<Step> Steps)
             }
         }
     }
+    */
 }
 
 }

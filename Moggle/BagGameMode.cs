@@ -43,8 +43,6 @@ public abstract record WhitelistGameMode : IMoggleGameMode
         return board;
     }
 
-    public abstract MoggleBoard GenerateRandomBoard(Random random);
-
     public abstract MoggleBoard GenerateCuratedRandomBoard(Random random);
 
     public abstract ImmutableArray<Letter> GetLetters(Random random);
@@ -62,11 +60,21 @@ public abstract record WhitelistGameMode : IMoggleGameMode
     {
         if (AnimateSetting.Get(settings))
         {
-            return Animation.CreateForAllSolutions(
-                CreateBoard(settings, wordList),
-                CreateSolver(settings, wordList),
-                ReverseAnimationOrder
-            );
+            var board  = CreateBoard(settings, wordList);
+            var solver = CreateSolver(settings, wordList);
+
+            var words = solver.GetPossibleSolutions(board);
+
+            if (ReverseAnimationOrder)
+                words = words.Reverse();
+
+            return Animation.Create(words);
+
+            //return Animation.CreateForAllSolutions(
+            //    CreateBoard(settings, wordList),
+            //    CreateSolver(settings, wordList),
+            //    ReverseAnimationOrder
+            //);
         }
 
         return null;
@@ -187,11 +195,21 @@ public abstract record BagGameMode : IMoggleGameMode
     {
         if (AnimateSetting.Get(settings))
         {
-            return Animation.CreateForAllSolutions(
-                CreateBoard(settings, wordList),
-                CreateSolver(settings, wordList),
-                ReverseAnimationOrder
-            );
+
+                var board = CreateBoard(settings, wordList);
+                var solver = CreateSolver(settings, wordList);
+
+                var words = solver.GetPossibleSolutions(board);
+
+                words = words.Reverse();
+
+                return Animation.Create(words);
+
+            //    return Animation.CreateForAllSolutions(
+            //    CreateBoard(settings, wordList),
+            //    CreateSolver(settings, wordList),
+            //    ReverseAnimationOrder
+            //);
         }
 
         return null;

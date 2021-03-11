@@ -75,9 +75,25 @@
   private async void DateTimeCallback(object state)
   {
     if (AnimationState.Value.Animation != null)
-      Dispatcher.Dispatch(new AnimateAction(
-                            Board.Value.UniqueKey,
-                            AnimationState.Value.Animation.GetStepWithResult(ChosenPositions.Value, Board.Value, Solver.Value, FoundWords.Value, AnimationState.Value.AnimationFrame)));
+    {
+      int frames;
+
+      if (AnimationState.Value.LastFrame is null)
+        frames = 1;
+      else
+      {
+        var totalMs = (DateTime.Now - AnimationState.Value.LastFrame).Value.TotalMilliseconds;
+
+        frames = Convert.ToInt32(totalMs / AnimationState.Value.FrameMs);
+      }
+
+      if (frames > 0)
+      {
+        Dispatcher.Dispatch(new AnimateAction(
+                              Board.Value.UniqueKey,
+                              AnimationState.Value.Animation.GetStepWithResult(ChosenPositions.Value, Board.Value, Solver.Value, FoundWords.Value, AnimationState.Value.AnimationFrame + frames)));
+      }
+    }
 
     await InvokeAsync(StateHasChanged);
   }

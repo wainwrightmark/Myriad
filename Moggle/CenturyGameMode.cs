@@ -14,19 +14,22 @@ public record CenturyGameMode : NumberGameMode
     /// <inheritdoc />
     public override string Name => "Century";
 
-    public override MoggleBoard GenerateRandomBoard(Random random)
-    {
-        var possibleLetters = "1234567890+-*/^";
+    //public override MoggleBoard GenerateRandomBoard(Random random)
+    //{
+    //    var possibleLetters = "1234567890+-*/^";
 
-        var a = MoreLinq.MoreEnumerable
-            .Random(random, 0, possibleLetters.Length)
-            .Select(x => possibleLetters[x])
-            .Select(Letter.Create)
-            .Take(9)
-            .ToImmutableArray();
+    //    var a = MoreLinq.MoreEnumerable
+    //        .Random(random, 0, possibleLetters.Length)
+    //        .Select(x => possibleLetters[x])
+    //        .Select(Letter.Create)
+    //        .Take(9)
+    //        .ToImmutableArray();
 
-        return new MoggleBoard(a, 3);
-    }
+    //    return new MoggleBoard(a, 3);
+    //}
+
+    /// <inheritdoc />
+    public override bool ReverseAnimationOrder => true;
 
     /// <inheritdoc />
     public override MoggleBoard GenerateCuratedRandomBoard(Random random)

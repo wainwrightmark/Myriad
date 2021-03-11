@@ -136,10 +136,10 @@ else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchD
   public void SelectFoundWord(FoundWord? foundWord)
   {
     if (foundWord is not null && !ChosenPositions.Value.ChosenPositions.SequenceEqual(foundWord.Path))
-      Dispatcher.Dispatch(new SetPositionsAction(foundWord.Path));
+      Dispatcher.Dispatch(new SetPositionsAction(foundWord.Path, null));
     else
     {
-      Dispatcher.Dispatch(new SetPositionsAction(ImmutableList<Coordinate>.Empty));
+      Dispatcher.Dispatch(new Step.ClearPositionsAction());
     }
   }
 

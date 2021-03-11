@@ -14,18 +14,21 @@ public record RomanGameMode : NumberGameMode
     /// <inheritdoc />
     public override string Name => "Roman";
 
-    public override MoggleBoard GenerateRandomBoard(Random random)
-    {
-        var possibleLetters = "IVXLCDM+-*/^";
+    //public override MoggleBoard GenerateRandomBoard(Random random)
+    //{
+    //    var possibleLetters = "IVXLCDM+-*/^";
 
-        var a = MoreEnumerable.Random(random, 0, possibleLetters.Length)
-            .Select(x => possibleLetters[x])
-            .Select(Letter.Create)
-            .Take(9)
-            .ToImmutableArray();
+    //    var a = MoreEnumerable.Random(random, 0, possibleLetters.Length)
+    //        .Select(x => possibleLetters[x])
+    //        .Select(Letter.Create)
+    //        .Take(9)
+    //        .ToImmutableArray();
 
-        return new MoggleBoard(a, 3);
-    }
+    //    return new MoggleBoard(a, 3);
+    //}
+
+    /// <inheritdoc />
+    public override bool ReverseAnimationOrder => true;
 
     /// <inheritdoc />
     public override MoggleBoard GenerateCuratedRandomBoard(Random random)

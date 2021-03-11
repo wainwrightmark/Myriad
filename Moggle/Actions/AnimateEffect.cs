@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Fluxor;
 
@@ -14,17 +13,17 @@ public class AnimateEffect : Effect<AnimateAction>
 
         switch (action.StepWithResult.Step)
         {
-            case Step.Move move:
-                dispatcher.Dispatch(new MoveAction(action.GameId, action.StepWithResult.MoveResult!, move.Coordinate));
-                break;
+            //case Step.Move move:
+            //    dispatcher.Dispatch(new MoveAction(action.GameId, action.StepWithResult.MoveResult!, move.Coordinate));
+            //    break;
             case Step.Rotate rotate:
                 dispatcher.Dispatch(new RotateAction(rotate.Amount));
                 break;
-            case Step.ClearCoordinatesAction _:
-                dispatcher.Dispatch(new SetPositionsAction(ImmutableList<Coordinate>.Empty));
+            case Step.ClearPositionsAction _:
+                dispatcher.Dispatch(new Step.ClearPositionsAction());
                 break;
             case Step.SetFoundWord sfw :
-                dispatcher.Dispatch(new SetPositionsAction(sfw.Word.Path));
+                dispatcher.Dispatch(new SetPositionsAction(sfw.Word.Path, new AnimationWord(sfw.Word.AnimationString, AnimationWord.WordType.Found)));
                 break;
             default:                     throw new ArgumentOutOfRangeException();
         }

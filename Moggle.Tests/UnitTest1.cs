@@ -343,30 +343,30 @@ public class UnitTest1
         }
     }
 
-    [Theory]
-    [InlineData(100)]
-    public void TestCenturyAnimate(int take)
-    {
-        var c = CenturyGameMode.Instance.GetAnimation(
-            ImmutableDictionary<string, string>.Empty.Add(
-                CenturyGameMode.Instance.AnimateSetting.Name,
-                true.ToString()
-            ),
-            WordList.LazyInstance
-        )!;
+    //[Theory]
+    //[InlineData(100)]
+    //public void TestCenturyAnimate(int take)
+    //{
+    //    var c = CenturyGameMode.Instance.GetAnimation(
+    //        ImmutableDictionary<string, string>.Empty.Add(
+    //            CenturyGameMode.Instance.AnimateSetting.Name,
+    //            true.ToString()
+    //        ),
+    //        WordList.LazyInstance
+    //    )!;
 
-        var board = CenturyGameMode.Instance.CreateBoard(
-            ImmutableDictionary<string, string>.Empty,
-            WordList.LazyInstance
-        );
+    //    var board = CenturyGameMode.Instance.CreateBoard(
+    //        ImmutableDictionary<string, string>.Empty,
+    //        WordList.LazyInstance
+    //    );
 
-        foreach (var move in c.Steps.OfType<Step.Move>().Take(take))
-        {
-            var letter = board.GetLetterAtCoordinate(move.Coordinate);
+    //    foreach (var move in c.Steps.OfType<Step.Move>().Take(take))
+    //    {
+    //        var letter = board.GetLetterAtCoordinate(move.Coordinate);
 
-            TestOutputHelper.WriteLine(letter.ButtonText);
-        }
-    }
+    //        TestOutputHelper.WriteLine(letter.ButtonText);
+    //    }
+    //}
 
     [Fact]
     public void CheckBoardEquivalence()
