@@ -196,7 +196,23 @@
 
 @foreach (var (word, coordinate, rotate, _,_ ) in RecentWordsState.Value.RecentWords)
 {
-  var (cx, cy) = GetLocation(coordinate.RotateAndFlip(Board.Value.MaxCoordinate, -rotate, RecentWordsState.Value.Flip), false);
+  var flippedCoordinate = coordinate.RotateAndFlip(Board.Value.MaxCoordinate, -rotate, RecentWordsState.Value.Flip);
+
+  string textAnchor;
+  if(flippedCoordinate.Column == 0)
+  {
+    textAnchor = "start";
+  }
+  else if (flippedCoordinate.Column == Board.Value.MaxCoordinate.Column)
+  {
+    textAnchor = "end";
+  }
+  else
+  {
+    textAnchor = "middle";
+  }
+
+  var (cx, cy) = GetLocation(flippedCoordinate, false);
   var id = $"{word.Text}{coordinate}";
   <text>
     <text
@@ -207,8 +223,8 @@
       id="@id"
       x="@cx"
       y="@cy"
-      dominant-baseline="middle"
-      text-anchor="middle">
+      dominant-baseline="text-bottom"
+      text-anchor="@textAnchor">
       @word.Text
 
     </text>
