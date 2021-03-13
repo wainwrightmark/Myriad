@@ -1,5 +1,5 @@
 - [x] Come up with a better name? Myriad? Centenary
-- [ ] Create separate page for Myriad
+- [x] Create separate page for Myriad
 - [x] Database of Century Games
 - [ ] Create a good loading animation
 - [x] Create animator
@@ -13,7 +13,10 @@
 - [x] Game keys should be rotation / reflection independent
 - [ ] Multiplayer
 - [x] Power Operator
-- [ ] Swipe support
+- [x] Swipe support
 - [x] Save coordinates of found words
 - [x] Rotation arrows on SVG
-- [ ] Specific word challenges
+- [x] Specific word challenges
+- [ ] Next Level screen
+- [ ] Choose level screen that keeps track of progress
+- [ ] First group should be autoselected
