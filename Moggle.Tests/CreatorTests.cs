@@ -28,7 +28,7 @@ public class CreatorTests
         //const int delay    = 2000_000;
         const int width    = 5;
         const int height   = 5;
-        const int maxTries = 1000;
+        const int maxTries = 3;
 
         var resourceSet =
             Lists.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, true, true);
