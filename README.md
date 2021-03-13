@@ -1,7 +1,6 @@
-# Moggle
- Play a fun word game with friends. 
+<img src="Logo.svg">
+
+_Myriad_ is a game where you click on letters to make words!
  
- If you all press `New Game` and type in the same seed, you will all see the same grid of letters. Whoever finds the most words in the time wins.
  
- 
- Go to https://wainwrightmark.github.io/Moggle/ to play
+ Go to https://wainwrightmark.github.io/Myriad/ to play
