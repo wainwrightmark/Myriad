@@ -1,0 +1,441 @@
+﻿@using Fluxor
+@using System.Collections.Immutable
+@using System.Net.Http.Headers
+@using BlafettisLib
+@using Myriad.Actions
+@using Myriad.States
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+<MudContainer MaxWidth="MaxWidth.Small">
+<svg viewBox="0 0 @FullWidth @FullHeight" class="myriadSVG" >
+
+
+<rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
+
+@{
+  var d = ChosenPositions.Value.GetPathData(Board.Value,
+                                            RecentWordsState.Value.Rotation, RecentWordsState.Value.Flip, FullWidth, FullHeight);
+
+  var opacity = ChosenPositions.Value.ChosenPositions.Any() ? "1" : "0";
+}
+<path
+  id="rope"
+
+  style="stroke-width: @LineWidth; stroke: @Colors.LightBlue.Default; -webkit-transition: 1s @AnimationTiming; transition: 1s @AnimationTiming; fill: none;"
+  stroke-linejoin="round"
+  stroke-linecap="round"
+  opacity="@opacity"
+  d="@d"/>
+
+@code
+{
+
+    Coordinate? _mouseDownCoordinate = null;
+
+    TouchPoint[]? _touchStartPoints = null;
+
+    public void MouseDown(Coordinate coordinate)
+    {
+      _mouseDownCoordinate = coordinate;
+    }
+
+    public void OnTouchStart(TouchEventArgs tea, Coordinate coordinate)
+    {
+      _touchStartPoints = _touchStartPoints = tea.ChangedTouches;
+    }
+
+    public (int rotate, bool flip) GetTransform(int xDiff, int yDiff)
+    {
+      return xDiff switch
+      {
+        0 when yDiff == 0  => (0, false),
+        0                  => (2, true),
+        1 when yDiff == 0  => (0, true),
+        1 when yDiff > 0   => (1, false),
+        1                  => (-1, false),
+        -1 when yDiff == 0 => (0, true),
+        -1 when yDiff > 0  => (-1, false),
+        -1                 => (1, false),
+        _                  => (0, false)
+      };
+    }
+
+    public void OnTouchEnd(TouchEventArgs tea, Coordinate coordinate)
+    {
+      if (_touchStartPoints is not null && _touchStartPoints.Length == 1 && tea.ChangedTouches.Length == 1)
+      {
+        var source = _touchStartPoints[0];
+        var target = tea.ChangedTouches[0];
+
+        var xDiff = target.ScreenX - source.ScreenX;
+        var yDiff = target.ScreenY - source.ScreenY;
+
+        var xDirection = xDiff switch
+        {
+          >= 50  => 1,
+          <= -50 => -1,
+          _      => 0
+        };
+
+        var yDirection = yDiff switch{
+          >= 50  => 1,
+          <= -50 => -1,
+          _      => 0
+        };
+
+
+
+        var transform = GetTransform(xDirection, yDirection);
+
+        if (transform.rotate != 0)
+        {
+          var rotatedCoordinate = GetRotated(coordinate);
+          if(rotatedCoordinate.Row == 0 || rotatedCoordinate.Row == Board.Value.MaxCoordinate.Row) //Top or bottom row
+          {
+            Dispatcher.Dispatch(new RotateAction(transform.rotate));
+          }
+          else
+          {
+            Dispatcher.Dispatch(new RotateAction(-transform.rotate));
+          }
+        }
+
+        if (transform.flip)
+          Dispatcher.Dispatch(new FlipAction());
+      }
+
+      _touchStartPoints
+        = null;
+    }
+
+    public void MouseUp(Coordinate coordinate)
+    {
+      if (_mouseDownCoordinate is not null)
+      {
+        if (_mouseDownCoordinate != coordinate)
+        {
+          var sourceRotated = GetRotated(_mouseDownCoordinate);
+          var targetRotated = GetRotated(coordinate);
+
+          var transform = Coordinate.GetTransform(sourceRotated, targetRotated, Board.Value.MaxCoordinate);
+
+          if (transform.HasValue)
+          {
+            if (transform.Value.rotate != 0)
+              Dispatcher.Dispatch(new RotateAction(-transform.Value.rotate));
+            if (transform.Value.flip)
+              Dispatcher.Dispatch(new FlipAction());
+          }
+        }
+      }
+
+      _mouseDownCoordinate = null;
+    }
+}
+
+
+@foreach (var coordinate in Board.Value.GetAllCoordinates())
+{
+  var color = GetColor(coordinate);
+  var (cx, cy) = GetLocation(coordinate, true);
+
+  string cursor;
+  if (_mouseDownCoordinate is null)
+  {
+    cursor = "default";
+  }
+  else if (_mouseDownCoordinate == coordinate)
+  {
+    cursor = "grab";
+  }
+  else
+  {
+    var r = Coordinate.GetTransform(_mouseDownCoordinate, coordinate, Board.Value.MaxCoordinate);
+    if (r.HasValue)
+    {
+      cursor = "move";
+    }
+    else
+    {
+      cursor = "no-drop";
+    }
+  }
+
+  <g class="square"
+     style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
+
+     cursor="@cursor"
+     @ontouchstart="(args) => OnTouchStart(args, coordinate)"
+     @ontouchend="(args) => OnTouchEnd(args, coordinate)"
+     @onmousedown="() => MouseDown(coordinate)"
+     @onmouseup="() => MouseUp(coordinate)"
+     @onclick="@((ca) => CellClicked(coordinate, ca))">
+    <circle
+      id="@($"{coordinate}_bigCircle")"
+
+      stroke="@color"
+      fill="@Colors.Shades.Black"
+      fill-opacity="0.01"
+      r="@CircleRadius"
+      class="circle">
+    </circle>
+
+    <text
+      id="@($"{coordinate}_text")"
+
+      dominant-baseline="middle"
+      text-anchor="middle"
+      stroke="@Colors.Shades.White"
+      fill="@Colors.Shades.Black">
+      @Board.Value.GetLetterAtCoordinate(coordinate).ButtonText
+
+    </text>
+  </g>
+}
+
+
+@foreach (var (word, coordinate, rotate, _,_ ) in RecentWordsState.Value.RecentWords)
+{
+  var (cx, cy) = GetLocation(coordinate.RotateAndFlip(Board.Value.MaxCoordinate, -rotate, RecentWordsState.Value.Flip), false);
+  var id = $"{word.Text}{coordinate}";
+  <text>
+    <text
+      fill="@GetColor(word)"
+      class="foundWord"
+      style="animation-duration: @(word.LingerDuration)ms"
+      pointer-events="none"
+      id="@id"
+      x="@cx"
+      y="@cy"
+      dominant-baseline="middle"
+      text-anchor="middle">
+      @word.Text
+
+    </text>
+  </text>
+}
+
+
+</svg>
+
+<Blafettis @ref="_confetti" duration="6000" elementCount=150 angle="90" style="transform: translateX(50%)" />
+
+@code{
+
+  private string GetColor(AnimationWord animationWord)
+  {
+    return animationWord.Type switch
+    {
+      AnimationWord.WordType.Found           => Colors.Green.Default,
+      AnimationWord.WordType.PreviouslyFound => Colors.Blue.Default,
+      AnimationWord.WordType.Invalid         => Colors.Red.Default,
+      AnimationWord.WordType.Illegal => Colors.Orange.Default,
+      _                                      => throw new ArgumentOutOfRangeException()
+      };
+  }
+
+}
+
+</MudContainer>
+
+<MudContainer MaxWidth="MaxWidth.Small">
+  <ResultsView></ResultsView>
+</MudContainer>
+
+
+@code {
+
+
+  protected Blafettis _confetti;
+
+  [Inject]
+  private IState<Board> Board { get; set; }
+
+  [Inject]
+  private IState<ChosenPositionsState> ChosenPositions { get; set; }
+
+  [Inject]
+  private IState<Solver> Solver { get; set; }
+
+  [Inject]
+  private IState<TimeState> TimeState { get; set; }
+
+  [Inject]
+  private IState<FoundWordsState> FoundWordsState { get; set; }
+
+  [Inject]
+  private IState<CheatState> CheatState { get; set; }
+
+  [Inject]
+  private IState<AnimationState> AnimationState { get; set; }
+
+  [Inject]
+  private IState<RecentWordsState> RecentWordsState { get; set; }
+
+  [Inject]
+  private IState<GameSettingsState> GameSettingsState { get; set; }
+
+  [Inject]
+  public IDispatcher Dispatcher { get; set; }
+
+  [Parameter]
+  public StartGameAction? StartGameAction { get; set; }
+
+  /// <inheritdoc />
+  protected override void OnParametersSet()
+  {
+    if (StartGameAction != null)
+      Dispatcher.Dispatch(StartGameAction);
+
+
+    FoundWordsState.StateChanged += (_, state) =>
+    {
+      if (state.Data is FoundWordsData.TargetWordsData twd && twd.WordsToFind.All(x => x.Value.word is not null))
+      {
+        _confetti.RaiseConfetti();
+      }
+    } ;
+
+    base.OnParametersSet();
+  }
+
+  public bool IsGameInProgress => !TimeState.Value.TimeSituation.IsFinished;
+
+  public double CircleRadius => FullWidth / Math.Max(Columns, Rows) * 0.4;
+  public double SquareSize => FullWidth / Math.Max(Columns, Rows);
+
+    public const double FullWidth = 360;
+    public const double FullHeight = 360;
+
+  public double LineWidth => FullWidth * 0.05;
+  public double CircleStrokeWidth => FullWidth * 0.02;
+
+  public int Columns => Board.Value.Columns;
+  public int Rows => Board.Value.Rows;
+
+  public void CellClicked(Coordinate coordinate, MouseEventArgs mouseEventArgs)
+  {
+    if (IsGameInProgress)
+    {
+      var mr = MoveResult.GetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
+
+      if (mouseEventArgs.Detail > 1) //double click
+      {
+        if (mr is MoveResult.SuccessResult) { } //Don't do anything special
+        else
+        {
+          mr = new MoveResult.WordAbandoned();
+        }
+      }
+
+      Dispatcher.Dispatch(new MoveAction(Board.Value.UniqueKey, mr, coordinate));
+    }
+    else
+    {
+      Dispatcher.Dispatch(new Step.ClearPositionsAction());
+    }
+  }
+
+  public Coordinate GetRotated(Coordinate coordinate) => coordinate.RotateAndFlip(
+    Board.Value.MaxCoordinate,
+    RecentWordsState.Value.Rotation * -1, RecentWordsState.Value.Flip);
+
+  public (double x, double y) GetLocation(Coordinate coordinate, bool rotate)
+  {
+    var rotated = rotate ? GetRotated(coordinate) : coordinate;
+
+    var cx = (rotated.Column + 0.5) * SquareSize;
+
+    var cy = (rotated.Row + 0.5) * SquareSize;
+    return (cx, cy);
+  }
+
+  public string GetColor(Coordinate coordinate)
+  {
+    if (!IsGameInProgress || !ChosenPositions.Value.ChosenPositions.Any())
+      return Colors.Grey.Default;
+
+    var result = MoveResult.GetMoveResult(coordinate, ChosenPositions.Value, Board.Value, Solver.Value, FoundWordsState.Value);
+
+    var color = result switch
+    {
+      MoveResult.IllegalMove   => Colors.Grey.Default,
+      MoveResult.MoveRetraced  => Colors.Green.Lighten3,
+      MoveResult.WordAbandoned => Colors.LightBlue.Default,
+      MoveResult.WordComplete  => Colors.Green.Darken2,
+      MoveResult.WordContinued => Colors.Green.Default,
+      _                        => throw new ArgumentOutOfRangeException(nameof(result))
+      };
+
+    return color;
+  }
+
+    const string AnimationTiming = "ease-out";
+
+}
+
+<style>
+
+  .myriadSVG {
+    font-family: monospace;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    font-size: @(144 / Math.Max(Columns, Rows))px;
+    width: 100%;
+    font-weight: bold;
+  }
+
+  .square {
+    -webkit-transition: 1s @AnimationTiming;
+    transition: 1s @AnimationTiming;
+  }
+
+  .circle {
+    stroke-width: @CircleStrokeWidth;
+
+    transition: 3s cubic-bezier(0, 1.45, 0.72, 1.33)
+  }
+
+  .circle:hover { transform: scale(1.1) }
+
+
+
+  .foundWord {
+    -webkit-animation-name: disappearAnimation-webkit;
+    animation-name: disappearAnimation;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-out;
+  }
+
+  @@-webkit-keyframes disappearAnimation-webkit {
+    0% { opacity: 1; }
+
+    50% {
+      opacity: 0.2;
+      -webkit-transform: translateY(50%);
+    }
+
+    100% {
+      opacity: 0;
+      -webkit-transform: translateY(100%);
+    }
+  }
+
+  @@-webkit-keyframes disappearAnimation {
+    0% { opacity: 1; }
+
+    50% {
+      opacity: 0.2;
+      transform: translateY(50%);
+    }
+
+    100% {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+
+
+</style>

@@ -1,0 +1,58 @@
+﻿@using System.Collections.Immutable
+
+
+<MudDialog>
+  <DialogActions>
+    <MudButton OnClick="Cancel">Cancel</MudButton>
+    <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+  </DialogActions>
+  <DialogContent>
+    <MudContainer Style="max-height: 400px; overflow-y: scroll">
+      <MudSelect @bind-Value="GameModeName">
+        @foreach (var gm in AllGameModes.Modes.Keys)
+        {
+          <MudSelectItem Value="@gm"/>
+        }
+      </MudSelect>
+      @if (GameMode is not null)
+      {
+        @foreach (var setting in GameMode.Settings)
+        {
+          <SettingBox Values="@SetValues" Setting="@setting"/>
+        }
+      }
+
+    </MudContainer>
+  </DialogContent>
+
+</MudDialog>
+
+@code {
+
+  [CascadingParameter]
+  MudDialogInstance MudDialog { get; set; }
+
+  [Parameter]
+  public string GameModeName { get; set; }
+
+  public IGameMode? GameMode => AllGameModes.CreateFromString(GameModeName)!;
+
+  [Parameter]
+  public Dictionary<string, string> SetValues { get; set; }
+
+  void Submit()
+  {
+    if (GameMode is not null)
+    {
+      var result = new StartDialogResult(GameMode, SetValues.ToImmutableDictionary());
+
+      MudDialog.Close(DialogResult.Ok(result));
+    }
+  }
+
+  void Cancel() => MudDialog.Cancel();
+
+  public record StartDialogResult(IGameMode Mode, ImmutableDictionary<string, string> Settings);
+
+
+}
