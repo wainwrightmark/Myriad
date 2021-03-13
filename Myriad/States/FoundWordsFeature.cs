@@ -7,7 +7,7 @@ namespace Myriad.States
 
 public static class Defaults
 {
-    public static IGameMode Mode => CenturyGameMode.Instance;
+    public static IGameMode Mode => NumbersGameMode.Instance;
 
     public static ImmutableDictionary<string, string> Settings =>
         ImmutableDictionary<string, string>.Empty;

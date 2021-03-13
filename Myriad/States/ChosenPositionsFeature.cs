@@ -25,7 +25,7 @@ public class BoardFeature : Feature<Board>
     /// <inheritdoc />
     protected override Board GetInitialState()
     {
-        return CenturyGameMode.Instance.CreateBoard(
+        return NumbersGameMode.Instance.CreateBoard(
             ImmutableDictionary<string, string>.Empty,
             WordList.LazyInstance
         );

@@ -16,7 +16,7 @@ public class GameSettingsFeature : Feature<GameSettingsState>
     protected override GameSettingsState GetInitialState()
     {
         return new(
-            CenturyGameMode.Instance,
+            NumbersGameMode.Instance,
             ImmutableDictionary<string, string>.Empty
         );
     }

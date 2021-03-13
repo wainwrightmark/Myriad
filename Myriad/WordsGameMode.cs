@@ -4,11 +4,11 @@ using System.Collections.Immutable;
 namespace Myriad
 {
 
-public record ModernGameMode : BagGameMode
+public record WordsGameMode : BagGameMode
 {
-    private ModernGameMode() { }
+    private WordsGameMode() { }
 
-    public static ModernGameMode Instance { get; } = new();
+    public static WordsGameMode Instance { get; } = new();
 
     /// <inheritdoc />
     public override string Letters { get; } =
@@ -59,7 +59,7 @@ public record ModernGameMode : BagGameMode
     }
 
     /// <inheritdoc />
-    public override string Name => "Modern";
+    public override string Name => "Words";
 }
 
 }

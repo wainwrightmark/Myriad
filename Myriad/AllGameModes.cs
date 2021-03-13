@@ -10,11 +10,10 @@ public static class AllGameModes
     public static readonly IReadOnlyDictionary<string, IGameMode> Modes =
         new List<IGameMode>()
         {
-            CenturyGameMode.Instance,
-            ModernGameMode.Instance,
-            ClassicGameMode.Instance,
+            NumbersGameMode.Instance,
+            WordsGameMode.Instance,
             ChallengeGameMode.Instance,
-            FixedGameMode.Instance,
+            CustomGameMode.Instance,
             SecretGameMode.Instance,
             RomanGameMode.Instance,
             EquationGameMode.Instance,

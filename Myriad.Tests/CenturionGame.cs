@@ -73,7 +73,7 @@ public class GameFinder
         CreateGames(
             startIndex,
             numberToCreate,
-            TestOutputHelper, CenturyGameMode.Instance
+            TestOutputHelper, NumbersGameMode.Instance
         );
     }
 

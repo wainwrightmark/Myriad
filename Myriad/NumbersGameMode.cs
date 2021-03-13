@@ -6,13 +6,13 @@ using MoreLinq.Extensions;
 namespace Myriad
 {
 
-public record CenturyGameMode : NumberGameMode
+public record NumbersGameMode : NumberGameMode
 {
-    private CenturyGameMode() { }
-    public static CenturyGameMode Instance { get; } = new();
+    private NumbersGameMode() { }
+    public static NumbersGameMode Instance { get; } = new();
 
     /// <inheritdoc />
-    public override string Name => "Century";
+    public override string Name => "Numbers";
 
     /// <inheritdoc />
     public override bool ReverseAnimationOrder => true;

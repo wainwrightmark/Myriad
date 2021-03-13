@@ -28,25 +28,24 @@ public class UnitTest1
 
     private (Board board, Solver solver) CreateFromSeed(
         string seed,
-        bool classic = false,
         int width = 4,
         int height = 4)
     {
-        IGameMode mode = classic ? ClassicGameMode.Instance : ModernGameMode.Instance;
+        IGameMode mode =  WordsGameMode.Instance;
 
         var settings = ImmutableDictionary.CreateRange(
             new[]
             {
                 new KeyValuePair<string, string>(
-                    ModernGameMode.Instance.Seed.Name,
+                    WordsGameMode.Instance.Seed.Name,
                     seed
                 ),
                 new KeyValuePair<string, string>(
-                    ModernGameMode.Instance.Width.Name,
+                    WordsGameMode.Instance.Width.Name,
                     width.ToString()
                 ),
                 new KeyValuePair<string, string>(
-                    ModernGameMode.Instance.Height.Name,
+                    WordsGameMode.Instance.Height.Name,
                     height.ToString()
                 ),
             }
@@ -64,7 +63,7 @@ public class UnitTest1
         int width = 4,
         int height = 4)
     {
-        IGameMode mode = equation ? EquationGameMode.Instance : CenturyGameMode.Instance;
+        IGameMode mode = equation ? EquationGameMode.Instance : NumbersGameMode.Instance;
 
         var settings = ImmutableDictionary.CreateRange(
             new[]
@@ -137,7 +136,7 @@ public class UnitTest1
 
         for (var i = 0; i < 1000; i++)
         {
-            var s = CreateFromSeed(i.ToString(), classic);
+            var s = CreateFromSeed(i.ToString());
 
             for (var j = 0; j < 16; j++)
             {
@@ -188,7 +187,7 @@ public class UnitTest1
 
         foreach (var seed in _wordList.Value.LegalWords)
         {
-            var state = CreateFromSeed(seed, classic, width, height);
+            var state = CreateFromSeed(seed, width: width, height: height);
 
             var words = state.solver.GetPossibleSolutions(state.board).ToList();
 
@@ -220,7 +219,7 @@ public class UnitTest1
     [InlineData("my hovercraft is full of eels", false, 6, 6)]
     public void TestSolver(string seed, bool classic, int height, int width)
     {
-        var state = CreateFromSeed(seed, classic, width, height);
+        var state = CreateFromSeed(seed, width: width, height: height);
 
         var sw    = Stopwatch.StartNew();
         var words = state.solver.GetPossibleSolutions(state.board).ToList();
@@ -281,7 +280,7 @@ public class UnitTest1
 
         for (var i = 0; i < trials; i++)
         {
-            var state = CreateFromSeed(i.ToString(), classic, width, height);
+            var state = CreateFromSeed(i.ToString(), width: width, height: height);
             var words = state.solver.GetPossibleSolutions(state.board).ToList();
             var score = words.Sum(x => x.Points);
 
@@ -318,7 +317,7 @@ public class UnitTest1
 
         for (var i = 0; i < numberOfTests; i++)
         {
-            var state = CreateFromSeed(i.ToString(), classic, width, height);
+            var state = CreateFromSeed(i.ToString(), width: width, height: height);
             var words = state.solver.GetPossibleSolutions(state.board).ToList();
             totalWords += words.Count;
             totalScore += words.Sum(x => x.Points);
@@ -389,7 +388,7 @@ public class UnitTest1
     [Fact]
     public void TestTargetWords()
     {
-        var g1 = CenturyGameMode.Instance.GetFoundWordsData(
+        var g1 = NumbersGameMode.Instance.GetFoundWordsData(
             ImmutableDictionary<string, string>.Empty,
             WordList.LazyInstance
         );

@@ -7,13 +7,13 @@ using Myriad.States;
 namespace Myriad
 {
 
-public record FixedGameMode : IGameMode
+public record CustomGameMode : IGameMode
 {
-    private FixedGameMode() { }
-    public static FixedGameMode Instance { get; } = new();
+    private CustomGameMode() { }
+    public static CustomGameMode Instance { get; } = new();
 
     /// <inheritdoc />
-    public string Name => "Fixed";
+    public string Name => "Custom";
 
     /// <inheritdoc />
     public Board CreateBoard(

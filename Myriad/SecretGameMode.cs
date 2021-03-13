@@ -24,7 +24,7 @@ public record SecretGameMode : IGameMode
         var allWords  = Creator.GridCreator.GetAllWords(wordsText).ToList();
         var grid      = Creator.GridCreator.CreateNodeGrid(allWords, null, 10000);
         var random    = RandomHelper.GetRandom(wordsText);
-        var board     = grid.ToBoard(() => ModernGameMode.Instance.GetRandomRune(random));
+        var board     = grid.ToBoard(() => WordsGameMode.Instance.GetRandomRune(random));
 
         return board;
     }
@@ -59,7 +59,7 @@ public record SecretGameMode : IGameMode
         var grid      = Creator.GridCreator.CreateNodeGrid(allWords, null, 10000);
         var random    = RandomHelper.GetRandom(wordsText);
 
-        var board = grid.ToBoard(() => ModernGameMode.Instance.GetRandomRune(random));
+        var board = grid.ToBoard(() => WordsGameMode.Instance.GetRandomRune(random));
 
         if (Animate.Get(settings))
             return Animation.Create(allWords, board);
