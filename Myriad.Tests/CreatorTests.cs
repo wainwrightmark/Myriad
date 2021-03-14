@@ -26,9 +26,9 @@ public class CreatorTests
     public static TheoryData<string,int, string, int, int> GetWordLists()
     {
         //const int delay    = 2000_000;
-        const int width    = 5;
-        const int height   = 5;
-        const int maxTries = 3;
+        const int width    = 4;
+        const int height   = 4;
+        const int maxTries = 10000;
 
         var resourceSet =
             Lists.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, true, true);
@@ -37,8 +37,8 @@ public class CreatorTests
 
         foreach (DictionaryEntry entry in resourceSet!)
         {
-            //td.Add(entry.Key.ToString()!, maxTries, entry.Value?.ToString()!, width, height);
-            td.Add(entry.Key.ToString()!, maxTries, entry.Value?.ToString()!, width -1, height - 1);
+            td.Add(entry.Key.ToString()!, maxTries, entry.Value?.ToString()!, width, height);
+            //td.Add(entry.Key.ToString()!, maxTries, entry.Value?.ToString()!, width -1, height - 1);
         }
 
         return td;
@@ -49,7 +49,7 @@ public class CreatorTests
     //[InlineData("Colors","red\r\ngreen\r\nblue", 10000, 3,3)]
     public void TestMostWords(
         string group,
-        int maxTries,
+        int? maxTries,
         string wordsString,
         int width,
         int height)
@@ -78,7 +78,7 @@ public class CreatorTests
 
         var ct = new CancellationTokenSource();
 
-        var grid = GridCreator.CreateGridForMostWords(
+        var grid = GridCreator.CreateGridForMostWordsDepthFirst(
             words,
             maxTries,
             logger,
@@ -91,12 +91,12 @@ public class CreatorTests
 
         TestOutputHelper.WriteLine(sw.Elapsed.ToString());
 
-        var gridText = grid.Value.grid.ToBoard(() => new Rune('_'))
+        var gridText = grid.grid.ToBoard(() => new Rune('_'))
             .Letters.Select(x => x.WordText.First())
             .ToDelimitedString("");
 
         TestOutputHelper.WriteLine(
-            $"{group}; {gridText};{grid!.Value.words.ToDelimitedString(", ")}"
+            $"{group}; {gridText};{grid.words.ToDelimitedString(", ")}"
         );
     }
 

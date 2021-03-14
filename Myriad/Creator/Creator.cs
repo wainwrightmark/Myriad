@@ -22,8 +22,8 @@ public class Creator
 {
     public NodeGridCreateResult Create(
         SolveState start,
-        ILogger? logger,
-        int maxTries,
+        ILogger logger,
+        int? maxTries,
         CancellationToken ct)
     {
         SolveStates.Add(start);
@@ -33,9 +33,9 @@ public class Creator
         return r;
     }
 
-    private NodeGridCreateResult Solve(ILogger? logger, int maxTries, CancellationToken ct)
+    private NodeGridCreateResult Solve(ILogger logger, int? maxTries, CancellationToken ct)
     {
-        var remainingTries     = maxTries;
+        var tries              = 0;
         var stickingPointRunes = new ConcurrentDictionary<Rune, int>();
 
         while (!ct.IsCancellationRequested && SolveStates.TryTake(out var ss)
@@ -49,12 +49,18 @@ public class Creator
                 {
                     stickingPointRunes.AddOrUpdate(cc.StickingPoint, 1, (_, c) => c + 1);
 
-                    remainingTries--;
+                    tries++;
 
-                    if (remainingTries <= 0)
+                    if (maxTries is null || tries > maxTries)
+                    {
+                        logger.LogInformation(
+                            $"giving up after {tries} tries of {maxTries}"
+                        );
+
                         return new NodeGridCreateResult.CouldNotPlaceFailure(
                             stickingPointRunes.OrderByDescending(x => x.Value).First().Key
                         );
+                    }
 
                     break;
                 }
@@ -70,7 +76,9 @@ public class Creator
                 }
                 case CreateResult.SolvedGrid solvedGrid:
                 {
-                    logger?.LogInformation($"{solvedGrid.Grid.Dictionary.Count} node grid found after {maxTries - remainingTries} tries of {maxTries}" );
+                    logger?.LogInformation(
+                        $"{solvedGrid.Grid.Dictionary.Count} node grid found after {tries} tries"
+                    );
 
                     return new NodeGridCreateResult.Success(solvedGrid.Grid);
                 }
@@ -87,6 +95,8 @@ public class Creator
 
             logger?.LogInformation(SolveStates.First().Grid.ToString());
         }
+
+        logger.LogInformation($"giving up after {tries} tries");
 
         if (stickingPointRunes.Any())
             return new NodeGridCreateResult.CouldNotPlaceFailure(

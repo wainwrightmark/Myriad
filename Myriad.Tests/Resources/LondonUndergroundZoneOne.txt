@@ -1,0 +1,63 @@
+Aldgate
+Aldgate East
+Angel
+Baker Street
+Bank
+Barbican
+Bayswater
+Blackfriars
+Bond Street
+Borough
+Cannon Street
+Chancery Lane
+Charing Cross
+Covent Garden
+Edgware Road
+Edgware Road
+Embankment
+Euston
+Euston Square
+Farringdon
+Gloucester Road
+Goodge Street
+Great Portland Street
+Green Park
+High Street Kensington
+Holborn
+Hyde Park Corner
+King's Cross St Pancras
+Knightsbridge
+Lambeth North
+Lancaster Gate
+Leicester Square
+Liverpool Street
+London Bridge
+Mansion House
+Marble Arch
+Marylebone
+Monument
+Moorgate
+Old Street
+Oxford Circus
+Paddington
+Paddington
+Piccadilly Circus
+Pimlico
+Queensway
+Regent's Park
+Russell Square
+St. James's Park
+St. Paul's
+Sloane Square
+South Kensington
+Southwark
+Temple
+Tottenham Court Road
+Tower Hill
+Victoria
+Warren Street
+Waterloo
+Westminster
+Earl's Court
+Elephant AND Castle
+Notting Hill Gate
