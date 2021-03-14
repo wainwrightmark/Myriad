@@ -9,72 +9,38 @@
 {
   var groups = data.WordsToFind.GroupBy(x => x.Value.group).OrderBy(x => x.Key.Order).ToList();
 
-  if (false && groups.Count == 1)
-  {
-    var group = groups.Single();
-    @foreach (var w in group.OrderBy(x => x.Key))
+  var groupKey = $"key{groups.Count}{groups.First().Key}";
+
+  <MudTabs @key="@groupKey" ActivePanelIndex="0">
+    @foreach (var group in groups)
     {
-      var key = $"CheckBox{@w.Key}";
+      var groupKey = @group.Key;
+      var remainingInGroup = group.Count(x => x.Value.word is null);
 
-      var text = (group.Key.HideText && w.Value.word is null ?
-        new string('?', w.Key.Length) : w.Key).PadLeft(3);
+      <MudTabPanel @key="@groupKey.Display" Text="@groupKey.Display" BadgeData="@remainingInGroup">
 
-      var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
+        @foreach (var w in group.OrderBy(x => x.Key))
+        {
+          var key = $"CheckBox{@w.Key}";
 
-      <MudChip @key="@key"
-                Disabled="@(w.Value.word is null)"
-                OnClick="() => SelectFoundWord(w.Value.word)"
-                Label="true"
-                Icon="@icon">
-        @text
-      </MudChip>
+          var text = (group.Key.HideText && w.Value.word is null ?
+            new string('?', w.Key.Length) : w.Key).PadLeft(3);
+
+          var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
+
+          <MudChip @key="@key"
+                    Disabled="@(w.Value.word is null)"
+                    OnClick="() => SelectFoundWord(w.Value.word)"
+                    Label="true"
+                    Icon="@icon">
+            @text
+          </MudChip>
+        }
+
+      </MudTabPanel>
     }
-  }
-  else
-  {
-    @code
-    {
-        MudTabs tabs;
-
-        //void TabInit()
-        //{
-        //  if(tabs.ac .ActivePanelIndex < 0)
-        //    tabs.ActivatePanel(0);
-        //}
-
-    }
-
-    <MudTabs @ref="tabs" ActivePanelIndex="0">
-      @foreach (var group in groups)
-      {
-        var groupKey = @group.Key;
-        var remainingInGroup = group.Count(x => x.Value.word is null);
-
-        <MudTabPanel @key="@groupKey.Display" Text="@groupKey.Display" BadgeData="@remainingInGroup">
-
-          @foreach (var w in group.OrderBy(x => x.Key))
-          {
-            var key = $"CheckBox{@w.Key}";
-
-            var text = (group.Key.HideText && w.Value.word is null ?
-              new string('?', w.Key.Length) : w.Key).PadLeft(3);
-
-            var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
-
-            <MudChip @key="@key"
-                      Disabled="@(w.Value.word is null)"
-                      OnClick="() => SelectFoundWord(w.Value.word)"
-                      Label="true"
-                      Icon="@icon">
-              @text
-            </MudChip>
-          }
-
-        </MudTabPanel>
-      }
-    </MudTabs>
-  }
-  }
+  </MudTabs>
+}
 else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchData)
 {
   <MudChip Icon="@Icons.Filled.MilitaryTech">@openSearchData.GetScore()</MudChip>
@@ -101,15 +67,13 @@ else if (FoundWordsState.Value.Data is FoundWordsData.OpenSearchData openSearchD
 
           SelectFoundWord(w.Key);
         }
-      }
+      }<MudChip
 
-      <MudChip
-
-        @onclick="(args) => ChipClicked(args, w)"
-         Label="true"
-         Icon="@icon">
-        @w.Key.Display
-      </MudChip>
+         @onclick="(args) => ChipClicked(args, w)"
+          Label="true"
+          Icon="@icon">
+         @w.Key.Display
+       </MudChip>
     }
 
   </MudList>
