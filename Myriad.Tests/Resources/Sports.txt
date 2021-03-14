@@ -1,7 +1,6 @@
 Acrobatics
 Aerobic Gymnastics
 Archery
-Arnis
 Artistic Gymnastics
 Artistic Swimming
 Badminton
@@ -54,7 +53,8 @@ Parachuting
 Paragliding
 Parkour
 Polo
-Pool/Billiards
+Pool
+Billiards
 Powerlifting
 Rafting
 Rhythmic Gymnastics
@@ -90,4 +90,3 @@ Water Polo
 Weightlifting
 Windsurfing
 Wrestling
-Wu Shu

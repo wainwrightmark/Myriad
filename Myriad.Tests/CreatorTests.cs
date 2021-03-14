@@ -23,21 +23,20 @@ public class CreatorTests
 
     public CreatorTests(ITestOutputHelper testOutputHelper) => TestOutputHelper = testOutputHelper;
 
-    public static TheoryData<string,int, string, int, int> GetWordLists()
+    public static TheoryData<string,int?, string, int, int> GetWordLists()
     {
         //const int delay    = 2000_000;
         const int width    = 4;
         const int height   = 4;
-        const int maxTries = 10000;
 
         var resourceSet =
             Lists.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, true, true);
 
-        var td = new TheoryData<string,int, string, int, int>();
+        var td = new TheoryData<string,int?, string, int, int>();
 
         foreach (DictionaryEntry entry in resourceSet!)
         {
-            td.Add(entry.Key.ToString()!, maxTries, entry.Value?.ToString()!, width, height);
+            td.Add(entry.Key.ToString()!, null, entry.Value?.ToString()!, width, height);
             //td.Add(entry.Key.ToString()!, maxTries, entry.Value?.ToString()!, width -1, height - 1);
         }
 
