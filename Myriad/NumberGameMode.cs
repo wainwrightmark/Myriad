@@ -69,6 +69,8 @@ public abstract record NumberGameMode : WhitelistGameMode
 
     /// <inheritdoc />
     public override int Columns => 3;
+
+    public abstract IEnumerable<Letter> LegalLetters { get; }
 }
 
 }

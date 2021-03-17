@@ -26,6 +26,9 @@ public enum ArithmeticExpressionToken
     [Token(Category = "operator", Example = "^")]
     Power,
 
+    [Token(Category = "operator", Example = "!")]
+    Bang,
+
     [Token(Category = "operator", Example = "=")]
     Equals,
 

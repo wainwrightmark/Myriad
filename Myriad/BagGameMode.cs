@@ -248,7 +248,7 @@ public abstract record BagGameMode : IGameMode
     /// <inheritdoc />
     public FoundWordsData GetFoundWordsData(ImmutableDictionary<string, string> settings, Lazy<WordList> wordList)
     {
-        return new FoundWordsData.OpenSearchData(ImmutableDictionary<FoundWord, bool>.Empty);
+        return new FoundWordsData.OpenSearchData(ImmutableSortedDictionary<FoundWord, bool>.Empty);
     }
 }
 

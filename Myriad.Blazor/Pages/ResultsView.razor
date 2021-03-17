@@ -11,7 +11,13 @@
 
   var groupKey = $"key{groups.Count}{groups.First().Key}";
 
-  <MudTabs @key="@groupKey" ActivePanelIndex="0">
+  @code{ MudTabs _mudTabs; }
+
+  int activePanelIndex = groups.Count == 1 || _mudTabs is null ? 0 : _mudTabs.ActivePanelIndex;
+
+
+
+  <MudTabs @ref="_mudTabs" @key="@groupKey" ActivePanelIndex="activePanelIndex">
     @foreach (var group in groups)
     {
       var groupKey = @group.Key;
@@ -24,7 +30,7 @@
           var key = $"CheckBox{@w.Key}";
 
           var text = (group.Key.HideText && w.Value.word is null ?
-            new string('?', w.Key.Length) : w.Key).PadLeft(3);
+            new string('?', w.Key.ToString().Length) : w.Key.ToString()).PadLeft(3);
 
           var icon = w.Value.word is not null ? Icons.Filled.CheckCircle : Icons.Filled.Circle;
 

@@ -34,6 +34,10 @@ namespace Myriad.Tests
         [Theory]
         [InlineData("", null)]
         [InlineData("0", 0)]
+        [InlineData("-1", -1)]
+        [InlineData("--1", 1)]
+        [InlineData("2+--1", 3)]
+        [InlineData("---1", -1)]
         [InlineData("12", 12)]
         [InlineData("1+2", 3)]
         [InlineData("11+12", 23)]
@@ -48,6 +52,14 @@ namespace Myriad.Tests
         [InlineData("3*-4", -12)]
         [InlineData("2^5", 32)]
         [InlineData("3^3", 27)]
+        [InlineData("3!", 6)]
+        [InlineData("3!!", 720)]
+        [InlineData("!3", 2)]
+        [InlineData("!3 + 5", 7)]
+        [InlineData("3! + 5", 11)]
+        [InlineData("III!", 6)]
+        [InlineData("III!!", 720)]
+        [InlineData("!III!", 265)]
         public void ShouldParseExpression(string text, int? expectedResult)
         {
             var r = Parser.GetExpressionValue(text);

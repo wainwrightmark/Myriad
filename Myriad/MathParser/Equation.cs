@@ -1,21 +1,18 @@
-﻿using System;
-using System.Linq.Expressions;
-
-namespace Myriad.MathParser
+﻿namespace Myriad.MathParser
 {
 
-public record Equation(Expression Left, Expression Right)
+public record Equation(int? Left, int? Right)
 {
     public bool IsValid
     {
         get
         {
+            if (Left.HasValue && Right.HasValue)
+            {
+                return Left.Value == Right.Value;
+            }
 
-
-            var l = Expression.Lambda<Func<int>>(Left).Compile().Invoke();
-            var r = Expression.Lambda<Func<int>>(Right).Compile().Invoke();
-
-            return l == r;
+            return false;
         }
     }
 }

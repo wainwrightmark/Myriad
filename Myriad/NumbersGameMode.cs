@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using MoreLinq.Extensions;
@@ -18,9 +19,12 @@ public record NumbersGameMode : NumberGameMode
     public override bool ReverseAnimationOrder => true;
 
     /// <inheritdoc />
+    public override IEnumerable<Letter> LegalLetters { get; } = Letter.CreateFromString("0123456789+-*/^!");
+
+    /// <inheritdoc />
     public override Board GenerateCuratedRandomBoard(Random random)
     {
-        var operators = "+++---**/^";
+        var operators = "+++---**/^!!";
         var numbers   = "1122334455667788990";
 
         var opCount = new[] { 1, 2, 2, 3, 3, 4 }.RandomSubset(1, random).Single();
@@ -28,7 +32,7 @@ public record NumbersGameMode : NumberGameMode
         var numCount = 9 - opCount;
 
         var chars = operators.RandomSubset(opCount, random)
-            .Concat(numbers.RandomSubset(numCount, random));
+            .Concat(numbers.RandomSubset(numCount, random)).Shuffle(random);
 
         var letters = chars.Select(Letter.Create).ToImmutableArray();
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using MoreLinq;
@@ -18,10 +19,17 @@ public record RomanGameMode : NumberGameMode
     public override bool ReverseAnimationOrder => true;
 
     /// <inheritdoc />
+    public override IEnumerable<Letter> LegalLetters { get; } =
+        Letter.CreateFromString("IVXCD+-*/^!");
+
+    /// <inheritdoc />
     public override Board GenerateCuratedRandomBoard(Random random)
     {
-        var chars = "+-*".RandomSubset(2, random)
-            .Concat("IIIIIIVVVXXX".RandomSubset(7, random));
+        var opNumber = random.Next(1, 4);
+
+        var chars = "+-*".RandomSubset(opNumber, random)
+            .Concat("IIIIIIVVVXXXLC".RandomSubset(9 - opNumber, random))
+            .Shuffle(random);
 
         var letters = chars.Select(Letter.Create).ToImmutableArray();
 

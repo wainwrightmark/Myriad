@@ -66,7 +66,6 @@ public static class RomanNumeralParser
 
 public static class Parser
 {
-
     public static bool IsValidEquation(string pattern)
     {
         var tokenListResult = Tokenizer.TryTokenize(pattern);
@@ -101,23 +100,7 @@ public static class Parser
             if (!parseResult.HasValue)
                 return null;
 
-            double value;
-            int    i;
-
-            try
-            {
-                value = parseResult.Value.Compile().Invoke();
-                i     = Convert.ToInt32(Math.Round(value));
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-
-            if (Math.Abs(value - i) < 0.0001)
-                return i;
-
-            return null; //The number was not an integer - it may have been e.g. 0.5
+            return parseResult.Value;
         }
     }
 
@@ -153,60 +136,114 @@ public static class Parser
             .Match(Character.EqualTo('='),               ArithmeticExpressionToken.Equals)
             .Match(Character.EqualTo('('),               ArithmeticExpressionToken.LParen)
             .Match(Character.EqualTo(')'),               ArithmeticExpressionToken.RParen)
+            .Match(Character.EqualTo('!'),               ArithmeticExpressionToken.Bang)
             .Match(Span.WithAll(RomanNumerals.Contains), ArithmeticExpressionToken.RomanNumeral)
             .Match(Numerics.Natural,                     ArithmeticExpressionToken.Number)
             .Build();
 
-    static readonly TokenListParser<ArithmeticExpressionToken, ExpressionType> Add =
-        Token.EqualTo(ArithmeticExpressionToken.Plus).Value(ExpressionType.AddChecked);
+    enum InfixExpressionType
+    {
+        Add,
+        Subtract,
+        Multiply,
+        Divide,
+        Power
+    }
 
-    static readonly TokenListParser<ArithmeticExpressionToken, ExpressionType> Subtract =
-        Token.EqualTo(ArithmeticExpressionToken.Minus).Value(ExpressionType.SubtractChecked);
+    static readonly TokenListParser<ArithmeticExpressionToken, InfixExpressionType> Add =
+        Token.EqualTo(ArithmeticExpressionToken.Plus).Value(InfixExpressionType.Add);
 
-    static readonly TokenListParser<ArithmeticExpressionToken, ExpressionType> Multiply =
-        Token.EqualTo(ArithmeticExpressionToken.Times).Value(ExpressionType.MultiplyChecked);
+    static readonly TokenListParser<ArithmeticExpressionToken, InfixExpressionType> Subtract =
+        Token.EqualTo(ArithmeticExpressionToken.Minus).Value(InfixExpressionType.Subtract);
 
-    static readonly TokenListParser<ArithmeticExpressionToken, ExpressionType> Divide =
-        Token.EqualTo(ArithmeticExpressionToken.Divide).Value(ExpressionType.Divide);
+    static readonly TokenListParser<ArithmeticExpressionToken, InfixExpressionType> Multiply =
+        Token.EqualTo(ArithmeticExpressionToken.Times).Value(InfixExpressionType.Multiply);
 
-    static readonly TokenListParser<ArithmeticExpressionToken, ExpressionType> Power =
-        Token.EqualTo(ArithmeticExpressionToken.Power).Value(ExpressionType.Power);
+    static readonly TokenListParser<ArithmeticExpressionToken, InfixExpressionType> Divide =
+        Token.EqualTo(ArithmeticExpressionToken.Divide).Value(InfixExpressionType.Divide);
 
-    static readonly TokenListParser<ArithmeticExpressionToken, Expression> Constant =
+    static readonly TokenListParser<ArithmeticExpressionToken, InfixExpressionType> Power =
+        Token.EqualTo(ArithmeticExpressionToken.Power).Value(InfixExpressionType.Power);
+
+    static readonly TokenListParser<ArithmeticExpressionToken, int?> Constant =
         Token.EqualTo(ArithmeticExpressionToken.Number)
-            .Apply(Numerics.DecimalDouble)
-            .Select(n => (Expression)Expression.Constant(n));
+            .Apply(Numerics.IntegerInt32)
+            .Select(n => n as int?);
 
-    private static readonly TokenListParser<ArithmeticExpressionToken, Expression> RomanNumeral =
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> RomanNumeral =
         Token.EqualTo(ArithmeticExpressionToken.RomanNumeral)
             .Apply(RomanNumeralParser.TextParser)
-            .Select(i => (Expression)Expression.Constant(Convert.ToDouble(i)));
+            .Select(x => x as int?);
 
-    static readonly TokenListParser<ArithmeticExpressionToken, Expression> Factor =
-        (from lparen in Token.EqualTo(ArithmeticExpressionToken.LParen)
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> L1 =
+        Constant.Or(RomanNumeral);
+
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> Bracketed =
+        (from leftParenthesis in Token.EqualTo(ArithmeticExpressionToken.LParen)
          from expr in Parse.Ref(() => Expr)
-         from rparen in Token.EqualTo(ArithmeticExpressionToken.RParen)
-         select expr)
-        .Or(Constant)
-        .Or(RomanNumeral);
+         from rightParenthesis in Token.EqualTo(ArithmeticExpressionToken.RParen)
+         select expr);
 
-    static readonly TokenListParser<ArithmeticExpressionToken, Expression> Operand =
-        (from sign in Token.EqualTo(ArithmeticExpressionToken.Minus)
-         from factor in Factor
-         select (Expression)Expression.Negate(factor))
-        .Or(Factor)
-        .Named("expression");
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> L2 = Bracketed.Or(L1);
 
-    static readonly TokenListParser<ArithmeticExpressionToken, Expression> Term =
-        Parse.Chain(Multiply.Or(Divide).Or(Power), Operand, Expression.MakeBinary);
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> FactorialMaybe =
+        (from num in L2
+         from b in Token.EqualTo(ArithmeticExpressionToken.Bang).Many()
+         select (num, b)
+        )
+        .Where(x => x.num.HasValue)
+        .Select(
+            x =>
+            {
+                var r     = x.num;
+                var times = x.b.Length;
 
-    static readonly TokenListParser<ArithmeticExpressionToken, Expression> Expr =
-        Parse.Chain(Add.Or(Subtract), Term, Expression.MakeBinary);
+                while (r.HasValue && times > 0)
+                {
+                    r = BangFunctions.Factorial(r.Value);
+                    times--;
+                }
 
-    public static readonly TokenListParser<ArithmeticExpressionToken, Expression<Func<double>>>
+                return r;
+            }
+        );
+
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> L3 = FactorialMaybe;
+
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> SubFactorial =
+        (from b in Token.EqualTo(ArithmeticExpressionToken.Bang)
+         from num in L3
+         select num
+        )
+        .Where(x => x.HasValue)
+        .Select(x => BangFunctions.SubFactorial(x!.Value));
+
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> L4 =
+        SubFactorial.Or(L3);
+
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> Negative =
+        (from sign in Token.EqualTo(ArithmeticExpressionToken.Minus).AtLeastOnce()
+         from factor in L4
+         select sign.Length % 2 == 0? factor : -factor);
+
+    private static readonly TokenListParser<ArithmeticExpressionToken, int?> L5 = Negative.Or(L4);
+
+    static readonly TokenListParser<ArithmeticExpressionToken, int?> Term = Parse.Chain(
+        Multiply.Or(Divide).Or(Power),
+        L5,
+        ApplyInfix
+    );
+
+    static readonly TokenListParser<ArithmeticExpressionToken, int?> Expr = Parse.Chain(
+        Add.Or(Subtract),
+        Term,
+        ApplyInfix
+    );
+
+    public static readonly TokenListParser<ArithmeticExpressionToken, int?>
         Lambda
             =
-            Expr.AtEnd().Select(body => Expression.Lambda<Func<double>>(body));
+            Expr.AtEnd().Select(body => body);
 
     public static readonly TokenListParser<ArithmeticExpressionToken, Equation> Equation =
         (from l in Expr
@@ -214,6 +251,78 @@ public static class Parser
          from r in Expr.AtEnd()
          select new Equation(l, r)
         );
+
+    private static int? ApplyInfix(InfixExpressionType expressionType, int? i1, int? i2)
+    {
+        if (!i1.HasValue || !i2.HasValue)
+            return null;
+
+        switch (expressionType)
+        {
+            case InfixExpressionType.Add:      return i1 + i2;
+            case InfixExpressionType.Subtract: return i1 - i2;
+            case InfixExpressionType.Multiply: return i1 * i2;
+            case InfixExpressionType.Divide:
+            {
+                if (i2.Value == 0)
+                    return null;
+
+                var div = Math.DivRem(i1.Value, i2.Value, out var rem);
+                return rem == 0 ? div : null;
+            }
+            case InfixExpressionType.Power:
+            {
+                var d = Math.Pow(i1.Value, i2.Value);
+
+                try
+                {
+                    var i = Convert.ToInt32(d);
+                    return i;
+                }
+                catch (OverflowException)
+                {
+                    return null;
+                }
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(expressionType), expressionType, null);
+        }
+    }
+}
+
+public static class BangFunctions
+{
+    public static int? Factorial(int x) => Factorials.TryGetValue(x, out var v) ? v : null;
+    public static int? SubFactorial(int x) => SubFactorials.TryGetValue(x, out var v) ? v : null;
+
+    private static readonly Dictionary<int, int> Factorials = Enumerable.Range(-20, 40)
+        .ToDictionary(x => x, Fact);
+
+    private static readonly Dictionary<int, int> SubFactorials = new()
+    {
+        { 1, 0 },
+        { 2, 1 },
+        { 3, 2 },
+        { 4, 9 },
+        { 5, 44 },
+        { 6, 265 },
+        { 7, 1854 },
+        { 8, 14833 },
+        { 9, 133496 },
+        { 10, 1334961 },
+    };
+
+    static int Fact(int i)
+    {
+        if (i < 0)
+            return -1 * Fact(-i);
+
+        if (i == 0 || i == 1)
+            return 1;
+
+        var sub = Fact(i - 1);
+        return i * sub;
+    }
 }
 
 }

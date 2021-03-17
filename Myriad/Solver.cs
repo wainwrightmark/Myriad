@@ -19,7 +19,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
     {
         if (SolveSettings.MinWordLength.HasValue && s.Length >= SolveSettings.MinWordLength
                                                  && WordList.LegalWords.Contains(s))
-            return new WordCheckResult.Legal(new StringWord(s,path));
+            return new WordCheckResult.Legal(new StringWord(s, path));
 
         if (SolveSettings.AllowMath && s.All(IsMath))
         {
@@ -97,7 +97,8 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         '-',
         '*',
         '/',
-        '^'
+        '^',
+        '!'
     };
 
     private static bool MathCanFollow(char a, char b)
@@ -106,7 +107,8 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             return true;
 
         //A and b are both operators
-        if (b == '-')
+
+        if (b == '-' || b == '!')
             return true;
 
         return false;
@@ -114,7 +116,16 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
 
     public IEnumerable<FoundWord> GetPossibleSolutions(Board board)
     {
-        var finder = new WordFinder(board, this);
+        int? maxWords = null;
+
+        if (SolveSettings.MathExpressionsRange.HasValue && !SolveSettings.AllowWords
+                                                        && !SolveSettings.AllowTrueEquations)
+        {
+            maxWords = SolveSettings.MathExpressionsRange.Value.Max
+                     - SolveSettings.MathExpressionsRange.Value.Min;
+        }
+
+        var finder = new WordFinder(board, this, maxWords);
 
         finder.Run();
 
@@ -123,10 +134,11 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
 
     private class WordFinder
     {
-        public WordFinder(Board board, Solver solver)
+        public WordFinder(Board board, Solver solver, int? maxWords)
         {
-            Board   = board;
-            _solver = solver;
+            Board         = board;
+            _solver       = solver;
+            MaxWords = maxWords;
         }
 
         public readonly ConcurrentDictionary<FoundWord, byte> WordsSoFar =
@@ -135,6 +147,8 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
         private readonly Solver _solver;
 
         private Board Board { get; }
+
+        private int? MaxWords {get;}
 
         private readonly ConcurrentQueue<(string prefix, ImmutableList<Coordinate> usedCoordinates)>
             _queue =
@@ -147,9 +161,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
                 var prefix = Board.GetLetterAtCoordinate(coordinate).WordText;
 
                 var list = ImmutableList.Create(coordinate);
-                var w = _solver.CheckLegal(prefix, list);
-
-
+                var w    = _solver.CheckLegal(prefix, list);
 
                 if (w is WordCheckResult.Legal legalWord)
                     WordsSoFar.TryAdd(legalWord.Word, 0);
@@ -157,7 +169,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
                 _queue.Enqueue((prefix, list));
             }
 
-            while (_queue.TryDequeue(out var a))
+            while (_queue.TryDequeue(out var a) && (MaxWords is null || WordsSoFar.Count <= MaxWords))
             {
                 FindWords(a.prefix, a.usedCoordinates);
             }
@@ -172,7 +184,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             {
                 var l         = Board.GetLetterAtCoordinate(adjacentCoordinate);
                 var newPrefix = prefix + l.WordText;
-                var newList = usedCoordinates.Add(adjacentCoordinate);
+                var newList   = usedCoordinates.Add(adjacentCoordinate);
 
                 var w = _solver.CheckLegal(newPrefix, newList);
 

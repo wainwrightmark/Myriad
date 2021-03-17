@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -17,15 +18,15 @@ public abstract record FoundWordsData
         /// <inheritdoc />
         public override bool WordIsFound(FoundWord s)
         {
-            return WordsToFind.TryGetValue(s.Comparison, out var p) && p.word is not null;
+            return WordsToFind.TryGetValue(s.Comparison.ToString(), out var p) && p.word is not null;
         }
 
         /// <inheritdoc />
         public override FoundWordsData FindWord(FoundWord word)
         {
-            if (WordsToFind.TryGetValue(word.Comparison, out var g))
+            if (WordsToFind.TryGetValue(word.Comparison.ToString(), out var g))
             {
-                var newWordsToFind = WordsToFind.SetItem(word.Comparison, (g.group, word));
+                var newWordsToFind = WordsToFind.SetItem(word.Comparison.ToString(), (g.group, word));
 
                 return this with { WordsToFind = newWordsToFind };
             }
@@ -46,7 +47,7 @@ public abstract record FoundWordsData
     }
 
     public record OpenSearchData
-        (ImmutableDictionary<FoundWord, bool> FoundWordsDictionary) : FoundWordsData
+        (ImmutableSortedDictionary<FoundWord, bool> FoundWordsDictionary) : FoundWordsData
     {
         public int GetNumberOfWords()
         {
@@ -76,7 +77,7 @@ public abstract record FoundWordsData
         /// <inheritdoc />
         public override FoundWordsData Reset()
         {
-            return this with { FoundWordsDictionary = ImmutableDictionary<FoundWord, bool>.Empty };
+            return this with { FoundWordsDictionary = ImmutableSortedDictionary<FoundWord, bool>.Empty };
         }
     }
 

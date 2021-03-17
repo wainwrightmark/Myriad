@@ -37,7 +37,7 @@ public abstract record FoundWord(string Text, ImmutableList<Coordinate> Path) : 
         return 0;
     }
 
-    protected virtual int CompareTo(FoundWord fw) => string.Compare(Comparison, fw.Comparison, StringComparison.OrdinalIgnoreCase);
+    protected virtual int CompareTo(FoundWord fw) => String.Compare(Comparison, fw.Comparison, StringComparison.OrdinalIgnoreCase);
 
     public static FoundWord Create(string s, ImmutableList<Coordinate> path)
     {
