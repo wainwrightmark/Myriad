@@ -7,7 +7,7 @@
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 <MudContainer MaxWidth="MaxWidth.Small">
-<svg viewBox="0 0 @FullWidth @FullHeight" class="myriadSVG" >
+<svg viewBox="0 0 @FullWidth @FullHeight" class="myriadSVG">
 
 
 <rect x="0" y="0" width="@FullWidth" height="@FullHeight" fill="@Colors.Shades.White"/>
@@ -30,107 +30,105 @@
 @code
 {
 
-    Coordinate? _mouseDownCoordinate = null;
+  Coordinate? _mouseDownCoordinate = null;
 
-    TouchPoint[]? _touchStartPoints = null;
+  TouchPoint[]? _touchStartPoints = null;
 
-    public void MouseDown(Coordinate coordinate)
+  public void MouseDown(Coordinate coordinate)
+  {
+    _mouseDownCoordinate = coordinate;
+  }
+
+  public void OnTouchStart(TouchEventArgs tea, Coordinate coordinate)
+  {
+    _touchStartPoints = _touchStartPoints = tea.ChangedTouches;
+  }
+
+  public (int rotate, bool flip) GetTransform(int xDiff, int yDiff)
+  {
+    return xDiff switch
     {
-      _mouseDownCoordinate = coordinate;
-    }
-
-    public void OnTouchStart(TouchEventArgs tea, Coordinate coordinate)
-    {
-      _touchStartPoints = _touchStartPoints = tea.ChangedTouches;
-    }
-
-    public (int rotate, bool flip) GetTransform(int xDiff, int yDiff)
-    {
-      return xDiff switch
-      {
-        0 when yDiff == 0  => (0, false),
-        0                  => (2, true),
-        1 when yDiff == 0  => (0, true),
-        1 when yDiff > 0   => (1, false),
-        1                  => (-1, false),
-        -1 when yDiff == 0 => (0, true),
-        -1 when yDiff > 0  => (-1, false),
-        -1                 => (1, false),
-        _                  => (0, false)
+      0 when yDiff == 0  => (0, false),
+      0                  => (2, true),
+      1 when yDiff == 0  => (0, true),
+      1 when yDiff > 0   => (1, false),
+      1                  => (-1, false),
+      -1 when yDiff == 0 => (0, true),
+      -1 when yDiff > 0  => (-1, false),
+      -1                 => (1, false),
+      _                  => (0, false)
       };
-    }
+  }
 
-    public void OnTouchEnd(TouchEventArgs tea, Coordinate coordinate)
+  public void OnTouchEnd(TouchEventArgs tea, Coordinate coordinate)
+  {
+    if (_touchStartPoints is not null && _touchStartPoints.Length == 1 && tea.ChangedTouches.Length == 1)
     {
-      if (_touchStartPoints is not null && _touchStartPoints.Length == 1 && tea.ChangedTouches.Length == 1)
+      var source = _touchStartPoints[0];
+      var target = tea.ChangedTouches[0];
+
+      var xDiff = target.ScreenX - source.ScreenX;
+      var yDiff = target.ScreenY - source.ScreenY;
+
+      var xDirection = xDiff switch
       {
-        var source = _touchStartPoints[0];
-        var target = tea.ChangedTouches[0];
-
-        var xDiff = target.ScreenX - source.ScreenX;
-        var yDiff = target.ScreenY - source.ScreenY;
-
-        var xDirection = xDiff switch
-        {
-          >= 50  => 1,
-          <= -50 => -1,
-          _      => 0
+        >= 50  => 1,
+        <= -50 => -1,
+        _      => 0
         };
 
-        var yDirection = yDiff switch{
-          >= 50  => 1,
-          <= -50 => -1,
-          _      => 0
+      var yDirection = yDiff switch{
+        >= 50  => 1,
+        <= -50 => -1,
+        _      => 0
         };
 
+      var transform = GetTransform(xDirection, yDirection);
 
-
-        var transform = GetTransform(xDirection, yDirection);
-
-        if (transform.rotate != 0)
+      if (transform.rotate != 0)
+      {
+        var rotatedCoordinate = GetRotated(coordinate);
+        if (rotatedCoordinate.Row == 0 || rotatedCoordinate.Row == Board.Value.MaxCoordinate.Row) //Top or bottom row
         {
-          var rotatedCoordinate = GetRotated(coordinate);
-          if(rotatedCoordinate.Row == 0 || rotatedCoordinate.Row == Board.Value.MaxCoordinate.Row) //Top or bottom row
-          {
-            Dispatcher.Dispatch(new RotateAction(transform.rotate));
-          }
-          else
-          {
-            Dispatcher.Dispatch(new RotateAction(-transform.rotate));
-          }
+          Dispatcher.Dispatch(new RotateAction(transform.rotate));
         }
-
-        if (transform.flip)
-          Dispatcher.Dispatch(new FlipAction());
-      }
-
-      _touchStartPoints
-        = null;
-    }
-
-    public void MouseUp(Coordinate coordinate)
-    {
-      if (_mouseDownCoordinate is not null)
-      {
-        if (_mouseDownCoordinate != coordinate)
+        else
         {
-          var sourceRotated = GetRotated(_mouseDownCoordinate);
-          var targetRotated = GetRotated(coordinate);
-
-          var transform = Coordinate.GetTransform(sourceRotated, targetRotated, Board.Value.MaxCoordinate);
-
-          if (transform.HasValue)
-          {
-            if (transform.Value.rotate != 0)
-              Dispatcher.Dispatch(new RotateAction(-transform.Value.rotate));
-            if (transform.Value.flip)
-              Dispatcher.Dispatch(new FlipAction());
-          }
+          Dispatcher.Dispatch(new RotateAction(-transform.rotate));
         }
       }
 
-      _mouseDownCoordinate = null;
+      if (transform.flip)
+        Dispatcher.Dispatch(new FlipAction());
     }
+
+    _touchStartPoints
+      = null;
+  }
+
+  public void MouseUp(Coordinate coordinate)
+  {
+    if (_mouseDownCoordinate is not null)
+    {
+      if (_mouseDownCoordinate != coordinate)
+      {
+        var sourceRotated = GetRotated(_mouseDownCoordinate);
+        var targetRotated = GetRotated(coordinate);
+
+        var transform = Coordinate.GetTransform(sourceRotated, targetRotated, Board.Value.MaxCoordinate);
+
+        if (transform.HasValue)
+        {
+          if (transform.Value.rotate != 0)
+            Dispatcher.Dispatch(new RotateAction(-transform.Value.rotate));
+          if (transform.Value.flip)
+            Dispatcher.Dispatch(new FlipAction());
+        }
+      }
+    }
+
+    _mouseDownCoordinate = null;
+  }
 }
 
 
@@ -161,36 +159,41 @@
     }
   }
 
-  <g class="square"
-     style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
+  var letter = Board.Value.GetLetterAtCoordinate(coordinate);
 
-     cursor="@cursor"
-     @ontouchstart="(args) => OnTouchStart(args, coordinate)"
-     @ontouchend="(args) => OnTouchEnd(args, coordinate)"
-     @onmousedown="() => MouseDown(coordinate)"
-     @onmouseup="() => MouseUp(coordinate)"
-     @onclick="@((ca) => CellClicked(coordinate, ca))">
-    <circle
-      id="@($"{coordinate}_bigCircle")"
+  @if (letter.IsLegal)
+  {
+    <g class="square"
+       style="-webkit-transform: translate(@(cx)px, @(cy)px); transform: translate(@(cx)px, @(cy)px);"
 
-      stroke="@color"
-      fill="@Colors.Shades.Black"
-      fill-opacity="0.01"
-      r="@CircleRadius"
-      class="circle">
-    </circle>
+       cursor="@cursor"
+       @ontouchstart="(args) => OnTouchStart(args, coordinate)"
+       @ontouchend="(args) => OnTouchEnd(args, coordinate)"
+       @onmousedown="() => MouseDown(coordinate)"
+       @onmouseup="() => MouseUp(coordinate)"
+       @onclick="@((ca) => CellClicked(coordinate, ca))">
+      <circle
+        id="@($"{coordinate}_bigCircle")"
 
-    <text
-      id="@($"{coordinate}_text")"
+        stroke="@color"
+        fill="@Colors.Shades.Black"
+        fill-opacity="0.01"
+        r="@CircleRadius"
+        class="circle">
+      </circle>
 
-      dominant-baseline="middle"
-      text-anchor="middle"
-      stroke="@Colors.Shades.White"
-      fill="@Colors.Shades.Black">
-      @Board.Value.GetLetterAtCoordinate(coordinate).ButtonText
+      <text
+        id="@($"{coordinate}_text")"
 
-    </text>
-  </g>
+        dominant-baseline="middle"
+        text-anchor="middle"
+        stroke="@Colors.Shades.White"
+        fill="@Colors.Shades.Black">
+        @letter.ButtonText
+
+      </text>
+    </g>
+  }
 }
 
 
@@ -199,7 +202,7 @@
   var flippedCoordinate = coordinate.RotateAndFlip(Board.Value.MaxCoordinate, -rotate, RecentWordsState.Value.Flip);
 
   string textAnchor;
-  if(flippedCoordinate.Column == 0)
+  if (flippedCoordinate.Column == 0)
   {
     textAnchor = "start";
   }
@@ -234,7 +237,7 @@
 
 </svg>
 
-<Blafettis @ref="_confetti" duration="6000" elementCount=150 angle="90" style="transform: translateX(50%)" />
+<Blafettis @ref="_confetti" duration="6000" elementCount=150 angle="90" style="transform: translateX(50%)"/>
 
 @code{
 
@@ -260,7 +263,6 @@
 
 
 @code {
-
 
   protected Blafettis _confetti;
 
@@ -303,14 +305,13 @@
     if (StartGameAction != null)
       Dispatcher.Dispatch(StartGameAction);
 
-
     FoundWordsState.StateChanged += (_, state) =>
     {
       if (state.Data is FoundWordsData.TargetWordsData twd && twd.WordsToFind.All(x => x.Value.word is not null))
       {
         _confetti.RaiseConfetti();
       }
-    } ;
+    };
 
     base.OnParametersSet();
   }

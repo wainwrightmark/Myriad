@@ -64,7 +64,7 @@ public record StartGameAction(
     /// <inheritdoc />
     public RecentWordsState Reduce(RecentWordsState state)
     {
-        return new(ImmutableList<RecentWord>.Empty, 0, false);
+        return new(ImmutableList<RecentWord>.Empty, new Random().Next(4), new Random().Next(2) == 0);
     }
 
     /// <inheritdoc />
