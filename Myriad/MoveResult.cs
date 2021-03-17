@@ -120,10 +120,15 @@ public abstract record MoveResult
                 );
             }
 
-            return new WordContinued(
+            var letter = board.GetLetterAtCoordinate(coordinate);
+
+            if(letter.IsLegal)
+                return new WordContinued(
                 checkResult.ToAnimationWord(false, word),
                 newChosenPositions
             );
+
+            return IllegalMove.Instance;
         }
 
         return IllegalMove.Instance;
