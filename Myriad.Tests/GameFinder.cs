@@ -88,34 +88,45 @@ public class GameFinder
         );
     }
 
+    private static bool HasCharacterInCorner(Board board, Letter l) => board.Letters[0] == l || board.Letters[2] == l || board.Letters[6] == l || board.Letters[8] == l;
+    private static bool HasCharacterInCross(Board board, Letter l) => board.Letters[1] == l || board.Letters[3] == l || board.Letters[5] == l || board.Letters[7] == l;
+    private static bool HasCharacterInCentre(Board board, Letter l) => board.Letters[4] == l;
+
     [Fact]
     public void NumberFind()
     {
-        var db  = GetDB();
-        var ids = db.Table<CenturionGame>().Select(x => x.BoardId).ToHashSet();
+        int seed = 3;
+        var db   = GetDB();
+        var ids  = db.Table<CenturionGame>().Select(x => x.BoardId).ToHashSet();
 
         var existingIds = new ConcurrentDictionary<string, string>(
             ids.Select(x => new KeyValuePair<string, string>(x, x))
         );
 
-        Stopwatch sw     = Stopwatch.StartNew();
-        var       boards = NumberCreator.CreateBoards(NumbersGameMode.Instance, new Random(1), x=>x.Letters[1].ButtonText.Equals("!"));
+        Stopwatch sw = Stopwatch.StartNew();
 
         var solver = NumbersGameMode.Instance.CreateSolver(
             ImmutableDictionary<string, string>.Empty,
             WordList.LazyInstance
         );
 
+        var letter = Letter.Create('_');
+
+        var boards = NumberCreator.CreateBoards(
+            NumbersGameMode.Instance,
+            solver,
+            new Random(seed),
+            x => HasCharacterInCentre(x, letter)
+        );
+
         foreach (var board in boards)
         {
-            if (existingIds.TryAdd(board.UniqueKey, board.UniqueKey))
-            {
-                var cg = CenturionGame.Create(board, solver, NumbersGameMode.Instance.Name);
+            var exists = existingIds.TryAdd(board.UniqueKey, board.UniqueKey);
+            var cg     = CenturionGame.Create(board, solver, NumbersGameMode.Instance.Name);
+            TestOutputHelper.WriteLine($"{sw.Elapsed}:  {cg}" + (exists ? " - new" : ""));
 
-                TestOutputHelper.WriteLine($"{sw.Elapsed}: {cg}");
-
+            if (exists)
                 db.InsertOrReplace(cg);
-            }
         }
     }
 
@@ -129,24 +140,28 @@ public class GameFinder
             ids.Select(x => new KeyValuePair<string, string>(x, x))
         );
 
-        Stopwatch sw     = Stopwatch.StartNew();
-        var       boards = NumberCreator.CreateBoards(RomanGameMode.Instance, new Random(1), null);
+        Stopwatch sw = Stopwatch.StartNew();
 
         var solver = RomanGameMode.Instance.CreateSolver(
             ImmutableDictionary<string, string>.Empty,
             WordList.LazyInstance
         );
 
+        var boards = NumberCreator.CreateBoards(
+            RomanGameMode.Instance,
+            solver,
+            new Random(3),
+            null
+        );
+
         foreach (var board in boards)
         {
-            if (existingIds.TryAdd(board.UniqueKey, board.UniqueKey))
-            {
-                var cg = CenturionGame.Create(board, solver, RomanGameMode.Instance.Name);
+            var exists = existingIds.TryAdd(board.UniqueKey, board.UniqueKey);
+            var cg     = CenturionGame.Create(board, solver, RomanGameMode.Instance.Name);
+            TestOutputHelper.WriteLine($"{sw.Elapsed}:  {cg}" + (exists ? " - new" : ""));
 
-                TestOutputHelper.WriteLine($"{sw.Elapsed}: {cg}");
-
+            if (exists)
                 db.InsertOrReplace(cg);
-            }
         }
     }
 }

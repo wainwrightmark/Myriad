@@ -25,13 +25,10 @@ public static class NumberCreator
 
     public static IEnumerable<Board> CreateBoards(
         NumberGameMode gameMode,
+        Solver solver,
         Random random,
         Func<Board, bool>? condition)
     {
-        var solver = gameMode.CreateSolver(
-            ImmutableDictionary<string, string>.Empty,
-            WordList.LazyInstance
-        );
 
         var board1 = new Board(Enumerable.Repeat(Letter.Create('_'), 9).ToImmutableArray(), 3);
 
