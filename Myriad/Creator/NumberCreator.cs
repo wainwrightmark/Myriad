@@ -24,13 +24,16 @@ public static class NumberCreator
     }
 
     public static IEnumerable<Board> CreateBoards(
-        NumberGameMode gameMode,
+        IGameMode gameMode,
         Solver solver,
         Random random,
+        int size,
+        int desiredSolutions,
         Func<Board, bool>? condition)
     {
 
-        var board1 = new Board(Enumerable.Repeat(Letter.Create('_'), 9).ToImmutableArray(), 3);
+        var board1 = new Board(Enumerable.Repeat(Letter.Create('_'), size * size).ToImmutableArray(), size);
+
 
         var legalLetters = gameMode.LegalLetters.ToImmutableList();
         var boards       = new HashSet<string>() { board1.UniqueKey };
@@ -43,7 +46,7 @@ public static class NumberCreator
             {
                 queue.Add(solution);
 
-                if (solution.Solutions >= 100)
+                if (solution.Solutions >= desiredSolutions)
                     yield return solution.Board;
             }
         }

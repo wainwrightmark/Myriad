@@ -88,14 +88,46 @@ public class GameFinder
         );
     }
 
-    private static bool HasCharacterInCorner(Board board, Letter l) => board.Letters[0] == l || board.Letters[2] == l || board.Letters[6] == l || board.Letters[8] == l;
-    private static bool HasCharacterInCross(Board board, Letter l) => board.Letters[1] == l || board.Letters[3] == l || board.Letters[5] == l || board.Letters[7] == l;
+    private static bool HasCharacterInCorner(Board board, Letter l) => board.Letters[0] == l
+     || board.Letters[2] == l || board.Letters[6] == l || board.Letters[8] == l;
+
+    private static bool HasCharacterInCross(Board board, Letter l) => board.Letters[1] == l
+     || board.Letters[3] == l || board.Letters[5] == l || board.Letters[7] == l;
+
     private static bool HasCharacterInCentre(Board board, Letter l) => board.Letters[4] == l;
+
+    [Fact]
+    public void WordFind()
+    {
+        var seed = 3;
+
+        Stopwatch sw = Stopwatch.StartNew();
+
+        var solver = WordsGameMode.Instance.CreateSolver(
+            ImmutableDictionary<string, string>.Empty,
+            WordList.LazyInstance
+        );
+
+        var boards = NumberCreator.CreateBoards(
+            WordsGameMode.Instance,
+            solver,
+            new Random(seed),
+            4,
+            400,
+            null
+        );
+
+        foreach (var board in boards)
+        {
+            var solutions = solver.GetPossibleSolutions(board).Count();
+            TestOutputHelper.WriteLine($"{sw.Elapsed}: {board.UniqueKey}: {solutions} Solutions");
+        }
+    }
 
     [Fact]
     public void NumberFind()
     {
-        int seed = 3;
+        var seed = 3;
         var db   = GetDB();
         var ids  = db.Table<CenturionGame>().Select(x => x.BoardId).ToHashSet();
 
@@ -116,6 +148,8 @@ public class GameFinder
             NumbersGameMode.Instance,
             solver,
             new Random(seed),
+            3,
+            100,
             x => HasCharacterInCentre(x, letter)
         );
 
@@ -151,6 +185,8 @@ public class GameFinder
             RomanGameMode.Instance,
             solver,
             new Random(3),
+            3,
+            100,
             null
         );
 

@@ -14,6 +14,9 @@ public record EquationGameMode : BagGameMode
     public override string Name => "Equation";
 
     /// <inheritdoc />
+    public override IEnumerable<Letter> LegalLetters { get; } = Letter.CreateFromString("=0123456789+-*/^!");
+
+    /// <inheritdoc />
     public override string Letters
     {
         get

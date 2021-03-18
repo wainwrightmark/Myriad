@@ -67,6 +67,9 @@ public record SecretGameMode : IGameMode
         return null;
     }
 
+    /// <inheritdoc />
+    public IEnumerable<Letter> LegalLetters { get; } = Letter.CreateFromString("abcdefghijklmnopqrstuvwxyz");
+
     public static readonly Setting.String Words =
         new(
             nameof(Words),

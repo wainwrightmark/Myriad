@@ -139,6 +139,9 @@ public record CustomGameMode : IGameMode
         return Animation.Create(words, board);
     }
 
+    /// <inheritdoc />
+    public IEnumerable<Letter> LegalLetters { get; } = Letter.CreateFromString("abcdefghijklmnopqrstuvwxyz");
+
     private static readonly Letter PaddingLetter = Letter.Create("😊".EnumerateRunes().Single());
 
     public static readonly Setting.String Letters =

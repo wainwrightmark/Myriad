@@ -95,6 +95,9 @@ public record ChallengeGameMode : IGameMode
         return null;
     }
 
+    /// <inheritdoc />
+    public IEnumerable<Letter> LegalLetters { get; } = Letter.CreateFromString("abcdefghijklmnopqrstuvwxyz");
+
     public virtual Setting.Bool Animate => new(nameof(Animate), false);
 
     public Setting.StringChoice Concept { get; } =  new(nameof(Concept), GoodSeedHelper.GoodChallengeGames.Value.Select(x=>x.group).ToImmutableList());

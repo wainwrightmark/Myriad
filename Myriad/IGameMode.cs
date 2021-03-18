@@ -18,6 +18,8 @@ public interface IGameMode
 
     Animation? GetAnimation(ImmutableDictionary<string, string> settings, Lazy<WordList> wordList);
 
+    abstract IEnumerable<Letter> LegalLetters { get; } //Used for generating
+
     IEnumerable<Setting> Settings { get; }
 
     public FoundWordsData GetFoundWordsData(

@@ -47,6 +47,9 @@ public record WordsGameMode : BagGameMode
     }
 
     /// <inheritdoc />
+    public override IEnumerable<Letter> LegalLetters { get; } = Letter.CreateFromString("abcdefghijklmnopqrstuvwxyz");
+
+    /// <inheritdoc />
     public override IEnumerable<Setting> Settings
     {
         get

@@ -80,6 +80,9 @@ public abstract record WhitelistGameMode : IGameMode
         return null;
     }
 
+    /// <inheritdoc />
+    public abstract IEnumerable<Letter> LegalLetters {get;}
+
     public virtual Setting.Bool AnimateSetting => new("Animate", false);
 
     public virtual Setting.String Seed =>
@@ -214,6 +217,9 @@ public abstract record BagGameMode : IGameMode
 
         return null;
     }
+
+    /// <inheritdoc />
+    public abstract IEnumerable<Letter> LegalLetters { get; }
 
     public virtual bool ReverseAnimationOrder => false;
 
