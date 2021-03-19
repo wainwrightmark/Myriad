@@ -7,9 +7,24 @@ using MoreLinq.Extensions;
 namespace Myriad
 {
 
+//public record MiniNumbersGameMode : NumbersGameMode
+//{
+//    private MiniNumbersGameMode() { }
+//    public static MiniNumbersGameMode Instance { get; } = new();
+
+//    /// <inheritdoc />
+//    public override int Columns { get; } = 2;
+
+//    /// <inheritdoc />
+//    public override SolveSettings GetSolveSettings(ImmutableDictionary<string, string> settings)
+//    {
+//        return new(null, false, (1, 10));
+//    }
+//}
+
 public record NumbersGameMode : NumberGameMode
 {
-    private NumbersGameMode() { }
+    protected NumbersGameMode() { }
     public static NumbersGameMode Instance { get; } = new();
 
     /// <inheritdoc />
@@ -19,7 +34,8 @@ public record NumbersGameMode : NumberGameMode
     public override bool ReverseAnimationOrder => true;
 
     /// <inheritdoc />
-    public override IEnumerable<Letter> LegalLetters { get; } = Letter.CreateFromString("0123456789+-*/^!");
+    public override IEnumerable<Letter> LegalLetters { get; } =
+        Letter.CreateFromString("0123456789+-*/^!");
 
     /// <inheritdoc />
     public override Board GenerateCuratedRandomBoard(Random random)
@@ -29,10 +45,11 @@ public record NumbersGameMode : NumberGameMode
 
         var opCount = new[] { 1, 2, 2, 3, 3, 4 }.RandomSubset(1, random).Single();
 
-        var numCount = 9 - opCount;
+        var numCount = (Columns * Columns) - opCount;
 
         var chars = operators.RandomSubset(opCount, random)
-            .Concat(numbers.RandomSubset(numCount, random)).Shuffle(random);
+            .Concat(numbers.RandomSubset(numCount, random))
+            .Shuffle(random);
 
         var letters = chars.Select(Letter.Create).ToImmutableArray();
 

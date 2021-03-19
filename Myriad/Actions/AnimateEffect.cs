@@ -19,8 +19,8 @@ public class AnimateEffect : Effect<AnimateAction>
             case Step.Rotate rotate:
                 dispatcher.Dispatch(new RotateAction(rotate.Amount));
                 break;
-            case Step.ClearPositionsAction _:
-                dispatcher.Dispatch(new Step.ClearPositionsAction());
+            case Step.ClearPositionsStep _:
+                dispatcher.Dispatch(new Step.ClearPositionsStep());
                 break;
             case Step.SetFoundWord sfw :
                 dispatcher.Dispatch(new SetPositionsAction(sfw.Word.Path, new AnimationWord(sfw.Word.AnimationString, AnimationWord.WordType.Found)));

@@ -12,7 +12,7 @@ public abstract record Step
     public record Rotate(int Amount) : Step;
     //public record Move(Coordinate Coordinate) : Step;[]
     public record SetFoundWord(FoundWord Word) : Step;
-    public record ClearPositionsAction : Step;
+    public record ClearPositionsStep : Step;
 }
 
 public record StepWithResult(Step Step, MoveResult? MoveResult, int NewIndex) { }
@@ -30,7 +30,7 @@ public record Animation(ImmutableList<Step> Steps)
 
         switch (c)
         {
-            case Step.ClearPositionsAction clearCoordinatesAction:
+            case Step.ClearPositionsStep clearCoordinatesAction:
             {
                 return new StepWithResult(
                     clearCoordinatesAction,

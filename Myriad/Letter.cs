@@ -13,7 +13,7 @@ public record Letter(string ButtonText, string WordText, bool IsLegal)
             return new Letter("Qᵤ", "QU", true);
 
         if (rune.ToString().Equals("_"))
-            return new Letter("", "_", false);
+            return new Letter("_", "_", false);
 
         return new Letter(rune.ToString().ToUpper(), rune.ToString().ToUpper(), true);
     }

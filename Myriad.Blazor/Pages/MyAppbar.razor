@@ -9,11 +9,7 @@
 
 
 
-@if (SecondsLeft.HasValue)
-{
-  <MudText Typo="Typo.h5">@SecondsLeft</MudText>
-  <MudAppBarSpacer/>
-}
+
 
 <MudIconButton
   Icon="@Icons.Material.Filled.FiberNew"
@@ -40,6 +36,12 @@
 
 <MudAppBarSpacer/>
 
+@if (SecondsLeft.HasValue)
+{
+  <MudText Typo="Typo.h5">@SecondsLeft</MudText>
+}
+
+<MudAppBarSpacer/>
 
 <MudIconButton
   Icon="@Icons.Custom.Brands.GitHub"

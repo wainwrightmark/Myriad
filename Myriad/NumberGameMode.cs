@@ -69,8 +69,6 @@ public abstract record NumberGameMode : WhitelistGameMode
 
     /// <inheritdoc />
     public override int Columns => 3;
-
-    
 }
 
 }
