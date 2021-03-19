@@ -8,16 +8,17 @@ namespace Myriad
 
 public static class GoodSeedHelper
 {
-    public static string GetGoodSeed(Random random) =>
-        GoodSeeds.GetRandomElement(random);
+    public static string GetGoodSeed(Random random) => GoodSeeds.GetRandomElement(random);
 
-    public static string GetGoodRomanGame(Random random) =>
-        GoodRomanGames.GetRandomElement(random);
+    public static string GetGoodRomanGame(Random random) => GoodRomanGames.GetRandomElement(random);
 
-    public static string GetGoodCenturyGame(Random random) => GoodCenturyGames.GetRandomElement(random);
+    public static string GetGoodCenturyGame(Random random) =>
+        GoodCenturyGames.GetRandomElement(random);
 
     public static (string group, string grid, IReadOnlyCollection<string> words)
-        GetChallengeGame(string name) => GoodChallengeGames.Value.Single(x=>x.group.Equals(name, StringComparison.OrdinalIgnoreCase));
+        GetChallengeGame(string name) => GoodChallengeGames.Value.Single(
+        x => x.group.Equals(name, StringComparison.OrdinalIgnoreCase)
+    );
 
     public static T GetRandomElement<T>(this Lazy<IReadOnlyList<T>> stuff, Random random)
     {
@@ -90,7 +91,9 @@ public static class GoodSeedHelper
                             .Select(x => x.Trim().ToUpperInvariant())
                             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                        return (m.Groups["group"].Value, m.Groups["grid"].Value.ToUpperInvariant(), words);
+                        var board = Board.Create(m.Groups["grid"].Value.ToUpperInvariant(), '_');
+
+                        return (m.Groups["group"].Value, board.UniqueKey, words);
                     }
                 }
             );

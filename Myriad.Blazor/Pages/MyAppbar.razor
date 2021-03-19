@@ -2,6 +2,7 @@
 @using Fluxor
 @using Myriad.Actions
 @using Myriad.States
+@using System.Collections.Immutable
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IDialogService Dialog
 
@@ -17,6 +18,19 @@
 <MudIconButton
   Icon="@Icons.Material.Filled.FiberNew"
   Color="Color.Inherit" OnClick="OpenDialog"/>
+
+<MudMenu Icon="@Icons.Material.Filled.List">
+  @foreach (var game in GoodSeedHelper.GoodChallengeGames.Value)
+  {
+    var minMaxString = "";
+    if (ChallengeGamesHistory.Value.SavedChallengeGames.TryGetValue(game.grid, out var svc))
+    {
+      minMaxString = svc.foundSolutions + "/" + svc.maxSolutions;
+    }
+
+    <MudMenuItem OnClick="() => StartChallengeGame(game.group)">@game.group @minMaxString</MudMenuItem>
+  }
+</MudMenu>
 
 <MudIconButton
   Icon="@Icons.Material.Filled.Delete"
@@ -36,108 +50,128 @@
 
 @code {
 
-  [Inject]
-  private IState<Board> Board { get; set; }
+    [Inject]
+    private IState<Board> Board { get; set; }
 
-  [Inject]
-  private IState<ChosenPositionsState> ChosenPositions { get; set; }
+    [Inject]
+    private IState<ChosenPositionsState> ChosenPositions { get; set; }
 
-  [Inject]
-  private IState<Solver> Solver { get; set; }
+    [Inject]
+    private IState<Solver> Solver { get; set; }
 
-  [Inject]
-  private IState<FoundWordsState> FoundWords { get; set; }
+    [Inject]
+    private IState<FoundWordsState> FoundWords { get; set; }
 
-  [Inject]
-  private IState<GameSettingsState> GameSettingsState { get; set; }
+    [Inject]
+    private IState<GameSettingsState> GameSettingsState { get; set; }
 
-  [Inject]
-  private IState<AnimationState> AnimationState { get; set; }
+    [Inject]
+    private IState<AnimationState> AnimationState { get; set; }
 
-  [Inject]
-  private IState<TimeState> TimeState { get; set; }
+    [Inject]
+    private IState<TimeState> TimeState { get; set; }
 
-  [Inject]
-  public IDispatcher Dispatcher { get; set; }
+    [Inject]
+    private IState<ChallengeGamesHistory> ChallengeGamesHistory { get; set; }
 
-  public bool IsGameVisible => SecondsLeft > 0;
+    [Inject]
+    private SavedChallengeGamesService _savedChallengeGameService { get; set; } //Ignore this
 
-  private Timer _timer;
+    [Inject]
+    public IDispatcher Dispatcher { get; set; }
 
-  protected override void OnAfterRender(bool firstRender)
-  {
-    if (firstRender)
+    public bool IsGameVisible => SecondsLeft > 0;
+
+    private Timer _timer;
+
+    protected override void OnAfterRender(bool firstRender)
     {
-      _timer = new Timer(DateTimeCallback, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-    }
-  }
-
-  private async void DateTimeCallback(object state)
-  {
-    if (AnimationState.Value.Animation != null)
-    {
-      int frames;
-
-      if (AnimationState.Value.LastFrame is null)
-        frames = 1;
-      else
+      if (firstRender)
       {
-        var totalMs = (DateTime.Now - AnimationState.Value.LastFrame).Value.TotalMilliseconds;
-
-        frames = Convert.ToInt32(totalMs / AnimationState.Value.FrameMs);
-      }
-
-      if (frames > 0)
-      {
-        Dispatcher.Dispatch(new AnimateAction(
-                              Board.Value.UniqueKey,
-                              AnimationState.Value.Animation.GetStepWithResult(ChosenPositions.Value, Board.Value, Solver.Value, FoundWords.Value, AnimationState.Value.AnimationFrame + frames)));
+        _timer = new Timer(DateTimeCallback, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
       }
     }
 
-    await InvokeAsync(StateHasChanged);
-  }
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+      _timer.Dispose();
+      base.Dispose(disposing);
+    }
 
-  private async Task OpenDialog()
-  {
-    var parameters = new DialogParameters
+    private async void DateTimeCallback(object state)
+    {
+      if (AnimationState.Value.Animation != null)
+      {
+        int frames;
+
+        if (AnimationState.Value.LastFrame is null)
+          frames = 1;
+        else
+        {
+          var totalMs = (DateTime.Now - AnimationState.Value.LastFrame).Value.TotalMilliseconds;
+
+          frames = Convert.ToInt32(totalMs / AnimationState.Value.FrameMs);
+        }
+
+        if (frames > 0)
+        {
+          Dispatcher.Dispatch(new AnimateAction(
+                                Board.Value.UniqueKey,
+                                AnimationState.Value.Animation.GetStepWithResult(ChosenPositions.Value, Board.Value, Solver.Value, FoundWords.Value, AnimationState.Value.AnimationFrame + frames)));
+        }
+      }
+
+      await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OpenDialog()
+    {
+      var parameters = new DialogParameters
     {
       { nameof(StartDialog.SetValues), GameSettingsState.Value.LastSettings.ToDictionary(x => x.Key, x => x.Value) },
       { nameof(StartDialog.GameModeName), GameSettingsState.Value.LastGameMode.Name }
     };
 
-    var d = Dialog.Show<StartDialog>("Start Game", parameters);
+      var d = Dialog.Show<StartDialog>("Start Game", parameters);
 
-    var r = await d.Result;
+      var r = await d.Result;
 
-    if (r.Cancelled)
-      return;
+      if (r.Cancelled)
+        return;
 
-    if (r.Data is StartDialog.StartDialogResult startDialogResult)
-    {
-      if (startDialogResult.Settings.Values.Contains("idkfa", StringComparer.OrdinalIgnoreCase))
+      if (r.Data is StartDialog.StartDialogResult startDialogResult)
       {
-        Dispatcher.Dispatch(new EnableCheatingAction());
-      }
-      else
-      {
-        var sga = new StartGameAction(WordList.LazyInstance, startDialogResult.Mode, startDialogResult.Settings);
-        Dispatcher.Dispatch(sga);
+        if (startDialogResult.Settings.Values.Contains("idkfa", StringComparer.OrdinalIgnoreCase))
+        {
+          Dispatcher.Dispatch(new EnableCheatingAction());
+        }
+        else
+        {
+          var sga = new StartGameAction(WordList.LazyInstance, startDialogResult.Mode, startDialogResult.Settings);
+          Dispatcher.Dispatch(sga);
+        }
       }
     }
-  }
 
-  public int? SecondsLeft
-  {
-    get
+    private void StartChallengeGame(string name)
     {
-      if (TimeState.Value.TimeSituation is TimeSituation.FinishAt finishAt)
-      {
-        var r = Convert.ToInt32(finishAt.DateTime.Subtract(DateTime.Now).TotalSeconds);
-        return Math.Max(0, r);
-      }
-      return null;
+      var dict = ImmutableDictionary<string, string>.Empty.Add(ChallengeGameMode.Instance.Concept.Name, name);
+      var sga = new StartGameAction(WordList.LazyInstance, ChallengeGameMode.Instance,  dict);
+      Dispatcher.Dispatch(sga);
     }
-  }
+
+    public int? SecondsLeft
+    {
+      get
+      {
+        if (TimeState.Value.TimeSituation is TimeSituation.FinishAt finishAt)
+        {
+          var r = Convert.ToInt32(finishAt.DateTime.Subtract(DateTime.Now).TotalSeconds);
+          return Math.Max(0, r);
+        }
+        return null;
+      }
+    }
 
 }

@@ -45,6 +45,8 @@ public class LoadWordsEffect : Effect<StartGameAction>
                 .ToList();
 
             dispatcher.Dispatch(new LoadWordsAction(legalSavedWords));
+
+
         }
     }
 }

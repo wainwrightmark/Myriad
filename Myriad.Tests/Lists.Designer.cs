@@ -513,7 +513,6 @@ namespace Myriad.Tests {
         ///   Looks up a localized string similar to Acrobatics
         ///Aerobic Gymnastics
         ///Archery
-        ///Arnis
         ///Artistic Gymnastics
         ///Artistic Swimming
         ///Badminton
@@ -554,7 +553,8 @@ namespace Myriad.Tests {
         ///Karate
         ///Kayaking
         ///Kendo
-        ///Kick Boxing [rest of string was truncated]&quot;;.
+        ///Kick Boxing
+        ///Kite  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Sports {
             get {
@@ -620,18 +620,75 @@ namespace Myriad.Tests {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bath
+        ///Birmingham
+        ///Bradford
+        ///Brighton
+        ///Bristol
+        ///Cambridge
+        ///Canterbury
+        ///Carlisle
+        ///Chester
+        ///Chichester
+        ///Coventry
+        ///Derby
+        ///Durham
+        ///Ely
+        ///Exeter
+        ///Gloucester
+        ///Hereford
+        ///Kingston
+        ///Lancaster
+        ///Leeds
+        ///Leicester
+        ///Lichfield
+        ///Lincoln
+        ///Liverpool
+        ///London
+        ///Manchester
+        ///Newcastle
+        ///Norwich
+        ///Nottingham
+        ///Oxford
+        ///Peterborough
+        ///Plymouth
+        ///Portsmouth
+        ///Preston
+        ///Ripon
+        ///Salford
+        ///Salisbury
+        ///Sheffield
+        ///Southampton
+        ///St Albans
+        ///Stoke on Trent
+        ///Sunderland
+        ///Truro
+        ///Wakefield
+        ///Wells
+        ///Westminster
+        ///Winchester
+        ///Wolverhampton
+        ///Worcester
+        ///York
+        ///Bang [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string UKCities {
+            get {
+                return ResourceManager.GetString("UKCities", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to artichoke
         ///aubergine
         ///eggplant
         ///asparagus
-        ///legumes
+        ///legume
         ///alfalfa
-        ///azuki
         ///bean
         ///sprout
         ///pea
-        ///borlotti
-        ///broad beans
+        ///broad bean
         ///chickpea
         ///lentil
         ///peanut
@@ -639,35 +696,25 @@ namespace Myriad.Tests {
         ///mangetout
         ///broccoli
         ///cabbage
-        ///kohlrabi
         ///cauliflower
         ///celery
-        ///endive
-        ///fiddleheads
-        ///frisee
         ///fennel
         ///bokchoy
         ///chard
-        ///collard
         ///kale
         ///mustard
         ///spinach
-        ///anise
         ///basil
-        ///caraway
         ///coriander
         ///chamomile
-        ///daikon
         ///fennel
         ///lavender
         ///lemongrass
-        ///marjoram
         ///oregano
         ///parsley
         ///rosemary
         ///thyme
         ///lettuce
-        ///arugula
         ///mushroom
         ///nettle
         ///okra
@@ -678,7 +725,19 @@ namespace Myriad.Tests {
         ///onion
         ///shallot
         ///scallion
-        /// [rest of string was truncated]&quot;;.
+        ///pepper
+        ///chili
+        ///jalapeno
+        ///paprika
+        ///tabasco
+        ///cayenne
+        ///rhubarb
+        ///beetroot
+        ///carrot
+        ///celeriac
+        ///chestnut
+        ///ginger
+        ///par [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Vegetables {
             get {

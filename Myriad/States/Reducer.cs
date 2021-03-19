@@ -15,6 +15,7 @@ public static class Reducer
     [ReducerMethod] public static GameSettingsState Reduce(GameSettingsState board, IAction<GameSettingsState> action) => action.Reduce(board);
     [ReducerMethod] public static RecentWordsState Reduce(RecentWordsState board, IAction<RecentWordsState> action) => action.Reduce(board);
     [ReducerMethod] public static TimeState Reduce(TimeState board, IAction<TimeState> action) => action.Reduce(board);
+    [ReducerMethod] public static ChallengeGamesHistory Reduce(ChallengeGamesHistory board, IAction<ChallengeGamesHistory> action) => action.Reduce(board);
 
     [ReducerMethod]
     public static TState Reduce<TState>(TState state, IAction<TState> action) =>

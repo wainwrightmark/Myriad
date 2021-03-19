@@ -16,35 +16,54 @@ public record Board
         UniqueKey = GetUniqueKey();
     }
 
+    public static Board Create(string s, char filler)
+    {
+        var letters = Letter.CreateFromString(s).ToImmutableArray();
+        var c       = Coordinate.GetMaxCoordinateForSquareGrid(letters.Length);
+
+        var total = (c.Column + 1) * (c.Row + 1);
+
+        if (letters.Length < total)
+        {
+            letters = letters.AddRange(
+                Enumerable.Repeat(Letter.Create(filler), total - letters.Length)
+            );
+        }
+
+        var board = new Board(letters, c.Column + 1);
+
+        return board;
+    }
+
     public ImmutableArray<Letter> Letters { get; }
     public int Columns { get; }
     public string UniqueKey { get; }
 
+    private string GetUniqueKey()
+    {
+        if (Columns != Rows)
+            return $"{Columns}_{string.Join("", Letters.Select(x => x.WordText))}";
 
-        private string GetUniqueKey()
+        var options = new List<string>();
+
+        for (var rotation = 0; rotation < 4; rotation++)
         {
-            if (Columns != Rows)
-                return $"{Columns}_{string.Join("", Letters.Select(x => x.WordText))}";
-
-            var options = new List<string>();
-
-            for (var rotation = 0; rotation < 4; rotation++)
+            for (var reflection = 0; reflection < 2; reflection++)
             {
-                for (var reflection = 0; reflection < 2; reflection++)
-                {
-                    var s = GetAllCoordinates()
-                        .Select(x => x.RotateAndFlip(MaxCoordinate,  rotation, reflection == 0))
-                        .Select(GetLetterAtCoordinate)
-                        .Select(x => x.WordText)
-                        .ToDelimitedString("");
-                    options.Add(s);
-                }
-            }
+                var s = GetAllCoordinates()
+                    .Select(x => x.RotateAndFlip(MaxCoordinate, rotation, reflection == 0))
+                    .Select(GetLetterAtCoordinate)
+                    .Select(x => x.WordText)
+                    .ToDelimitedString("");
 
-            return options.OrderBy(x => x).First();
+                options.Add(s);
+            }
         }
 
-        public Letter GetLetterAtCoordinate(Coordinate coordinate)
+        return options.OrderBy(x => x).First();
+    }
+
+    public Letter GetLetterAtCoordinate(Coordinate coordinate)
     {
         var index = (coordinate.Row * Columns) + coordinate.Column;
 

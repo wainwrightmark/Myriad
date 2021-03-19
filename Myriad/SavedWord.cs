@@ -6,10 +6,27 @@ using MoreLinq;
 namespace Myriad
 {
 
+public class SavedChallengeGame
+{
+    public string boardId { get; set; }
+
+    public int maxSolutions { get; set; }
+
+    public int foundSolutions { get; set; }
+
+    public bool IsComplete() => foundSolutions >= maxSolutions;
+
+    public bool AreEqual(SavedChallengeGame savedChallengeGame)
+    {
+        return boardId.Equals(savedChallengeGame.boardId) &&
+               maxSolutions.Equals(savedChallengeGame.maxSolutions) &&
+               foundSolutions.Equals(savedChallengeGame.foundSolutions);
+    }
+}
+
 public class SavedWord
 {
-
-    public int uniqueId {get; set; }
+    public int uniqueId { get; set; }
     public string boardId { get; set; }
 
     public string wordText { get; set; }

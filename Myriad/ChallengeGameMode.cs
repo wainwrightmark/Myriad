@@ -20,22 +20,8 @@ public record ChallengeGameMode : IGameMode
         ImmutableDictionary<string, string> settings,
         Lazy<WordList> wordList)
     {
-        var game = GetGame(settings);
-
-        var letters = Letter.CreateFromString(game.grid).ToImmutableArray();
-
-        var c = Coordinate.GetMaxCoordinateForSquareGrid(letters.Length);
-
-        var total = (c.Column + 1) * (c.Row + 1);
-
-        if (letters.Length < total)
-        {
-            letters = letters.AddRange(
-                Enumerable.Repeat(Letter.Create('_'), total - letters.Length)
-            );
-        }
-
-        var board = new Board(letters, c.Column + 1);
+        var game  = GetGame(settings);
+        var board = Board.Create(game.grid, '_');
 
         return board;
     }

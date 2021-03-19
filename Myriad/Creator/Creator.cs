@@ -51,7 +51,7 @@ public class Creator
 
                     tries++;
 
-                    if (maxTries is null || tries > maxTries)
+                    if (tries > maxTries)
                     {
                         logger.LogInformation(
                             $"giving up after {tries} tries of {maxTries}"
