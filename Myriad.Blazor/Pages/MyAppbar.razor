@@ -34,14 +34,14 @@
   Edge="Edge.End"
   OnClick="() => Dispatcher.Dispatch(new ResetFoundWordsAction(Board.Value))"/>
 
-<MudAppBarSpacer/>
+<MudSpacer/>
 
 @if (SecondsLeft.HasValue)
 {
   <MudText Typo="Typo.h5">@SecondsLeft</MudText>
 }
 
-<MudAppBarSpacer/>
+<MudSpacer/>
 
 <MudIconButton
   Icon="@Icons.Custom.Brands.GitHub"
