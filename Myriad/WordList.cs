@@ -4,8 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Myriad;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record WordList(IReadOnlySet<string> LegalWords, IReadOnlySet<string> LegalPrefixes)
 {
@@ -56,7 +55,5 @@ public record WordList(IReadOnlySet<string> LegalWords, IReadOnlySet<string> Leg
         foreach (var word in words)
             AddAllPrefixes(word, newPrefixes); return new WordList(newWords.ToHashSet(), newPrefixes);
     }
-
-}
 
 }

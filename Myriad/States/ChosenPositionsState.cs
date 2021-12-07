@@ -4,10 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using MoreLinq;
 
-namespace Myriad.States
-{
-
-
+namespace Myriad.States;
 
 public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
 {
@@ -96,6 +93,4 @@ public record ChosenPositionsState(ImmutableList<Coordinate> ChosenPositions)
             flip
         );
     }
-}
-
 }

@@ -3,8 +3,7 @@ using Fluxor;
 using Myriad.Actions;
 using TG.Blazor.IndexedDB;
 
-namespace Myriad.Blazor.Flux
-{
+namespace Myriad.Blazor.Flux;
 
 public class ResetWordsEffect : Effect<ResetFoundWordsAction>
 {
@@ -36,6 +35,4 @@ public class ResetWordsEffect : Effect<ResetFoundWordsAction>
             await _database.DeleteRecord(nameof(SavedWord), sw.uniqueId);
         }
     }
-}
-
 }

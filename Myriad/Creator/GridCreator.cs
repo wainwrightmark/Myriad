@@ -8,8 +8,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 public static class GridCreator
 {
@@ -451,6 +450,4 @@ public static class GridCreator
 
         return allNodes;
     }
-}
-
 }

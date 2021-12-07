@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record EquationWord(string Text, ImmutableList<Coordinate> Path) : FoundWord(Text, Path)
 {
@@ -17,7 +16,5 @@ public record EquationWord(string Text, ImmutableList<Coordinate> Path) : FoundW
 
     /// <inheritdoc />
     public override int Points => 1;
-
-}
 
 }

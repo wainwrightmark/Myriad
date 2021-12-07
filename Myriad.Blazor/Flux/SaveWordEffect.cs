@@ -3,8 +3,7 @@ using Fluxor;
 using Myriad.Actions;
 using TG.Blazor.IndexedDB;
 
-namespace Myriad.Blazor.Flux
-{
+namespace Myriad.Blazor.Flux;
 
 public class SaveWordEffect : Effect<MoveAction>
 {
@@ -30,6 +29,4 @@ public class SaveWordEffect : Effect<MoveAction>
             );
         }
     }
-}
-
 }

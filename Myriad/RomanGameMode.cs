@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using MoreLinq;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record RomanGameMode : NumberGameMode
 {
@@ -44,6 +43,4 @@ public record RomanGameMode : NumberGameMode
 
         return array;
     }
-}
-
 }

@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using MoreLinq.Extensions;
 
-namespace Myriad
-{
+namespace Myriad;
 
 //public record MiniNumbersGameMode : NumbersGameMode
 //{
@@ -64,6 +63,4 @@ public record NumbersGameMode : NumberGameMode
 
         return array;
     }
-}
-
 }

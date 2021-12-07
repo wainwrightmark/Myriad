@@ -11,8 +11,7 @@ using MudBlazor.Services;
 using Myriad.States;
 using TG.Blazor.IndexedDB;
 
-namespace Myriad.Blazor
-{
+namespace Myriad.Blazor;
 
 public class SavedChallengeGameEffect : Effect<SaveGameAction>
 {
@@ -221,6 +220,4 @@ public class Program
 
         await host.RunAsync();
     }
-}
-
 }

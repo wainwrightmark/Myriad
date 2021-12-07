@@ -2,8 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 public class RootNode : Node
 {
@@ -20,7 +19,7 @@ public class RootNode : Node
             return new HashSet<Coordinate> { c };
 
         var              allowAnyUnusedCell = false;
-        ISet<Coordinate> set      = new HashSet<Coordinate>();
+        ISet<Coordinate> set                = new HashSet<Coordinate>();
 
         foreach (var cn in RootNodeGroup.Constraints.SelectMany(x => x))
         {
@@ -77,6 +76,4 @@ public class RootNode : Node
 
         return true;
     }
-}
-
 }

@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Myriad.States;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record ChallengeGameMode : IGameMode
 {
@@ -97,6 +96,4 @@ public record ChallengeGameMode : IGameMode
             yield return Animate;
         }
     }
-}
-
 }

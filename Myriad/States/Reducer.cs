@@ -1,8 +1,7 @@
 ﻿using Fluxor;
 using Myriad.Actions;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public static class Reducer
 {
@@ -20,6 +19,4 @@ public static class Reducer
     [ReducerMethod]
     public static TState Reduce<TState>(TState state, IAction<TState> action) =>
         action.Reduce(state);
-}
-
 }

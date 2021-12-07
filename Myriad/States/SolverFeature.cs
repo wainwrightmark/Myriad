@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Fluxor;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public class SolverFeature : Feature<Solver>
 {
@@ -18,6 +17,4 @@ public class SolverFeature : Feature<Solver>
             )
             ;
     }
-}
-
 }

@@ -2,8 +2,7 @@
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Myriad.Tests
-{
+namespace Myriad.Tests;
 
 public class RotateTest
 {
@@ -34,15 +33,15 @@ public class RotateTest
     }
 
     [Theory]
-    [InlineData(2,2)]
-    [InlineData(3,3)]
-    [InlineData(4,4)]
-    [InlineData(5,5)]
-    [InlineData(6,6)]
-    [InlineData(4,6)]
-    [InlineData(6,4)]
-    [InlineData(2,3)]
-    [InlineData(3,2)]
+    [InlineData(2, 2)]
+    [InlineData(3, 3)]
+    [InlineData(4, 4)]
+    [InlineData(5, 5)]
+    [InlineData(6, 6)]
+    [InlineData(4, 6)]
+    [InlineData(6, 4)]
+    [InlineData(2, 3)]
+    [InlineData(3, 2)]
     public void RotationShouldRotateAllPointsCorrectly(int height, int width)
     {
         var maxCoordinate = new Coordinate(height - 1, width - 1);
@@ -78,6 +77,4 @@ public class RotateTest
             return coordinate.RotateAndFlip(maxCoordinate, rotation, false);
         }
     }
-}
-
 }

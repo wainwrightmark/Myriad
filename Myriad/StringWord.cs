@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record StringWord(string Text, ImmutableList<Coordinate> Path) : FoundWord(Text, Path)
 {
@@ -28,6 +27,4 @@ public record StringWord(string Text, ImmutableList<Coordinate> Path) : FoundWor
             >= 8 => 11
         };
     }
-}
-
 }

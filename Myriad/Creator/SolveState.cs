@@ -2,8 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 public record SolveState(NodeGrid Grid, ImmutableList<Node> RemainingNodes)
 {
@@ -93,6 +92,4 @@ public record SolveState(NodeGrid Grid, ImmutableList<Node> RemainingNodes)
 
         return new CreateResult.CantCreate(nextNode.node.Rune);
     }
-}
-
 }

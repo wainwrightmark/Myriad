@@ -5,8 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Myriad.MathParser;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record Solver(WordList WordList, SolveSettings SolveSettings)
 {
@@ -136,8 +135,8 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
     {
         public WordFinder(Board board, Solver solver, int? maxWords)
         {
-            Board         = board;
-            _solver       = solver;
+            Board    = board;
+            _solver  = solver;
             MaxWords = maxWords;
         }
 
@@ -180,7 +179,7 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             var c = usedCoordinates.Last();
 
             foreach (var adjacentCoordinate in c.GetAdjacentCoordinates(Board.MaxCoordinate)
-                .Except(usedCoordinates))
+                         .Except(usedCoordinates))
             {
                 var l         = Board.GetLetterAtCoordinate(adjacentCoordinate);
                 var newPrefix = prefix + l.WordText;
@@ -198,6 +197,4 @@ public record Solver(WordList WordList, SolveSettings SolveSettings)
             }
         }
     }
-}
-
 }

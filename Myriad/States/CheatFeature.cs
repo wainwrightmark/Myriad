@@ -1,7 +1,6 @@
 ﻿using Fluxor;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public class CheatFeature : Feature<CheatState>
 {
@@ -13,6 +12,4 @@ public class CheatFeature : Feature<CheatState>
     {
         return new(false, false);
     }
-}
-
 }

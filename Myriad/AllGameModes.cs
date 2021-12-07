@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public static class AllGameModes
 {
@@ -26,6 +25,4 @@ public static class AllGameModes
 
         return null;
     }
-}
-
 }

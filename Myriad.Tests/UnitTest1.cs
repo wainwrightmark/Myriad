@@ -11,8 +11,7 @@ using Myriad.States;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Myriad.Tests
-{
+namespace Myriad.Tests;
 
 public class UnitTest1
 {
@@ -411,6 +410,4 @@ public class UnitTest1
         board.Letters.Should().NotBeEmpty();
 
     }
-}
-
 }

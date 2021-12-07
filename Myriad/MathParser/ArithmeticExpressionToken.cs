@@ -1,7 +1,6 @@
 ﻿using Superpower.Display;
 
-namespace Myriad.MathParser
-{
+namespace Myriad.MathParser;
 
 public enum ArithmeticExpressionToken
 {
@@ -35,6 +34,4 @@ public enum ArithmeticExpressionToken
     [Token(Example = "(")] LParen,
 
     [Token(Example = ")")] RParen
-}
-
 }

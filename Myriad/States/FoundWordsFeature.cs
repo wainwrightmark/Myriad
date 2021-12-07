@@ -2,8 +2,7 @@
 using System.Collections.Immutable;
 using Fluxor;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public static class Defaults
 {
@@ -30,6 +29,4 @@ public class FoundWordsFeature : Feature<FoundWordsState>
 
         return new FoundWordsState(data);
     }
-}
-
 }

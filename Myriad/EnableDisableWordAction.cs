@@ -1,8 +1,7 @@
 ﻿using Myriad.Actions;
 using Myriad.States;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record EnableDisableWordAction(FoundWord Word, bool Enable) : IAction<FoundWordsState>
 {
@@ -11,6 +10,4 @@ public record EnableDisableWordAction(FoundWord Word, bool Enable) : IAction<Fou
     {
         return state.EnableWord(Word, Enable);
     }
-}
-
 }

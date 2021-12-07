@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public record GameSettingsState(
     IGameMode LastGameMode,
@@ -23,6 +22,4 @@ public record GameSettingsState(
 
         return uri;
     }
-}
-
 }

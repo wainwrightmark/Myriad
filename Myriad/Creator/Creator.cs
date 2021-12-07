@@ -6,8 +6,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 public abstract record NodeGridCreateResult
 {
@@ -39,7 +38,7 @@ public class Creator
         var stickingPointRunes = new ConcurrentDictionary<Rune, int>();
 
         while (!ct.IsCancellationRequested && SolveStates.TryTake(out var ss)
-        ) //TODO combine depth and breadth
+              ) //TODO combine depth and breadth
         {
             var r = ss.TrySolve();
 
@@ -130,6 +129,4 @@ public class Creator
             return x.RemainingNodes.Count.CompareTo(y.RemainingNodes.Count) * -1;
         }
     }
-}
-
 }

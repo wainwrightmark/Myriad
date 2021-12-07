@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public record FoundWordsState(FoundWordsData Data)
 {
@@ -41,6 +40,4 @@ public record FoundWordsState(FoundWordsData Data)
     {
         return this with { Data = Data.Reset() };
     }
-}
-
 }

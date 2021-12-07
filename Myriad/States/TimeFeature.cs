@@ -1,7 +1,6 @@
 ﻿using Fluxor;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public class TimeFeature : Feature<TimeState>
 {
@@ -10,6 +9,4 @@ public class TimeFeature : Feature<TimeState>
 
     /// <inheritdoc />
     protected override TimeState GetInitialState() => new(TimeSituation.Infinite.Instance);
-}
-
 }

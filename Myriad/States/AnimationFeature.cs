@@ -1,7 +1,6 @@
 ﻿using Fluxor;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public class AnimationFeature : Feature<AnimationState>
 {
@@ -16,6 +15,4 @@ public class AnimationFeature : Feature<AnimationState>
     {
         return new(null, null, 3000,  0);
     }
-}
-
 }

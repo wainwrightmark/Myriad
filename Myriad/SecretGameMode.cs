@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Myriad.States;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record SecretGameMode : IGameMode
 {
@@ -34,7 +33,7 @@ public record SecretGameMode : IGameMode
         ImmutableDictionary<string, string> settings,
         Lazy<WordList> wordList)
     {
-        var wordsText     = Words.Get(settings);
+        var wordsText = Words.Get(settings);
         //var minWordLength = MinWordLength.Get(settings);
         var allWords      = Creator.GridCreator.GetAllWords(wordsText).ToList();
         var solveSettings = new SolveSettings(allWords.Select(x=>x.Length).Append(3).Min(), false, null);
@@ -99,6 +98,4 @@ public record SecretGameMode : IGameMode
     {
         return new FoundWordsData.OpenSearchData(ImmutableSortedDictionary<FoundWord, bool>.Empty);
     }
-}
-
 }

@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public abstract record FoundWordsData
 {
@@ -87,6 +86,4 @@ public abstract record FoundWordsData
     public abstract FoundWordsData FindWord(FoundWord word);
 
     public abstract FoundWordsData Reset();
-}
-
 }

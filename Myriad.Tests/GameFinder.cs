@@ -11,8 +11,7 @@ using SQLite;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Myriad.Tests
-{
+namespace Myriad.Tests;
 
 public class GameFinder
 {
@@ -201,6 +200,4 @@ public class GameFinder
                 db.InsertOrReplace(cg);
         }
     }
-}
-
 }

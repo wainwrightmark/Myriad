@@ -2,8 +2,7 @@
 using System.Collections.Immutable;
 using System.Text;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record EquationGameMode : BagGameMode
 {
@@ -39,7 +38,7 @@ public record EquationGameMode : BagGameMode
                 ('+', 6),
                 ('*', 6),
                 ('-', 4),
-                ('/', 4)// Can't do divide yet - remainders are bad
+                ('/', 4) // Can't do divide yet - remainders are bad
             };
 
             foreach (var (c, number) in terms)
@@ -66,6 +65,4 @@ public record EquationGameMode : BagGameMode
     {
         return new(null, true, null);
     }
-}
-
 }

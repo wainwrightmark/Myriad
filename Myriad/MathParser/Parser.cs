@@ -8,8 +8,7 @@ using Superpower.Model;
 using Superpower.Parsers;
 using Superpower.Tokenizers;
 
-namespace Myriad.MathParser
-{
+namespace Myriad.MathParser;
 
 public static class RomanNumeralParser
 {
@@ -323,6 +322,4 @@ public static class BangFunctions
         var sub = Fact(i - 1);
         return i * sub;
     }
-}
-
 }

@@ -1,7 +1,6 @@
 ﻿using Myriad.States;
 
-namespace Myriad.Actions
-{
+namespace Myriad.Actions;
 
 public record RotateAction(int Amount) : IAction<RecentWordsState>
 {
@@ -23,8 +22,4 @@ public record FlipAction : IAction<RecentWordsState>
     {
         return state with { Flip = !state.Flip };
     }
-}
-
-
-
 }

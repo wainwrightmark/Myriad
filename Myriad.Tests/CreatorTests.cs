@@ -14,8 +14,7 @@ using Myriad.Creator;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Myriad.Tests
-{
+namespace Myriad.Tests;
 
 public class CreatorTests
 {
@@ -26,8 +25,8 @@ public class CreatorTests
     public static TheoryData<string,int?, string, int, int> GetWordLists()
     {
         //const int delay    = 2000_000;
-        const int width    = 4;
-        const int height   = 4;
+        const int width  = 4;
+        const int height = 4;
 
         var resourceSet =
             Lists.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, true, true);
@@ -267,6 +266,4 @@ Stacy, can't you see?
 You're just not the girl for me
 I know it might be wrong but
 I'm in love with Stacy's mom";
-}
-
 }

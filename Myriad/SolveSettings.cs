@@ -1,5 +1,4 @@
-﻿namespace Myriad
-{
+﻿namespace Myriad;
 
 public record SolveSettings(int? MinWordLength, bool AllowTrueEquations, (int Min, int Max)? MathExpressionsRange)
 {
@@ -8,6 +7,4 @@ public record SolveSettings(int? MinWordLength, bool AllowTrueEquations, (int Mi
     public bool AllowWords => MinWordLength.HasValue;
 
     public int MinimumTermLength => MinWordLength ?? 1;
-}
-
 }

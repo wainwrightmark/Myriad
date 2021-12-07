@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Fluxor;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public class ChallengeGamesHistoryFeature : Feature<ChallengeGamesHistory>
 {
@@ -14,6 +13,4 @@ public class ChallengeGamesHistoryFeature : Feature<ChallengeGamesHistory>
     {
         return new(ImmutableDictionary<string, SavedChallengeGame>.Empty);
     }
-}
-
 }

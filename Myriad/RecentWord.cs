@@ -1,7 +1,6 @@
 ﻿using System;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record RecentWord(
     AnimationWord Word,
@@ -9,5 +8,3 @@ public record RecentWord(
     int Rotate,
     bool Flip,
     DateTime ExpiryDate);
-
-}

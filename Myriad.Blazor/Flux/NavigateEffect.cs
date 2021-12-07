@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Myriad.Actions;
 using Myriad.States;
 
-namespace Myriad.Blazor.Flux
-{
+namespace Myriad.Blazor.Flux;
 
 public class NavigateEffect : Effect<StartGameAction>
 {
@@ -24,6 +23,4 @@ public class NavigateEffect : Effect<StartGameAction>
         var uri = _navigationManager.BaseUri + $"?{gameString}";
         _navigationManager.NavigateTo(uri);
     }
-}
-
 }

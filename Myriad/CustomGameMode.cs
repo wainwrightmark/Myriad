@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Myriad.States;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record CustomGameMode : IGameMode
 {
@@ -183,6 +182,4 @@ public record CustomGameMode : IGameMode
     {
         return new FoundWordsData.OpenSearchData(ImmutableSortedDictionary<FoundWord, bool>.Empty);
     }
-}
-
 }

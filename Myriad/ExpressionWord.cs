@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record ExpressionWord : FoundWord
 {
@@ -43,6 +42,4 @@ public record ExpressionWord : FoundWord
 
     /// <inheritdoc />
     public override int Points => 1;
-}
-
 }

@@ -3,8 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using MoreLinq;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public class SavedChallengeGame
 {
@@ -55,6 +54,4 @@ public class SavedWord
             yield return coordinate;
         }
     }
-}
-
 }

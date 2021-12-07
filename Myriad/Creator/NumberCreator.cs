@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using MoreLinq;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 public static class NumberCreator
 {
@@ -94,6 +93,4 @@ public static class NumberCreator
             }
         }
     }
-}
-
 }

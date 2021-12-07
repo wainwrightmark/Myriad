@@ -6,8 +6,7 @@ using System.Text;
 using MoreLinq.Extensions;
 using Myriad.States;
 
-namespace Myriad
-{
+namespace Myriad;
 
 /// <summary>
 /// Creates a game by choosing from a pre-approved list
@@ -199,14 +198,14 @@ public abstract record BagGameMode : IGameMode
         if (AnimateSetting.Get(settings))
         {
 
-                var board = CreateBoard(settings, wordList);
-                var solver = CreateSolver(settings, wordList);
+            var board  = CreateBoard(settings, wordList);
+            var solver = CreateSolver(settings, wordList);
 
-                var words = solver.GetPossibleSolutions(board);
+            var words = solver.GetPossibleSolutions(board);
 
-                words = words.Reverse();
+            words = words.Reverse();
 
-                return Animation.Create(words);
+            return Animation.Create(words);
 
             //    return Animation.CreateForAllSolutions(
             //    CreateBoard(settings, wordList),
@@ -256,6 +255,4 @@ public abstract record BagGameMode : IGameMode
     {
         return new FoundWordsData.OpenSearchData(ImmutableSortedDictionary<FoundWord, bool>.Empty);
     }
-}
-
 }

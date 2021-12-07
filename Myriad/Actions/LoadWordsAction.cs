@@ -2,8 +2,7 @@
 using System.Linq;
 using Myriad.States;
 
-namespace Myriad.Actions
-{
+namespace Myriad.Actions;
 
 public record LoadWordsAction(IReadOnlyList<WordCheckResult.Legal> Save) : IAction<FoundWordsState>
 {
@@ -14,6 +13,4 @@ public record LoadWordsAction(IReadOnlyList<WordCheckResult.Legal> Save) : IActi
 
         return r;
     }
-}
-
 }

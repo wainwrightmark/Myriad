@@ -2,8 +2,7 @@
 using System.Collections.Immutable;
 using Myriad.States;
 
-namespace Myriad.Actions
-{
+namespace Myriad.Actions;
 
 public record StartGameAction(
     Lazy<WordList> WordList,
@@ -82,6 +81,4 @@ public record StartGameAction(
 
         return new FoundWordsState(data);
     }
-}
-
 }

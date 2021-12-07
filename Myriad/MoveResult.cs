@@ -3,8 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Myriad.States;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public abstract record MoveResult
 {
@@ -124,9 +123,9 @@ public abstract record MoveResult
 
             if(letter.IsLegal)
                 return new WordContinued(
-                checkResult.ToAnimationWord(false, word),
-                newChosenPositions
-            );
+                    checkResult.ToAnimationWord(false, word),
+                    newChosenPositions
+                );
 
             return IllegalMove.Instance;
         }
@@ -161,6 +160,4 @@ public record AnimationWord(string Text, AnimationWord.WordType Type)
         Invalid,
         Illegal
     }
-}
-
 }

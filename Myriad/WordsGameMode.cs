@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record WordsGameMode : BagGameMode
 {
@@ -63,6 +62,4 @@ public record WordsGameMode : BagGameMode
 
     /// <inheritdoc />
     public override string Name => "Words";
-}
-
 }

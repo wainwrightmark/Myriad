@@ -1,8 +1,7 @@
 ﻿using System;
 using Myriad.States;
 
-namespace Myriad.Actions
-{
+namespace Myriad.Actions;
 
 public record AnimateAction(string GameId, StepWithResult StepWithResult) : IAction<AnimationState>
 {
@@ -12,6 +11,4 @@ public record AnimateAction(string GameId, StepWithResult StepWithResult) : IAct
 
         return state with { LastFrame = DateTime.Now, AnimationFrame = StepWithResult.NewIndex};
     }
-}
-
 }

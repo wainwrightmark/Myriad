@@ -1,8 +1,7 @@
 ﻿using System;
 using Myriad.States;
 
-namespace Myriad.Actions
-{
+namespace Myriad.Actions;
 
 public record MoveAction(string BoardId, MoveResult Result, Coordinate Coordinate)
     : IAction<ChosenPositionsState>,
@@ -49,6 +48,4 @@ public record MoveAction(string BoardId, MoveResult Result, Coordinate Coordinat
 
         return state;
     }
-}
-
 }

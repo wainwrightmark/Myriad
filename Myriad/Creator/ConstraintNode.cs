@@ -3,8 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 public class ConstraintNode : Node
 {
@@ -114,13 +113,11 @@ public class ConstraintNode : Node
             if (requiredAdjacentNodes > 3)
             {
                 if (!coordinate.HasAtLeastXNeighbors(requiredAdjacentNodes, grid.MaxCoordinate)
-                ) //TODO do a bit better here
+                   ) //TODO do a bit better here
                     return false;
             }
         }
 
         return true;
     }
-}
-
 }

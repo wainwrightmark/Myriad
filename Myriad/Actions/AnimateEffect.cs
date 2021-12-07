@@ -2,8 +2,7 @@
 using System.Threading.Tasks;
 using Fluxor;
 
-namespace Myriad.Actions
-{
+namespace Myriad.Actions;
 
 public class AnimateEffect : Effect<AnimateAction>
 {
@@ -25,11 +24,9 @@ public class AnimateEffect : Effect<AnimateAction>
             case Step.SetFoundWord sfw :
                 dispatcher.Dispatch(new SetPositionsAction(sfw.Word.Path, new AnimationWord(sfw.Word.AnimationString, AnimationWord.WordType.Found)));
                 break;
-            default:                     throw new ArgumentOutOfRangeException();
+            default: throw new ArgumentOutOfRangeException();
         }
 
         return Task.CompletedTask;
     }
-}
-
 }

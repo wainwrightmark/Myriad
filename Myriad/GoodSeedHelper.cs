@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public static class GoodSeedHelper
 {
@@ -102,6 +101,4 @@ public static class GoodSeedHelper
         @"\A(?<group>\w+);\s*(?<grid>[a-zA-Z0-9_\-]+);\s*(?<words>(?:\w+,?\s*)*)\Z",
         RegexOptions.Compiled
     );
-}
-
 }

@@ -1,7 +1,6 @@
 ﻿using Myriad.States;
 
-namespace Myriad.Actions
-{
+namespace Myriad.Actions;
 
 public record EnableCheatingAction : IAction<CheatState>
 {
@@ -10,6 +9,4 @@ public record EnableCheatingAction : IAction<CheatState>
     {
         return state with { AllowCheating = true };
     }
-}
-
 }

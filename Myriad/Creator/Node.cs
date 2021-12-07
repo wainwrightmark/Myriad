@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 public abstract class Node : IEquatable<Node>, IComparable<Node>, IComparable
 {
     protected Node(string id, Rune rune, RootNodeGroup rootNodeGroup)
     {
-        Id           = id;
-        Rune         = rune;
+        Id            = id;
+        Rune          = rune;
         RootNodeGroup = rootNodeGroup;
     }
 
@@ -76,6 +75,4 @@ public abstract class Node : IEquatable<Node>, IComparable<Node>, IComparable
     public static bool operator ==(Node? left, Node? right) => Equals(left, right);
 
     public static bool operator !=(Node? left, Node? right) => !Equals(left, right);
-}
-
 }

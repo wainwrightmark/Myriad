@@ -1,7 +1,6 @@
 ﻿using System;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public static class RandomHelper
 {
@@ -20,6 +19,4 @@ public static class RandomHelper
 
         return new Random(current);
     }
-}
-
 }

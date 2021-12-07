@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Fluxor;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public class RecentWordsFeature : Feature<RecentWordsState>
 {
@@ -14,6 +13,4 @@ public class RecentWordsFeature : Feature<RecentWordsState>
     {
         return new(ImmutableList<RecentWord>.Empty, 0, false);
     }
-}
-
 }

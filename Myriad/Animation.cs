@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Myriad.States;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public abstract record Step
 {
@@ -92,6 +91,4 @@ public record Animation(ImmutableList<Step> Steps)
 
         return steps.Any() ? new Animation(steps.ToImmutableList()) : null;
     }
-}
-
 }

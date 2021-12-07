@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Myriad.States;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public abstract record NumberGameMode : WhitelistGameMode
 {
@@ -69,6 +68,4 @@ public abstract record NumberGameMode : WhitelistGameMode
 
     /// <inheritdoc />
     public override int Columns => 3;
-}
-
 }

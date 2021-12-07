@@ -2,8 +2,7 @@
 using System.Linq;
 using SQLite;
 
-namespace Myriad.Tests
-{
+namespace Myriad.Tests;
 
 public class CenturionGame
 {
@@ -76,18 +75,18 @@ public class CenturionGame
 
         var cg = new CenturionGame()
         {
-            BoardId = board.UniqueKey,
-            Width = board.Columns,
-            PossibleSolutions = solutions.Count,
-            MaxSolution = solutions.Max(),
-            MinSolution = solutions.Min(),
-            MaxContiguous = maxContiguous,
-            MinContiguous = minContiguous,
+            BoardId             = board.UniqueKey,
+            Width               = board.Columns,
+            PossibleSolutions   = solutions.Count,
+            MaxSolution         = solutions.Max(),
+            MinSolution         = solutions.Min(),
+            MaxContiguous       = maxContiguous,
+            MinContiguous       = minContiguous,
             OneHundredSolutions = Enumerable.Range(1, 100).Count(solutions.Contains),
-            Operators = board.Letters.Count(x => OperatorCharacters.Contains(x.WordText)),
-            Letters = board.Letters.Count(x => x.WordText.All(char.IsLetter)),
-            Numbers = board.Letters.Count(x => x.WordText.All(char.IsDigit)),
-            GameMode = gameMode
+            Operators           = board.Letters.Count(x => OperatorCharacters.Contains(x.WordText)),
+            Letters             = board.Letters.Count(x => x.WordText.All(char.IsLetter)),
+            Numbers             = board.Letters.Count(x => x.WordText.All(char.IsDigit)),
+            GameMode            = gameMode
         };
 
         return cg;
@@ -95,6 +94,4 @@ public class CenturionGame
 
     private static readonly HashSet<string> OperatorCharacters =
         (new[] { '+', '-', '*', '/', '=', '^' }).Select(x => x.ToString()).ToHashSet();
-}
-
 }

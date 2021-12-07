@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Myriad
-{
+namespace Myriad;
 
 class ListComparer<T> : IComparer<ImmutableList<T>> where T : IComparable
 {
@@ -31,6 +30,4 @@ class ListComparer<T> : IComparer<ImmutableList<T>> where T : IComparable
 
         return x.Count.CompareTo(y.Count);
     }
-}
-
 }

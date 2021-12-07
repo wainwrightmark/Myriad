@@ -3,8 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 public class RootNodeGroup
 {
@@ -41,6 +40,4 @@ public class RootNodeGroup
     {
         return $"{Rune} {RootNodes.Count}";
     }
-}
-
 }

@@ -3,8 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Myriad.Actions;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public record LoadSavedChallengeGamesAction(IReadOnlyCollection<SavedChallengeGame> Games) : IAction<ChallengeGamesHistory>
 {
@@ -66,6 +65,4 @@ public record ChallengeGamesHistory(
         else
             return null;
     }
-}
-
 }

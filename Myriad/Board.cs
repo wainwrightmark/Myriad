@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using MoreLinq;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record Board
 {
@@ -145,15 +144,13 @@ public record Board
                     var newCoordinates = usedCoordinates.Add(adj);
 
                     foreach (var finalList in FindAllPathsToWord(
-                        newRemainingLetters,
-                        newCoordinates,
-                        board
-                    ))
+                                 newRemainingLetters,
+                                 newCoordinates,
+                                 board
+                             ))
                         yield return finalList;
                 }
             }
         }
     }
-}
-
 }

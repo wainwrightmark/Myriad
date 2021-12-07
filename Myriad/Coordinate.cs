@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public record Coordinate(int Row, int Column) : IComparable<Coordinate>, IComparable
 {
@@ -214,6 +213,4 @@ public record Coordinate(int Row, int Column) : IComparable<Coordinate>, ICompar
 
         return null;
     }
-}
-
 }

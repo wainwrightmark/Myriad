@@ -1,11 +1,10 @@
 ﻿using System.Collections.Immutable;
 using Myriad.States;
 
-namespace Myriad.Actions
-{
+namespace Myriad.Actions;
 
 public record CheatAction(Solver Solver, Board Board) : IAction<CheatState>,
-                                                              IAction<FoundWordsState>
+                                                        IAction<FoundWordsState>
 {
     /// <inheritdoc />
     public CheatState Reduce(CheatState state)
@@ -25,6 +24,4 @@ public record CheatAction(Solver Solver, Board Board) : IAction<CheatState>,
 
         return state;
     }
-}
-
 }

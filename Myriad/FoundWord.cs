@@ -2,8 +2,8 @@
 using System.Collections.Immutable;
 using Myriad.MathParser;
 
-namespace Myriad
-{
+namespace Myriad;
+
 public abstract record FoundWord(string Text, ImmutableList<Coordinate> Path) : IComparable
 {
     public abstract string Display { get; }
@@ -51,7 +51,4 @@ public abstract record FoundWord(string Text, ImmutableList<Coordinate> Path) : 
 
         return new StringWord(s, path);
     }
-}
-
-
 }

@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 public record NodeGrid(
     ImmutableSortedDictionary<Coordinate, ImmutableSortedSet<Node>> Dictionary,
@@ -159,6 +158,4 @@ public record NodeGrid(
     {
         return ToBoard(() => new Rune('-')).ToString();
     }
-}
-
 }

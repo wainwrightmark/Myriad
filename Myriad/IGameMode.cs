@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Myriad.States;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public interface IGameMode
 {
@@ -36,6 +35,4 @@ public interface IGameMode
                 yield return (setting.Name, valString);
         }
     }
-}
-
 }

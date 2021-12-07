@@ -1,7 +1,6 @@
 ﻿using System;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public abstract record TimeSituation
 {
@@ -47,6 +46,4 @@ public abstract record TimeSituation
         120,
         10
     );
-}
-
 }

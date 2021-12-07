@@ -3,8 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Myriad.Creator
-{
+namespace Myriad.Creator;
 
 /// <summary>
 /// Thread-safe heap-based resizable max-priority queue.
@@ -241,6 +240,4 @@ public sealed class ConcurrentPriorityQueue<T> : PriorityQueue<T>, IProducerCons
     {
         ((IDisposable)_lock).Dispose();
     }
-}
-
 }

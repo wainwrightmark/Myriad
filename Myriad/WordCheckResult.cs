@@ -1,5 +1,4 @@
-﻿namespace Myriad
-{
+﻿namespace Myriad;
 
 public abstract record WordCheckResult(bool IsLegal)
 {
@@ -39,6 +38,4 @@ public abstract record WordCheckResult(bool IsLegal)
     }
 
     public abstract AnimationWord ToAnimationWord(bool previouslyFound, string text);
-}
-
 }

@@ -1,7 +1,6 @@
 ﻿using Myriad.States;
 
-namespace Myriad.Actions
-{
+namespace Myriad.Actions;
 
 public record ResetFoundWordsAction(Board Board) : IAction<FoundWordsState>
 {
@@ -10,6 +9,4 @@ public record ResetFoundWordsAction(Board Board) : IAction<FoundWordsState>
     {
         return state.Reset();
     }
-}
-
 }

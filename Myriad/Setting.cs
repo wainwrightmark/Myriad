@@ -4,8 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Myriad
-{
+namespace Myriad;
 
 public abstract record Setting(string Name)
 {
@@ -64,7 +63,7 @@ public abstract record Setting(string Name)
         {
             if (Options.Contains(s))
             {
-                value= s;
+                value = s;
                 return true;
             }
 
@@ -117,6 +116,4 @@ public abstract record Setting(string Name)
     public abstract bool IsValid(string s);
 
     public abstract string DefaultString {get;}
-}
-
 }

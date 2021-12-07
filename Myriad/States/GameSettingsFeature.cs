@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Fluxor;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public class GameSettingsFeature : Feature<GameSettingsState>
 {
@@ -20,6 +19,4 @@ public class GameSettingsFeature : Feature<GameSettingsState>
             ImmutableDictionary<string, string>.Empty
         );
     }
-}
-
 }

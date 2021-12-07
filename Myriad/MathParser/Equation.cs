@@ -1,5 +1,4 @@
-﻿namespace Myriad.MathParser
-{
+﻿namespace Myriad.MathParser;
 
 public record Equation(int? Left, int? Right)
 {
@@ -15,6 +14,4 @@ public record Equation(int? Left, int? Right)
             return false;
         }
     }
-}
-
 }

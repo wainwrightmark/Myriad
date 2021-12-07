@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Fluxor;
 
-namespace Myriad.States
-{
+namespace Myriad.States;
 
 public class ChosenPositionsFeature : Feature<ChosenPositionsState>
 {
@@ -30,6 +29,4 @@ public class BoardFeature : Feature<Board>
             WordList.LazyInstance
         );
     }
-}
-
 }
