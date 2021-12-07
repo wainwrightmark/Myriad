@@ -14,13 +14,13 @@
   <link href="_content/MudBlazor/MudBlazor.min.css?v=5.0.3" rel="stylesheet"/>
 
   <style>
-body{
-        touch-action: manipulation;
-        overscroll-behavior-x: none;
-        overscroll-behavior-y: none;
+    body{
+      touch-action: manipulation;
+      overscroll-behavior-x: none;
+      overscroll-behavior-y: none;
 
     }
-</style>
+  </style>
 
 
   <link href="Myriad.Blazor.styles.css" rel="stylesheet"/>
@@ -28,25 +28,7 @@ body{
 
 <body overscroll-behavior: contain;>
 <div id="app">
-  <img src="Logo.png"  style="display: block; width: 100%" />
-
-
-  <style>@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
-  .area {
-    position: relative;
-    font-size: 30px;
-    width: 100%
-  }
-
-  .letter {
-    text-anchor: middle;
-    font-family: 'Share Tech Mono', monospace, sans-serif;
-  }
-
-
-
-  </style>
+  <div class="spinner"></div>
 </div>
 
 <div id="blazor-error-ui">
@@ -56,10 +38,34 @@ body{
 </div>
 <script src="_framework/blazor.webassembly.js"></script>
 <script src="_content/TG.Blazor.IndexedDB/indexedDb.Blazor.js"></script>
-<script src="_content/MudBlazor/MudBlazor.min.js?v=5.0.5"></script>
+<script src="_content/MudBlazor/MudBlazor.min.js?v=6.0.2"></script>
 <script src="_content/Fluxor.Blazor.Web/scripts/index.js"></script>
 <script src="_content/blazor-dom-confetti/bundle.js"></script>
 
 </body>
 
 </html>
+
+<style>
+  .spinner {
+    border: 16px solid silver;
+    border-top: 16px solid #337AB7;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 700ms linear infinite;
+    top: 40%;
+    left: 55%;
+    position: absolute;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg)
+    }
+
+    100% {
+      transform: rotate(360deg)
+    }
+  }
+</style>
